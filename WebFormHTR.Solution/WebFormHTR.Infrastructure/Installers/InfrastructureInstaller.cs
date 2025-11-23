@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using WebFormHTR.Application.Features.File;
+using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Features.Template.Interfaces;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Infrastructure.Persistence.Interceptors;
 using WebFormHTR.Infrastructure.Services;
 
-namespace WebFormHTR.Infrastructure.Persistence.Installers;
+namespace WebFormHTR.Infrastructure.Installers;
 
 public static class InfrastructureInstaller
 {
@@ -23,5 +25,6 @@ public static class InfrastructureInstaller
         services.AddScoped<IAppDbContext, AppDbContext>();
 
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<ITemplateService, TemplateService>();
     }
 }

@@ -24,4 +24,19 @@ public static class ResultExtensions
 
         return Results.BadRequest(result.Errors.Select(e => e.Message));
     }
+
+    public static IResult ToHttpResult(this Result result)
+    {
+        if (result.IsSuccess)
+        {
+            return Results.Ok();
+        }
+        
+        if (result.Errors.Any(e => e is NotFoundError))
+        {
+            return Results.NotFound(result.Errors.Select(e => e.Message));
+        }
+        
+        return Results.BadRequest(result.Errors.Select(e => e.Message));
+    }
 }

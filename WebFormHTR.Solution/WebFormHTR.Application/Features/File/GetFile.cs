@@ -1,5 +1,6 @@
 using FluentResults;
 using WebFormHTR.Application.DTOs;
+using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.File;

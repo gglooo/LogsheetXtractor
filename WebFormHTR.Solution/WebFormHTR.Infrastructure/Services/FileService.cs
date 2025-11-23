@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File;
 using WebFormHTR.Application.Features.File.DTOs;
+using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Infrastructure.Services;
@@ -31,7 +32,6 @@ public class FileService(IAppDbContext dbContext, IMapper mapper): IFileService
         await File.WriteAllBytesAsync(storagePath, fileContent);
         
         dbContext.Files.Add(file);
-        dbContext.SaveChanges();
 
         return mapper.Map<FileDto>(file);
     }
@@ -59,5 +59,13 @@ public class FileService(IAppDbContext dbContext, IMapper mapper): IFileService
             FileShare.Read);
 
         return new GetFileDto(){Stream = stream, ContentType = file.ContentType, FileName = file.OriginalFileName};
+    }
+
+    public async Task<FileDto> CloneFileAsync(Guid fileId)
+    {
+        var file = await dbContext.Files.FirstAsync(f => f.Id == fileId);
+        
+        var fileBytes = await File.ReadAllBytesAsync(file.StoragePath);
+        return await UploadFileAsync(fileBytes, file.OriginalFileName, file.ContentType);
     }
 }

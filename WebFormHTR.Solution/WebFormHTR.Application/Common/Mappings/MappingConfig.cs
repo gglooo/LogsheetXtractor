@@ -12,6 +12,8 @@ public class MappingConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
+        config.NewConfig<Template, Template>();
+        
         config.NewConfig<Template, TemplateDetailDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Name, src => src.Name)
@@ -32,5 +34,6 @@ public class MappingConfig : IRegister
             .Map(dest => dest.CreatedAt, src => src.CreatedAt)
             .Map(dest => dest.ContentType, src => src.ContentType)
             .Map(dest => dest.SizeBytes, src => src.SizeBytes);
+
     }
 }
