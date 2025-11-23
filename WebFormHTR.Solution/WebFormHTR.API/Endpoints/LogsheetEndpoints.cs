@@ -1,0 +1,54 @@
+using FluentResults;
+using Microsoft.AspNetCore.Mvc;
+using WebFormHTR.API.Extensions;
+using WebFormHTR.Application.Features.Logsheets;
+using WebFormHTR.Application.Features.Logsheets.DTOs;
+using Wolverine;
+using Wolverine.Http;
+
+namespace WebFormHTR.API.Endpoints;
+
+public static class LogsheetEndpoints
+{
+    [WolverinePost("/api/logsheets")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    public static async Task<IResult> CreateLogsheet(
+        CreateLogsheetCommand request,
+        CancellationToken ct,
+        IMessageBus bus
+    )
+    {
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(request, ct);
+        
+        return result.ToHttpResult();
+    }
+
+    [WolverineDelete("/api/logsheets/{id}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> DeleteLogsheet(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new DeleteLogsheetCommand(id);
+        var result = await bus.InvokeAsync<Result>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverineGet("/api/templates/{id}/logsheets")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<LogsheetListDto>))]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> ListLogsheetsByTemplate(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var query = new ListLogsheetsByTemplateQuery(id);
+        var result = await bus.InvokeAsync<Result<IEnumerable<LogsheetListDto>>>(query, ct);
+        
+        return result.ToHttpResult();
+    }
+}

@@ -9,7 +9,7 @@ using Wolverine.Http;
 
 namespace WebFormHTR.API.Endpoints;
 
-public sealed record CreateTemplateRequest(string NewName);
+public sealed record CreateTemplateRequest(string NewName, Guid? FileId);
 
 public static class TemplateEndpoints
 {
@@ -82,7 +82,7 @@ public static class TemplateEndpoints
         IMessageBus bus,
         CancellationToken ct)
     {
-        var command = new CloneTemplateCommand(id, request.NewName);
+        var command = new CloneTemplateCommand(id, request.NewName, request.FileId);
         
         var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
 

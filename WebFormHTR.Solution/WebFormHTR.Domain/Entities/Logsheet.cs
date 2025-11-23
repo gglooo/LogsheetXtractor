@@ -14,7 +14,7 @@ public class Logsheet: BaseEntity
     public ELogSheetStatus Status { get; set; }
     public string? AlignmentData { get; set; } 
     public string? ErrorMessage { get; set; }
-    public DateTime ProcessedAt { get; set; }
+    public DateTime? ProcessedAt { get; set; }
     
     public virtual ICollection<ExtractedValue> ExtractedValues { get; set; } = new List<ExtractedValue>();
 }

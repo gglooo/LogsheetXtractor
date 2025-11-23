@@ -2,6 +2,8 @@ using System.Net;
 using Mapster;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File.DTOs;
+using WebFormHTR.Application.Features.Logsheets;
+using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
 using File = WebFormHTR.Domain.Entities.File;
@@ -34,6 +36,24 @@ public class MappingConfig : IRegister
             .Map(dest => dest.CreatedAt, src => src.CreatedAt)
             .Map(dest => dest.ContentType, src => src.ContentType)
             .Map(dest => dest.SizeBytes, src => src.SizeBytes);
-
+        
+        config.NewConfig<Logsheet, LogsheetDetailDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Template, src => src.Template)
+            .Map(dest => dest.File, src => src.File)
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.ProcessedAt, src => src.ProcessedAt);
+        
+        config.NewConfig<CreateLogsheetCommand, Logsheet>()
+            .Map(dest => dest.TemplateId, src => src.TemplateId)
+            .Map(dest => dest.FileId, src => src.FileId)
+            .IgnoreNullValues(true);
+        
+        config.NewConfig<Logsheet, LogsheetListDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.FileId, src => src.FileId)
+            .Map(dest => dest.TemplateId, src => src.TemplateId)
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.ProcessedAt, src => src.ProcessedAt);
     }
 }

@@ -6,7 +6,7 @@ using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.Template;
 
-public sealed record CloneTemplateCommand(Guid TemplateId, string NewTemplateName);
+public sealed record CloneTemplateCommand(Guid TemplateId, string NewTemplateName, Guid? FileId);
 
 public static class CloneTemplateHandler
 {
@@ -21,7 +21,13 @@ public static class CloneTemplateHandler
                 return Result.Fail<TemplateDetailDto>(new NotFoundError("Cloned template not found"));
             }
             
-            var clonedTemplate = await templateService.CloneTemplateAsync(request.TemplateId, request.NewTemplateName, cancellationToken);
+            var existingFile = dbContext.Files.FirstOrDefault(t => t.Id == existingTemplate.FileId);
+            if (existingTemplate.FileId is not null && existingFile is null)
+            {
+                return Result.Fail<TemplateDetailDto>(new NotFoundError("Cloned template's file not found"));
+            }
+            
+            var clonedTemplate = await templateService.CloneTemplateAsync(request.TemplateId, request.NewTemplateName, request.FileId, cancellationToken);
 
             await dbContext.SaveChangesAsync(cancellationToken);
             
