@@ -1,3 +1,6 @@
+using FluentResults;
+using MapsterMapper;
+using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.Template;
@@ -6,8 +9,9 @@ public sealed record GetTemplateQuery(string Id);
 
 public static class GetTemplateHandler
 {
-    public static Task<Domain.Entities.Template?> Handle(GetTemplateQuery request, IAppDbContext dbContext)
+    public static Task<Result<TemplateDetailDto?>> Handle(GetTemplateQuery request, IAppDbContext dbContext, IMapper mapper)
     {
-        return Task.FromResult(dbContext.Templates.FirstOrDefault(t => t.Id.ToString() == request.Id));
+        var template = dbContext.Templates.FirstOrDefault(t => t.Id.ToString() == request.Id);
+        return Task.FromResult(Result.Ok(mapper.Map<TemplateDetailDto?>(template)));
     }
 }

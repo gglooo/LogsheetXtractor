@@ -16,6 +16,7 @@ public static class InfrastructureInstaller
             (sp, options) => options
                 // TODO: allow user to configure
                 .UseSqlite("Data Source=app.db")
+                .UseLazyLoadingProxies()
                 .AddInterceptors(
                     sp.GetRequiredService<SoftDeleteInterceptor>()));
         

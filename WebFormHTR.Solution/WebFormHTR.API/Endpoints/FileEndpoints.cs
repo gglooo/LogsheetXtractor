@@ -1,5 +1,8 @@
+using FluentResults;
 using Microsoft.AspNetCore.Mvc;
+using WebFormHTR.API.Extensions;
 using WebFormHTR.Application.DTOs;
+using WebFormHTR.Application.Errors;
 using Wolverine;
 using Wolverine.Http;
 
@@ -26,9 +29,9 @@ public static class FileEndpoints
            formFile.ContentType
        );
        
-        var file = await bus.InvokeAsync<Domain.Entities.File>(command, ct);
-        
-        return Results.Ok(file);
+        var result = await bus.InvokeAsync<Result<Domain.Entities.File>>(command, ct);
+
+        return result.ToHttpResult();
     }
 
     [WolverineGet("/api/files/{id}")]
@@ -40,8 +43,18 @@ public static class FileEndpoints
         CancellationToken ct)
     {
         var query = new Application.Features.File.GetFileQuery(id);
-        var res = await bus.InvokeAsync<GetFileDto?>(query, ct);
+        var result = await bus.InvokeAsync<Result<GetFileDto?>>(query, ct);
 
-        return res?.Stream is null ? Results.NotFound() : Results.File(res.Stream, res.ContentType, res.FileName);
+        if (result.IsFailed)
+        {
+            if (result.Errors.Any(e => e is NotFoundError))
+            {
+                return Results.NotFound(result.Errors.Select(e => e.Message));
+            }
+            
+            return Results.Problem(string.Join("; ", result.Errors.Select(e => e.Message)));
+        }
+        
+        return result.Value?.Stream is null ? Results.NotFound("File not found.") : Results.File(result.Value.Stream, result.Value.ContentType, result.Value.FileName);
     }
 }

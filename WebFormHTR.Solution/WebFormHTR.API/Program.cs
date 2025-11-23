@@ -2,6 +2,7 @@ using WebFormHTR.Application;
 using WebFormHTR.Infrastructure.Persistence.Installers;
 using Wolverine;
 using Wolverine.Http;
+using Mapster;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Host.UseWolverine(opts =>
     opts.Discovery.IncludeAssembly(typeof(ApplicationAssemblyReference).Assembly);
 });
 builder.Services.AddWolverineHttp();
+builder.Services.AddMapster();
+TypeAdapterConfig.GlobalSettings.Scan(typeof(ApplicationAssemblyReference).Assembly);
 
 var app = builder.Build();
 

@@ -1,3 +1,4 @@
+using FluentResults;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Interfaces;
 
@@ -7,8 +8,15 @@ public sealed record GetFileQuery(string Id);
 
 public static class GetFileHandler
 {
-    public static async Task<GetFileDto?> Handle(GetFileQuery request, IFileService fileService)
+    public static async Task<Result<GetFileDto?>> Handle(GetFileQuery request, IFileService fileService)
     {
-        return await fileService.GetFileAsync(Guid.Parse(request.Id));
+        try {
+            var res = await fileService.GetFileAsync(Guid.Parse(request.Id));
+            return Result.Ok(res);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail<GetFileDto?>(ex.Message);
+        }
     }
 }

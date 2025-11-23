@@ -1,3 +1,5 @@
+using FluentResults;
+using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.File;
@@ -6,8 +8,15 @@ public sealed record UploadFileCommand(byte[] FileContent, string FileName, stri
 
 public static class UploadFileHandler
 {
-    public static async Task<Domain.Entities.File> Handle(UploadFileCommand request, IFileService fileService)
+    public static async Task<Result<FileDto>> Handle(UploadFileCommand request, IFileService fileService)
     {
-       return await fileService.UploadFileAsync(request.FileContent, request.FileName, request.ContentType);
+        try {
+            var res = await fileService.UploadFileAsync(request.FileContent, request.FileName, request.ContentType);
+            return Result.Ok(res);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail<FileDto>(ex.Message);
+        }
     }
 }

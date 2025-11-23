@@ -1,14 +1,16 @@
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File;
+using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Infrastructure.Services;
 
-public class FileService(IAppDbContext dbContext): IFileService
+public class FileService(IAppDbContext dbContext, IMapper mapper): IFileService
 {
     private readonly string _storageDirectory = "FileStorage";
-    public async Task<Domain.Entities.File> UploadFileAsync(byte[] fileContent, string fileName, string contentType)
+    public async Task<FileDto> UploadFileAsync(byte[] fileContent, string fileName, string contentType)
     {
         var newFileName = Guid.NewGuid().ToString();
         var storagePath = Path.Combine(_storageDirectory, newFileName);
@@ -31,7 +33,7 @@ public class FileService(IAppDbContext dbContext): IFileService
         dbContext.Files.Add(file);
         dbContext.SaveChanges();
 
-        return file;
+        return mapper.Map<FileDto>(file);
     }
     
     public async Task<GetFileDto?> GetFileAsync(Guid id)
