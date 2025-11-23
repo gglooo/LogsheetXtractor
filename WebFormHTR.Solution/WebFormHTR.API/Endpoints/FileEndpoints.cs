@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebFormHTR.API.Extensions;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.File.DTOs;
 using Wolverine;
 using Wolverine.Http;
 
@@ -29,7 +30,7 @@ public static class FileEndpoints
            formFile.ContentType
        );
        
-        var result = await bus.InvokeAsync<Result<Domain.Entities.File>>(command, ct);
+        var result = await bus.InvokeAsync<Result<FileDto>>(command, ct);
 
         return result.ToHttpResult();
     }
