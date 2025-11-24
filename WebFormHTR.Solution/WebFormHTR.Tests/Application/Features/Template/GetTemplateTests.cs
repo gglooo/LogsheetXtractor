@@ -5,22 +5,14 @@ using Moq;
 using WebFormHTR.Application.Features.Template;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Infrastructure.Persistence;
+using WebFormHTR.Tests.Common;
 
 namespace WebFormHTR.Tests.Application.Features.Template;
 
 public class GetTemplateTests : IDisposable
 {
-    private readonly AppDbContext _dbContext;
-    private readonly Mock<IMapper> _mapperMock;
-
-    public GetTemplateTests()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
-        _mapperMock = new Mock<IMapper>();
-    }
+    private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
+    private readonly Mock<IMapper> _mapperMock = new();
 
     [Fact]
     public async Task Handle_ShouldReturnTemplate_WhenFound()
@@ -31,7 +23,7 @@ public class GetTemplateTests : IDisposable
 
         var query = new GetTemplateQuery(template.Id);
         
-        var expectedDto = new TemplateDetailDto(template.Id, template.Name, null, null, DateTime.Now, DateTime.Now);
+        var expectedDto = new TemplateDetailDto(template.Id, template.Name, null, null, DateTime.Now, DateTime.Now, []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto?>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
 

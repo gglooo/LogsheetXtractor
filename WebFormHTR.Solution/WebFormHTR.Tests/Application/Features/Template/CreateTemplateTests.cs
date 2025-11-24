@@ -9,23 +9,15 @@ using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Template;
 
 public class CreateTemplateTests : IDisposable
 {
-    private readonly AppDbContext _dbContext;
-    private readonly Mock<IMapper> _mapperMock;
-
-    public CreateTemplateTests()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
-        _mapperMock = new Mock<IMapper>();
-    }
+    private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
+    private readonly Mock<IMapper> _mapperMock = new();
 
     [Fact]
     public async Task Handle_ShouldReturnError_WhenParentIdNotFound()
@@ -67,7 +59,7 @@ public class CreateTemplateTests : IDisposable
             Name = "Test Template"
         };
         
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now);
+        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
 
@@ -94,7 +86,7 @@ public class CreateTemplateTests : IDisposable
             ParentId = parent.Id
         };
         
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now);
+        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
 

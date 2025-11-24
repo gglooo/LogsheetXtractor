@@ -8,6 +8,7 @@ using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Infrastructure.Persistence;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
@@ -19,10 +20,7 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
 
     public ListLogsheetsByTemplateQueryHandlerTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
+        _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
     }
 

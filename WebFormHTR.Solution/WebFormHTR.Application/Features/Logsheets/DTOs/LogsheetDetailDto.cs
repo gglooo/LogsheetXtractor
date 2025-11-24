@@ -10,6 +10,7 @@ public record LogsheetDetailDto
     TemplateListDto Template,
     FileDto File,
     ELogSheetStatus Status,
-    DateTime? ProcessedAt
+    DateTime? ProcessedAt,
+    string? AlignmentData
     // TODO: add extracted values list if needed
 );

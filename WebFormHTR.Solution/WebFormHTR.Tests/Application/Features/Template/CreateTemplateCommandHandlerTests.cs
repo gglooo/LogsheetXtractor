@@ -7,29 +7,21 @@ using WebFormHTR.Application.Features.Template;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Template;
 
 public class CreateTemplateCommandHandlerTests
 {
-    private readonly AppDbContext _dbContext;
-    private readonly Mock<IMapper> _mapperMock;
-
-    public CreateTemplateCommandHandlerTests()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
-        _mapperMock = new Mock<IMapper>();
-    }
+    private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
+    private readonly Mock<IMapper> _mapperMock = new();
 
     [Fact]
     public async Task Handle_ShouldCreateTemplate_WhenRequestIsValid()
     {
         var command = new CreateTemplateCommand { Name = "New Template" };
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "New Template", null, null, DateTime.UtcNow, DateTime.UtcNow);
+        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "New Template", null, null, DateTime.UtcNow, DateTime.UtcNow, []);
 
         _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<WebFormHTR.Domain.Entities.Template>()))
             .Returns(expectedDto);

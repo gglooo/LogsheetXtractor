@@ -8,23 +8,15 @@ using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Domain.ValueObjects;
 using WebFormHTR.Infrastructure.Persistence;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.ROIs;
 
 public class CreateRoisCommandHandlerTests : IDisposable
 {
-    private readonly AppDbContext _dbContext;
-    private readonly Mock<IMapper> _mapperMock;
-
-    public CreateRoisCommandHandlerTests()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
-        _mapperMock = new Mock<IMapper>();
-    }
+    private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
+    private readonly Mock<IMapper> _mapperMock = new();
 
     [Fact]
     public async Task Handle_ShouldCreateRois_WhenRequestIsValid()

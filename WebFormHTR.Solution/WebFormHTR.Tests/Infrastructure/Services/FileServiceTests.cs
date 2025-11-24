@@ -7,6 +7,7 @@ using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Infrastructure.Services;
 using Xunit;
 using WebFormHTR.Application.DTOs;
+using WebFormHTR.Tests.Common;
 
 namespace WebFormHTR.Tests.Infrastructure.Services;
 
@@ -19,10 +20,7 @@ public class FileServiceTests : IDisposable
 
     public FileServiceTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
+        _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
         _fileService = new FileService(_dbContext, _mapperMock.Object);
 

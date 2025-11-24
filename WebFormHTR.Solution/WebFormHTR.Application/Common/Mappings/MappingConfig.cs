@@ -43,7 +43,8 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Template, src => src.Template)
             .Map(dest => dest.File, src => src.File)
             .Map(dest => dest.Status, src => src.Status)
-            .Map(dest => dest.ProcessedAt, src => src.ProcessedAt);
+            .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
+            .Map(dest => dest.AlignmentData, src => src.AlignmentData);
         
         config.NewConfig<CreateLogsheetCommand, Logsheet>()
             .Map(dest => dest.TemplateId, src => src.TemplateId)
@@ -81,6 +82,14 @@ public class MappingConfig : IRegister
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.Coordinates, src => src.Coordinates);
-            
+        
+        config.NewConfig<UpsertRoiDto, Roi>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Type, src => src.Type)
+            .Map(dest => dest.VariableName, src => src.VariableName)
+            .Map(dest => dest.Coordinates, src => src.Coordinates);
+
+        config.NewConfig<PatchLogsheetDto, Logsheet>()
+            .IgnoreNullValues(true);
     }
 }

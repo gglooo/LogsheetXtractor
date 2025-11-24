@@ -5,21 +5,14 @@ using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
 
 public class ProcessLogsheetDataCommandHandlerTests : IDisposable
 {
-    private readonly AppDbContext _dbContext;
-
-    public ProcessLogsheetDataCommandHandlerTests()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
-    }
+    private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
 
     [Fact]
     public async Task Handle_ShouldFail_WhenLogsheet_NotFound()

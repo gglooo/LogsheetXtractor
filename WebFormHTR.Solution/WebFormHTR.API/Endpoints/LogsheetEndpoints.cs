@@ -23,6 +23,22 @@ public static class LogsheetEndpoints
         
         return result.ToHttpResult();
     }
+    
+    [WolverinePatch("/api/logsheets/{id}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> UpdateLogsheet(
+        Guid id,
+        PatchLogsheetDto request,
+        IMessageBus bus,
+         CancellationToken ct)
+    {
+        var command = new PatchLogsheetCommand(id, request);
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
+        
+        return result.ToHttpResult();
+    }
 
     [WolverineDelete("/api/logsheets/{id}")]
     [ProducesResponseType(200)]
@@ -52,7 +68,7 @@ public static class LogsheetEndpoints
         return result.ToHttpResult();
     }
     
-    [WolverinePost("/api/templates/{id}/process")]
+    [WolverinePost("/api/logsheets/{id}/process")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(404)]

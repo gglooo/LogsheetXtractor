@@ -6,6 +6,7 @@ using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Infrastructure.Services;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Infrastructure.Services;
@@ -18,10 +19,7 @@ public class TemplateServiceTests
 
     public TemplateServiceTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
+        _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
         _templateService = new TemplateService(_dbContext, _mapperMock.Object);
     }
@@ -37,7 +35,7 @@ public class TemplateServiceTests
         var newTemplateName = "Cloned Template";
         var fileId = Guid.NewGuid();
 
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), newTemplateName, null, null, DateTime.UtcNow, DateTime.UtcNow);
+        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), newTemplateName, null, null, DateTime.UtcNow, DateTime.UtcNow, []);
         _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<Template>()))
             .Returns(expectedDto);
 

@@ -17,12 +17,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Roi>()
+            .HasQueryFilter(e => e.DeletedAt == null)
             .OwnsOne(r => r.Coordinates);
         
         modelBuilder.Entity<Residual>()
+            .HasQueryFilter(e => e.DeletedAt == null)
             .OwnsOne(r => r.Coordinates);
         
         modelBuilder.Entity<Template>()
+            .HasQueryFilter(e => e.DeletedAt == null)
             .HasOne(t => t.Parent)
             .WithMany(t => t.Children)
             .OnDelete(DeleteBehavior.SetNull);
@@ -42,6 +45,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Logsheet>()
+            .HasQueryFilter(e => e.DeletedAt == null)
             .HasMany(l => l.ExtractedValues)
             .WithOne(ev => ev.Logsheet)
             .HasForeignKey(eV => eV.LogsheetId)
@@ -57,6 +61,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.Entity<ExtractedValue>()
+            .HasQueryFilter(e => e.DeletedAt == null)
             .HasOne<Roi>(ev => ev.Roi)
             .WithOne(r => r.ExtractedValue)
             .HasForeignKey<Roi>(r => r.ExtractedValueId)

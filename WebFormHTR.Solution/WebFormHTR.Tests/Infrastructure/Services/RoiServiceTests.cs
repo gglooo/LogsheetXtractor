@@ -8,6 +8,7 @@ using WebFormHTR.Domain.Enums;
 using WebFormHTR.Domain.ValueObjects;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Infrastructure.Services;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Infrastructure.Services;
@@ -20,10 +21,7 @@ public class RoiServiceTests : IDisposable
 
     public RoiServiceTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
+        _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
         _roiService = new RoiService(_dbContext, _mapperMock.Object);
     }

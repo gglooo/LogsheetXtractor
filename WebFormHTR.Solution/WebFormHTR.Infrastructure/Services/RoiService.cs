@@ -1,4 +1,5 @@
 using FluentResults;
+using ImTools;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Features.ROIs;
@@ -16,6 +17,7 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper): IRoiService
         var updateRoisList = updateRois.ToList();
         
         var existingRois = await dbContext.Rois
+            .Include(r => r.Coordinates)
             .Where(r => r.TemplateId == templateId)
             .ToDictionaryAsync(r => r.Id, cancellationToken);
         
@@ -58,5 +60,27 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper): IRoiService
         }
 
         return mapper.Map<IEnumerable<RoiDto>>(allEntities);
+    }
+
+    public async Task<RoiDto> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi, CancellationToken cancellationToken)
+    {
+        var template = dbContext.Templates.FindFirst(t => t.Id == templateId);
+        if (template is null)
+        {
+            throw new Exception("Template not found");
+        }
+        
+        var existingRoi = template.Rois.FirstOrDefault(r => r.Id == updateRoi.Id);
+        if (existingRoi is not null)
+        {
+            mapper.Map(updateRoi, existingRoi);
+            return mapper.Map<RoiDto>(existingRoi);
+        }
+
+        var roi = mapper.Map<Roi>(updateRoi);
+        roi.TemplateId = templateId;
+            
+        await dbContext.Rois.AddAsync(roi, cancellationToken);
+        return mapper.Map<RoiDto>(roi);
     }
 }

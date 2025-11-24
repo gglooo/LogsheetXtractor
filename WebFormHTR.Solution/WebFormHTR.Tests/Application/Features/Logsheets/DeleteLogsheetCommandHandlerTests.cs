@@ -5,6 +5,7 @@ using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
+using WebFormHTR.Tests.Common;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
@@ -15,10 +16,7 @@ public class DeleteLogsheetCommandHandlerTests : IDisposable
 
     public DeleteLogsheetCommandHandlerTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _dbContext = new AppDbContext(options);
+        _dbContext = TestDbContextFactory.Create();
     }
 
     [Fact]
@@ -31,11 +29,13 @@ public class DeleteLogsheetCommandHandlerTests : IDisposable
 
         var command = new DeleteLogsheetCommand(logsheetId);
 
-        var result = await DeleteLogsheet.Handle(command, _dbContext, CancellationToken.None);
+        var result = await DeleteLogsheetHandler.Handle(command, _dbContext, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         var deletedLogsheet = await _dbContext.Logsheets.FindAsync(logsheetId);
-        deletedLogsheet.Should().BeNull();
+        
+        deletedLogsheet.Should().NotBeNull();
+        deletedLogsheet.DeletedAt.Should().NotBeNull();
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class DeleteLogsheetCommandHandlerTests : IDisposable
     {
         var command = new DeleteLogsheetCommand(Guid.NewGuid());
 
-        var result = await DeleteLogsheet.Handle(command, _dbContext, CancellationToken.None);
+        var result = await DeleteLogsheetHandler.Handle(command, _dbContext, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Logsheet not found");

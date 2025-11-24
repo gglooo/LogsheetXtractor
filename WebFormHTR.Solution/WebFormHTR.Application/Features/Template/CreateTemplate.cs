@@ -41,7 +41,13 @@ public static class CreateTemplateHandler
 
         dbContext.Templates.Add(template);
         await dbContext.SaveChangesAsync(ct);
+        
+        var createdTemplate = await dbContext.Templates
+            .AsNoTracking()
+            .Include(t => t.File)
+            .Include(t => t.Parent)
+            .FirstOrDefaultAsync(t => t.Id == template.Id, ct);
 
-        return Result.Ok(mapper.Map<TemplateDetailDto>(template));
+        return Result.Ok(mapper.Map<TemplateDetailDto>(createdTemplate!));
     }
 }

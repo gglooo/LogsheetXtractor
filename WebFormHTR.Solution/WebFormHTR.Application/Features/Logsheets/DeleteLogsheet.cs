@@ -6,7 +6,7 @@ namespace WebFormHTR.Application.Features.Logsheets;
 
 public sealed record DeleteLogsheetCommand(Guid Id);
 
-public static class DeleteLogsheet
+public static class DeleteLogsheetHandler
 {
     public static async Task<Result> Handle(DeleteLogsheetCommand request, IAppDbContext dbContext, CancellationToken ct)
     {

@@ -29,6 +29,17 @@ public class SoftDeleteInterceptor: SaveChangesInterceptor
         {
             entry.State = EntityState.Modified;
             entry.Entity.DeletedAt = DateTime.UtcNow;
+            foreach (var navigationEntry in entry.Navigations)
+            {
+                if (navigationEntry.Metadata.TargetEntityType.IsOwned())
+                {
+                    if (navigationEntry is ReferenceEntry { TargetEntry.State: EntityState.Deleted } referenceEntry)
+                    {
+                        referenceEntry.TargetEntry.State = EntityState.Modified;
+                    }
+                }
+            }
+            
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);

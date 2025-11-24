@@ -12,37 +12,57 @@ public sealed record SetRoiRequest(
     IEnumerable<SetRoiDto> Rois
 );
 
+public sealed record UpsertRoiRequest(
+    UpsertRoiDto Roi
+);
+
 public static class RoiEndpoints
 {
-    [WolverinePost("/api/templates/{id}/rois")]
+    [WolverinePost("/api/templates/{templateId}/rois/set")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     public static async Task<IResult> SetRoisForTemplate(
-        Guid id,
+        Guid templateId,
         SetRoiRequest request,
         CancellationToken ct,
         IMessageBus bus
     )
     {
-        var command = new SetTemplateRoisCommand(id, request.Rois);
+        var command = new SetTemplateRoisCommand(templateId, request.Rois);
 
         var result = await bus.InvokeAsync<Result<IEnumerable<RoiDto>>>(command, ct);
         return result.ToHttpResult();
     }
 
-    [WolverineGet("/api/templates/{id}/rois")]
+    [WolverineGet("/api/templates/{templateId}/rois")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     public static async Task<IResult> GetRoisForTemplate(
-        Guid id,
+        Guid templateId,
         IMessageBus bus,
         CancellationToken ct
     )
     {
-        var query = new ListRoisForTemplateQuery(id);
+        var query = new ListRoisForTemplateQuery(templateId);
 
         var result = await bus.InvokeAsync<Result<IEnumerable<RoiDto>>>(query, ct);
 
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/templates/{templateId}/rois/upsert")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    public static async Task<IResult> UpsertRoiForTemplate(
+        Guid templateId,
+        UpsertRoiRequest request,
+        IMessageBus bus,
+        CancellationToken ct
+    )
+    {
+        var command = new UpsertRoiCommand(templateId, request.Roi);
+        
+        var result = await bus.InvokeAsync<Result<RoiDto>>(command, ct);
         return result.ToHttpResult();
     }
 }

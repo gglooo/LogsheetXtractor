@@ -1,5 +1,6 @@
 using FluentResults;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
 
@@ -11,7 +12,10 @@ public static class GetTemplateHandler
 {
     public static Task<Result<TemplateDetailDto?>> Handle(GetTemplateQuery request, IAppDbContext dbContext, IMapper mapper)
     {
-        var template = dbContext.Templates.FirstOrDefault(t => t.Id == request.Id);
+        var template = dbContext.Templates
+            .AsNoTracking()
+            .Include(t => t.Rois)
+            .FirstOrDefault(t => t.Id == request.Id);
         
         var result = template is null ? null : mapper.Map<TemplateDetailDto>(template);
         
