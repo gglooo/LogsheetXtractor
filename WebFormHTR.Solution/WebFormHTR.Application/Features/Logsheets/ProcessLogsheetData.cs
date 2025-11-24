@@ -16,7 +16,7 @@ public static class ProcessLogsheetDataHandler
         {
             return Result.Fail(new NotFoundError("Logsheet not found"));
         }
-        
+
         throw new NotImplementedException();
     }
 }

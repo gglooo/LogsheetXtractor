@@ -11,7 +11,8 @@ public static class GetFileHandler
 {
     public static async Task<Result<GetFileDto?>> Handle(GetFileQuery request, IFileService fileService)
     {
-        try {
+        try
+        {
             var res = await fileService.GetFileAsync(Guid.Parse(request.Id));
             return Result.Ok(res);
         }

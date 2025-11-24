@@ -21,13 +21,15 @@ public static class SetTemplateRoisHandler
         {
             return Result.Fail(new NotFoundError("Template not found"));
         }
-        
-        try {
+
+        try
+        {
             var updatedRois = await roiService.SetRoisForTemplateAsync(request.TemplateId, request.Rois, ct);
             await dbContext.SaveChangesAsync(ct);
-            
+
             return Result.Ok(updatedRois);
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return Result.Fail($"Failed to update ROIs: {ex.Message}");
         }

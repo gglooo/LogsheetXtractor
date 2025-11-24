@@ -21,10 +21,10 @@ public static class UpsertRoiHandler
             {
                 return Result.Fail<RoiDto>(new NotFoundError("Template not found"));
             }
-            
+
             var upsertedRoi = await roiService.UpsertRoiForTemplateAsync(request.TemplateId, request.Roi, ct);
             await dbContext.SaveChangesAsync(ct);
-            
+
             return Result.Ok(upsertedRoi);
         }
         catch (Exception ex)

@@ -13,17 +13,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Residual> Residuals { get; set; }
     public DbSet<Logsheet> Logsheets { get; set; }
     public DbSet<ExtractedValue> ExtractedValues { get; set; }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Roi>()
             .HasQueryFilter(e => e.DeletedAt == null)
             .OwnsOne(r => r.Coordinates);
-        
+
         modelBuilder.Entity<Residual>()
             .HasQueryFilter(e => e.DeletedAt == null)
             .OwnsOne(r => r.Coordinates);
-        
+
         modelBuilder.Entity<Template>()
             .HasQueryFilter(e => e.DeletedAt == null)
             .HasOne(t => t.Parent)
@@ -33,12 +33,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<File>(t => t.File)
             .WithOne()
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<Residual>()
             .HasOne<Template>(r => r.Template)
             .WithMany(t => t.Residuals)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<Roi>()
             .HasOne<Template>(r => r.Template)
             .WithMany(t => t.Rois)
@@ -59,7 +59,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Template>(l => l.Template)
             .WithMany(t => t.Logsheets)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         modelBuilder.Entity<ExtractedValue>()
             .HasQueryFilter(e => e.DeletedAt == null)
             .HasOne<Roi>(ev => ev.Roi)

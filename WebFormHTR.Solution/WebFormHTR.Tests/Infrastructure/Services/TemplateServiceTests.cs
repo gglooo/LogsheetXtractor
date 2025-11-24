@@ -35,14 +35,30 @@ public class TemplateServiceTests
         var newTemplateName = "Cloned Template";
         var fileId = Guid.NewGuid();
 
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), newTemplateName, null, null, DateTime.UtcNow, DateTime.UtcNow, []);
-        _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<Template>()))
-            .Returns(expectedDto);
+        var expectedDto = new TemplateDetailDto(
+            Guid.NewGuid(),
+            newTemplateName,
+            null,
+            null,
+            DateTime.UtcNow,
+            DateTime.UtcNow,
+            []
+        );
+        _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<Template>())).Returns(expectedDto);
 
-        var result = await _templateService.CloneTemplateAsync(parentId, newTemplateName, fileId, CancellationToken.None);
+        var result = await _templateService.CloneTemplateAsync(
+            parentId,
+            newTemplateName,
+            fileId,
+            CancellationToken.None
+        );
         await _dbContext.SaveChangesAsync();
-        
+
         result.Should().Be(expectedDto);
-        _dbContext.Templates.Should().Contain(t => t.Name == newTemplateName && t.ParentId == parentId && t.FileId == fileId);
+        _dbContext
+            .Templates.Should()
+            .Contain(t =>
+                t.Name == newTemplateName && t.ParentId == parentId && t.FileId == fileId
+            );
     }
 }

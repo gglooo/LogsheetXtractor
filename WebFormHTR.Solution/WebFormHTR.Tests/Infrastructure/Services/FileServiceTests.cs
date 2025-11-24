@@ -45,11 +45,11 @@ public class FileServiceTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         result.Should().Be(expectedDto);
-        
+
         var savedFile = await _dbContext.Files.FirstOrDefaultAsync();
         savedFile.Should().NotBeNull();
         savedFile!.OriginalFileName.Should().Be(fileName);
-        
+
         File.Exists(savedFile.StoragePath).Should().BeTrue();
         var savedContent = await File.ReadAllBytesAsync(savedFile.StoragePath);
         savedContent.Should().BeEquivalentTo(content);
@@ -61,7 +61,7 @@ public class FileServiceTests : IDisposable
         var content = new byte[] { 4, 5, 6 };
         var fileName = "existing.txt";
         var contentType = "text/plain";
-        
+
         Directory.CreateDirectory(_storageDirectory);
         var storedFileName = $"{Guid.NewGuid()}_{fileName}";
         var storagePath = Path.Combine(_storageDirectory, storedFileName);
@@ -85,11 +85,11 @@ public class FileServiceTests : IDisposable
         result!.FileName.Should().Be(fileName);
         result.ContentType.Should().Be(contentType);
         result.Stream.Should().NotBeNull();
-        
+
         using var ms = new MemoryStream();
         await result.Stream!.CopyToAsync(ms);
         ms.ToArray().Should().BeEquivalentTo(content);
-        
+
         await result.Stream.DisposeAsync();
     }
 
@@ -97,7 +97,7 @@ public class FileServiceTests : IDisposable
     {
         if (Directory.Exists(_storageDirectory))
         {
-            try 
+            try
             {
                 Directory.Delete(_storageDirectory, true);
             }

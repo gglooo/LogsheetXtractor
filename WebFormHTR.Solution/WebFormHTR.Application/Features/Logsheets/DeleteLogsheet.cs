@@ -15,10 +15,10 @@ public static class DeleteLogsheetHandler
         {
             return Result.Fail(new NotFoundError("Logsheet not found"));
         }
-        
+
         dbContext.Logsheets.Remove(logsheet);
         await dbContext.SaveChangesAsync(ct);
-        
+
         return Result.Ok();
     }
 }

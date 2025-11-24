@@ -12,5 +12,5 @@ public record LogsheetDetailDto
     ELogSheetStatus Status,
     DateTime? ProcessedAt,
     string? AlignmentData
-    // TODO: add extracted values list if needed
+// TODO: add extracted values list if needed
 );

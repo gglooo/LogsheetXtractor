@@ -32,23 +32,23 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
     {
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
-        
+
         var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template" };
         var file = new Domain.Entities.File { Id = fileId, OriginalFileName = "test.jpg", StoragePath = "path/to/file" };
-        
+
         _dbContext.Templates.Add(template);
         _dbContext.Files.Add(file);
         await _dbContext.SaveChangesAsync();
 
         var command = new CreateLogsheetCommand(templateId, fileId);
-        
+
         var templateDto = new TemplateListDto(templateId.ToString(), "Test Template", null, null);
         var fileDto = new FileDto(fileId, "test.jpg", "image/jpeg", 100, DateTime.UtcNow);
         var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, fileDto, ELogSheetStatus.Pending, DateTime.UtcNow, null);
 
         _mapperMock.Setup(x => x.Map<Domain.Entities.Logsheet>(command))
             .Returns(new Domain.Entities.Logsheet { Id = expectedDto.Id, TemplateId = templateId, FileId = fileId, Template = null!, File = null! });
-            
+
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.IsAny<Domain.Entities.Logsheet>()))
             .Returns(expectedDto);
 
@@ -56,7 +56,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
-        
+
         var savedLogsheet = await _dbContext.Logsheets.FirstOrDefaultAsync();
         savedLogsheet.Should().NotBeNull();
         savedLogsheet!.TemplateId.Should().Be(templateId);
@@ -68,7 +68,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
     {
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
-        
+
         var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template" };
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
@@ -86,7 +86,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
     {
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
-        
+
         var file = new Domain.Entities.File { Id = fileId, OriginalFileName = "test.jpg", StoragePath = "path/to/file" };
         _dbContext.Files.Add(file);
         await _dbContext.SaveChangesAsync();

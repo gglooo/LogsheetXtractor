@@ -22,7 +22,7 @@ public class GetTemplateTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var query = new GetTemplateQuery(template.Id);
-        
+
         var expectedDto = new TemplateDetailDto(template.Id, template.Name, null, null, DateTime.Now, DateTime.Now, []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto?>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
@@ -37,7 +37,7 @@ public class GetTemplateTests : IDisposable
     public async Task Handle_ShouldReturnNull_WhenNotFound()
     {
         var query = new GetTemplateQuery(Guid.NewGuid());
-        
+
         _mapperMock.Setup(m => m.Map<TemplateDetailDto?>(null))
             .Returns((TemplateDetailDto?)null);
 

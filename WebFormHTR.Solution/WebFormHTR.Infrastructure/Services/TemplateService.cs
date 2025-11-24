@@ -8,7 +8,7 @@ using WebFormHTR.Domain.Entities;
 
 namespace WebFormHTR.Infrastructure.Services;
 
-public class TemplateService(IAppDbContext dbContext, IMapper mapper): ITemplateService
+public class TemplateService(IAppDbContext dbContext, IMapper mapper) : ITemplateService
 {
     public async Task<TemplateDetailDto> CloneTemplateAsync(Guid templateId, string newTemplateName, Guid? fileId, CancellationToken cancellationToken)
     {
@@ -29,7 +29,7 @@ public class TemplateService(IAppDbContext dbContext, IMapper mapper): ITemplate
         };
 
         await dbContext.Templates.AddAsync(clonedTemplate, cancellationToken);
-        
+
         return mapper.Map<TemplateDetailDto>(clonedTemplate);
     }
 }

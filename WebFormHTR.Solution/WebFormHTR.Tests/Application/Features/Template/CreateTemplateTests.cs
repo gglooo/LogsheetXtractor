@@ -58,7 +58,7 @@ public class CreateTemplateTests : IDisposable
         {
             Name = "Test Template"
         };
-        
+
         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
@@ -85,7 +85,7 @@ public class CreateTemplateTests : IDisposable
             Name = "Child Template",
             ParentId = parent.Id
         };
-        
+
         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
@@ -93,7 +93,7 @@ public class CreateTemplateTests : IDisposable
         var result = await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        
+
         var templateInDb = await _dbContext.Templates.FirstOrDefaultAsync(t => t.Name == command.Name);
         templateInDb.Should().NotBeNull();
         templateInDb!.ParentId.Should().Be(parent.Id);

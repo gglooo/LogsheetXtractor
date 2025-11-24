@@ -6,7 +6,7 @@ using WebFormHTR.Domain.Entities.Base;
 namespace WebFormHTR.Infrastructure.Persistence.Interceptors;
 
 // https://www.milanjovanovic.tech/blog/implementing-soft-delete-with-ef-core
-public class SoftDeleteInterceptor: SaveChangesInterceptor
+public class SoftDeleteInterceptor : SaveChangesInterceptor
 {
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
@@ -39,7 +39,7 @@ public class SoftDeleteInterceptor: SaveChangesInterceptor
                     }
                 }
             }
-            
+
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);

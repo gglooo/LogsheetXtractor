@@ -16,9 +16,9 @@ public static class GetTemplateHandler
             .AsNoTracking()
             .Include(t => t.Rois)
             .FirstOrDefault(t => t.Id == request.Id);
-        
+
         var result = template is null ? null : mapper.Map<TemplateDetailDto>(template);
-        
+
         return Task.FromResult(Result.Ok(result));
     }
 }

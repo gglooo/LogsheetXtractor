@@ -25,7 +25,7 @@ public class UploadFileCommandHandlerTests
     {
         var command = new UploadFileCommand([1, 2, 3], "test.txt", "text/plain");
         var expectedFileDto = new FileDto(Guid.NewGuid(), "test.txt", "text/plain", 3, DateTime.UtcNow);
-        
+
         _fileServiceMock.Setup(x => x.UploadFileAsync(command.FileContent, command.FileName, command.ContentType))
             .ReturnsAsync(expectedFileDto);
 
@@ -41,7 +41,7 @@ public class UploadFileCommandHandlerTests
     {
         var command = new UploadFileCommand([1, 2, 3], "test.txt", "text/plain");
         var errorMessage = "Upload failed";
-        
+
         _fileServiceMock.Setup(x => x.UploadFileAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new Exception(errorMessage));
 

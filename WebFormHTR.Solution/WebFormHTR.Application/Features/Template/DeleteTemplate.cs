@@ -15,10 +15,10 @@ public static class DeleteTemplateHandler
         {
             return Result.Fail(new NotFoundError("Template not found"));
         }
-        
+
         dbContext.Templates.Remove(template);
         await dbContext.SaveChangesAsync(ct);
-        
+
         return Result.Ok();
     }
 }

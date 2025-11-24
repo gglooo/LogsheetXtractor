@@ -72,7 +72,7 @@ public static class TemplateEndpoints
 
         return result.ToHttpResult();
     }
-    
+
     [WolverinePost("/api/templates/{id}/clone")]
     [ProducesResponseType(200, Type = typeof(TemplateDetailDto))]
     [ProducesResponseType(400)]
@@ -83,7 +83,7 @@ public static class TemplateEndpoints
         CancellationToken ct)
     {
         var command = new CloneTemplateCommand(id, request.NewName, request.FileId);
-        
+
         var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
 
         return result.ToHttpResult();

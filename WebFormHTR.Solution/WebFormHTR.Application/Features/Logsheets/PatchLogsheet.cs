@@ -30,9 +30,9 @@ public static class PatchLogsheetHandler
         }
 
         request.PatchLogsheet.Adapt(logsheet);
-        
+
         await dbContext.SaveChangesAsync(cancellationToken);
-        
+
         return Result.Ok(mapper.Map<LogsheetDetailDto>(logsheet));
     }
 }

@@ -3,7 +3,7 @@ using WebFormHTR.Domain.ValueObjects;
 
 namespace WebFormHTR.Domain.Entities;
 
-public class Residual: BaseEntity
+public class Residual : BaseEntity
 {
     public Guid TemplateId { get; set; }
     public virtual required Template Template { get; set; }

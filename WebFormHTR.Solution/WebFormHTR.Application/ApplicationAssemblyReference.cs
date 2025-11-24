@@ -1,4 +1,4 @@
-﻿namespace WebFormHTR.Application;
+namespace WebFormHTR.Application;
 
 public sealed class ApplicationAssemblyReference
 {

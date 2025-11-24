@@ -16,7 +16,7 @@ public class MappingConfig : IRegister
     public void Register(TypeAdapterConfig config)
     {
         config.NewConfig<Template, Template>();
-        
+
         config.NewConfig<Template, TemplateDetailDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Name, src => src.Name)
@@ -37,7 +37,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.CreatedAt, src => src.CreatedAt)
             .Map(dest => dest.ContentType, src => src.ContentType)
             .Map(dest => dest.SizeBytes, src => src.SizeBytes);
-        
+
         config.NewConfig<Logsheet, LogsheetDetailDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Template, src => src.Template)
@@ -45,12 +45,12 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
             .Map(dest => dest.AlignmentData, src => src.AlignmentData);
-        
+
         config.NewConfig<CreateLogsheetCommand, Logsheet>()
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.FileId, src => src.FileId)
             .IgnoreNullValues(true);
-        
+
         config.NewConfig<Logsheet, LogsheetListDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.FileId, src => src.FileId)
@@ -62,27 +62,27 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.VariableName, src => src.VariableName)
             .Map(dest => dest.Coordinates, src => src.Coordinates);
-        
+
         config.NewConfig<SetRoiDto, Roi>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.VariableName, src => src.VariableName)
-            .Map(dest => dest.Coordinates, src => src.Coordinates); 
-        
+            .Map(dest => dest.Coordinates, src => src.Coordinates);
+
         config.NewConfig<Roi, RoiDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.VariableName, src => src.VariableName)
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.Coordinates, src => src.Coordinates);
-        
+
         config.NewConfig<RoiDto, Roi>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.VariableName, src => src.VariableName)
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.Coordinates, src => src.Coordinates);
-        
+
         config.NewConfig<UpsertRoiDto, Roi>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Type, src => src.Type)

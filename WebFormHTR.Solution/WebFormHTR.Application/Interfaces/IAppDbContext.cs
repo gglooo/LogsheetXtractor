@@ -11,7 +11,7 @@ public interface IAppDbContext
     public DbSet<Residual> Residuals { get; set; }
     public DbSet<Logsheet> Logsheets { get; set; }
     public DbSet<ExtractedValue> ExtractedValues { get; set; }
-    
+
     int SaveChanges();
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

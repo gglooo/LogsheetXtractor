@@ -61,7 +61,7 @@ public static class RoiEndpoints
     )
     {
         var command = new UpsertRoiCommand(templateId, request.Roi);
-        
+
         var result = await bus.InvokeAsync<Result<RoiDto>>(command, ct);
         return result.ToHttpResult();
     }

@@ -20,10 +20,10 @@ public static class LogsheetEndpoints
     )
     {
         var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(request, ct);
-        
+
         return result.ToHttpResult();
     }
-    
+
     [WolverinePatch("/api/logsheets/{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -36,7 +36,7 @@ public static class LogsheetEndpoints
     {
         var command = new PatchLogsheetCommand(id, request);
         var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
-        
+
         return result.ToHttpResult();
     }
 
@@ -64,10 +64,10 @@ public static class LogsheetEndpoints
     {
         var query = new ListLogsheetsByTemplateQuery(id);
         var result = await bus.InvokeAsync<Result<IEnumerable<LogsheetListDto>>>(query, ct);
-        
+
         return result.ToHttpResult();
     }
-    
+
     [WolverinePost("/api/logsheets/{id}/process")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -79,7 +79,7 @@ public static class LogsheetEndpoints
     {
         var command = new ProcessLogsheetDataCommand(id);
         var result = await bus.InvokeAsync<Result>(command, ct);
-        
+
         return result.ToHttpResult();
     }
 }

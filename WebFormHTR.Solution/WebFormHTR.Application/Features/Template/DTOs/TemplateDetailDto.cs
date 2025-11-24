@@ -13,5 +13,5 @@ public record TemplateDetailDto
     DateTime CreatedAt,
     DateTime? UpdatedAt,
     IEnumerable<RoiDto> Rois
-    // TODO: add logsheets, etc
+// TODO: add logsheets, etc
 );

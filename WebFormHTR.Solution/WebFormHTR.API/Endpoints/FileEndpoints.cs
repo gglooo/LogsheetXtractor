@@ -16,20 +16,20 @@ public static class FileEndpoints
     [ProducesResponseType(400)]
     public static async Task<IResult> UploadFile(IFormFile formFile, IMessageBus bus, CancellationToken ct)
     {
-       if (formFile.Length == 0)
-       {
-           return Results.BadRequest("No file uploaded.");
-       }
-       
-       using var ms = new MemoryStream();
-       await formFile.CopyToAsync(ms, ct);
-        
-       var command = new Application.Features.File.UploadFileCommand(
-           ms.ToArray(),
-           formFile.FileName,
-           formFile.ContentType
-       );
-       
+        if (formFile.Length == 0)
+        {
+            return Results.BadRequest("No file uploaded.");
+        }
+
+        using var ms = new MemoryStream();
+        await formFile.CopyToAsync(ms, ct);
+
+        var command = new Application.Features.File.UploadFileCommand(
+            ms.ToArray(),
+            formFile.FileName,
+            formFile.ContentType
+        );
+
         var result = await bus.InvokeAsync<Result<FileDto>>(command, ct);
 
         return result.ToHttpResult();
@@ -52,10 +52,10 @@ public static class FileEndpoints
             {
                 return Results.NotFound(result.Errors.Select(e => e.Message));
             }
-            
+
             return Results.Problem(string.Join("; ", result.Errors.Select(e => e.Message)));
         }
-        
+
         return result.Value?.Stream is null ? Results.NotFound("File not found.") : Results.File(result.Value.Stream, result.Value.ContentType, result.Value.FileName);
     }
 }

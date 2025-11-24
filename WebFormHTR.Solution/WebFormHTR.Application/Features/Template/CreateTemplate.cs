@@ -19,19 +19,19 @@ public static class CreateTemplateHandler
     public static async Task<Result<TemplateDetailDto>> Handle(CreateTemplateCommand request, IAppDbContext dbContext, IMapper mapper, CancellationToken ct)
     {
 
-        if (request.ParentId is not null && 
+        if (request.ParentId is not null &&
             !await dbContext.Templates
-                .AnyAsync(t => t.Id == request.ParentId.Value, ct) )
+                .AnyAsync(t => t.Id == request.ParentId.Value, ct))
         {
             return Result.Fail<TemplateDetailDto>(new NotFoundError("Parent template not found"));
         }
-        
+
         if (request.FileId is not null && !await dbContext.Files
                 .AnyAsync(f => f.Id == request.FileId.Value, ct))
         {
             return Result.Fail<TemplateDetailDto>(new NotFoundError("File not found"));
         }
-        
+
         var template = new Domain.Entities.Template
         {
             Name = request.Name,
@@ -41,7 +41,7 @@ public static class CreateTemplateHandler
 
         dbContext.Templates.Add(template);
         await dbContext.SaveChangesAsync(ct);
-        
+
         var createdTemplate = await dbContext.Templates
             .AsNoTracking()
             .Include(t => t.File)

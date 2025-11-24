@@ -45,7 +45,7 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
         };
 
         _mapperMock.Setup(x => x.Map<IEnumerable<LogsheetListDto>>(It.IsAny<IEnumerable<Logsheet>>()))
-            .Returns((IEnumerable<Logsheet> logsheets) => 
+            .Returns((IEnumerable<Logsheet> logsheets) =>
             {
                 var list = logsheets.ToList();
                 if (list.Count == 2 && list.Any(l => l.Id == logsheet1.Id) && list.Any(l => l.Id == logsheet2.Id))

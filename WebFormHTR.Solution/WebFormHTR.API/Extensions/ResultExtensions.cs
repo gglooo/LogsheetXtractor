@@ -11,7 +11,7 @@ public static class ResultExtensions
         {
             return Results.NotFound();
         }
-        
+
         if (result.IsSuccess)
         {
             return Results.Ok(result.Value);
@@ -31,12 +31,12 @@ public static class ResultExtensions
         {
             return Results.Ok();
         }
-        
+
         if (result.Errors.Any(e => e is NotFoundError))
         {
             return Results.NotFound(result.Errors.Select(e => e.Message));
         }
-        
+
         return Results.BadRequest(result.Errors.Select(e => e.Message));
     }
 }

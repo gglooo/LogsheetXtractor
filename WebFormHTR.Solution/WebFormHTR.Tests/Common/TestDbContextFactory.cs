@@ -9,10 +9,10 @@ public static class TestDbContextFactory
     public static AppDbContext Create()
     {
         var softDeleteInterceptor = new SoftDeleteInterceptor();
-        
+
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) 
-            .AddInterceptors(softDeleteInterceptor) 
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .AddInterceptors(softDeleteInterceptor)
             .Options;
 
         var context = new AppDbContext(options);

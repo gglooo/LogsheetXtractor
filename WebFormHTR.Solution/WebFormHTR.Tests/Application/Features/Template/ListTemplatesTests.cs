@@ -26,13 +26,13 @@ public class ListTemplatesTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var query = new ListTemplatesQuery(null);
-        
+
         var expectedDtos = new List<TemplateListDto>
         {
             new(Guid.NewGuid().ToString(), "Template 1", null, null),
             new(Guid.NewGuid().ToString(), "Template 2", null, null)
         };
-        
+
         _mapperMock.Setup(m => m.Map<IEnumerable<TemplateListDto>>(It.IsAny<List<Domain.Entities.Template>>()))
             .Returns(expectedDtos);
 
@@ -55,13 +55,13 @@ public class ListTemplatesTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var query = new ListTemplatesQuery("Ap");
-        
+
         var expectedDtos = new List<TemplateListDto>
         {
             new(Guid.NewGuid().ToString(), "Apple", null, null),
             new(Guid.NewGuid().ToString(), "Apricot", null, null)
         };
-        
+
         _mapperMock.Setup(m => m.Map<IEnumerable<TemplateListDto>>(It.Is<List<Domain.Entities.Template>>(l => l.Count == 2)))
             .Returns(expectedDtos);
 

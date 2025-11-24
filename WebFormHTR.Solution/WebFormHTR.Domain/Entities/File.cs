@@ -3,11 +3,11 @@ using WebFormHTR.Domain.Entities.Base;
 
 namespace WebFormHTR.Domain.Entities;
 
-public class File: BaseEntity
+public class File : BaseEntity
 {
     public string OriginalFileName { get; set; } = String.Empty;
     public string StoredFileName { get; set; } = String.Empty;
     public string StoragePath { get; set; } = String.Empty;
     public string ContentType { get; set; } = MediaTypeNames.Application.Octet;
-    public uint SizeBytes { get; set; } 
+    public uint SizeBytes { get; set; }
 }

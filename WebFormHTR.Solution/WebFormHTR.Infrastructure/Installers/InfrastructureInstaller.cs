@@ -22,7 +22,7 @@ public static class InfrastructureInstaller
                 .UseLazyLoadingProxies()
                 .AddInterceptors(
                     sp.GetRequiredService<SoftDeleteInterceptor>()));
-        
+
         services.AddScoped<IAppDbContext, AppDbContext>();
 
         services.AddScoped<IFileService, FileService>();

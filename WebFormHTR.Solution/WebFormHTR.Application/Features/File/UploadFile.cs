@@ -11,11 +11,12 @@ public static class UploadFileHandler
 {
     public static async Task<Result<FileDto>> Handle(UploadFileCommand request, IFileService fileService, IAppDbContext dbContext, CancellationToken ct)
     {
-        try {
+        try
+        {
             var res = await fileService.UploadFileAsync(request.FileContent, request.FileName, request.ContentType);
-            
+
             await dbContext.SaveChangesAsync(ct);
-            
+
             return Result.Ok(res);
         }
         catch (Exception ex)

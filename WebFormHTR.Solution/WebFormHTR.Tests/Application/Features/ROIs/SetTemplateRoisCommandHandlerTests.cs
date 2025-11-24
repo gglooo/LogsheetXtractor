@@ -39,7 +39,7 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
         result.Value.Should().BeEquivalentTo(expectedResult);
         _roiServiceMock.Verify(x => x.SetRoisForTemplateAsync(templateId, updateRois, It.IsAny<CancellationToken>()), Times.Once);
     }
-    
+
     [Fact]
     public async Task Handle_ShouldUpsertAndDeleteRois_WhenTemplateExists()
     {
@@ -51,14 +51,14 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var existingRoiId = Guid.NewGuid();
-        var updateRois = new List<SetRoiDto> 
-        { 
+        var updateRois = new List<SetRoiDto>
+        {
             new SetRoiDto(existingRoiId, "Updated ROI", ERoiType.Text, new Coordinates { X = 5, Y = 5, Width = 15, Height = 15 }),
             new SetRoiDto(null, "New ROI", ERoiType.Checkbox, new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
         };
         var command = new SetTemplateRoisCommand(templateId, updateRois);
-        var expectedResult = new List<RoiDto> 
-        { 
+        var expectedResult = new List<RoiDto>
+        {
             new RoiDto(existingRoiId, "Updated ROI", templateId, ERoiType.Text, new Coordinates { X = 5, Y = 5, Width = 15, Height = 15 }),
             new RoiDto(Guid.NewGuid(), "New ROI", templateId, ERoiType.Checkbox, new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
         };
@@ -68,7 +68,7 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
 
         var result = await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext, CancellationToken.None);
         await _dbContext.SaveChangesAsync();
-        
+
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(expectedResult);
         _roiServiceMock.Verify(x => x.SetRoisForTemplateAsync(templateId, updateRois, It.IsAny<CancellationToken>()), Times.Once);

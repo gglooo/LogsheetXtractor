@@ -33,7 +33,7 @@ public class DeleteLogsheetCommandHandlerTests : IDisposable
 
         result.IsSuccess.Should().BeTrue();
         var deletedLogsheet = await _dbContext.Logsheets.FindAsync(logsheetId);
-        
+
         deletedLogsheet.Should().NotBeNull();
         deletedLogsheet.DeletedAt.Should().NotBeNull();
     }

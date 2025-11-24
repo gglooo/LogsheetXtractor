@@ -33,4 +33,3 @@ app.UseHttpsRedirection();
 app.MapWolverineEndpoints();
 
 app.Run();
-

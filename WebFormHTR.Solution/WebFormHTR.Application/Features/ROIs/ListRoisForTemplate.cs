@@ -21,12 +21,12 @@ public static class ListRoisForTemplateHandler
             .AsNoTracking()
             .Include(t => t.Rois)
             .FindFirst(t => t.Id == request.TemplateId);
-        
+
         if (template is null)
         {
             return Task.FromResult(Result.Fail<IEnumerable<RoiDto>>(new NotFoundError("Template not found")));
         }
-        
+
         return Task.FromResult(Result.Ok(mapper.Map<IEnumerable<RoiDto>>(template.Rois)));
     }
 }

@@ -8,7 +8,7 @@ using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Infrastructure.Services;
 
-public class FileService(IAppDbContext dbContext, IMapper mapper): IFileService
+public class FileService(IAppDbContext dbContext, IMapper mapper) : IFileService
 {
     private readonly string _storageDirectory = "FileStorage";
     public async Task<FileDto> UploadFileAsync(byte[] fileContent, string fileName, string contentType)
@@ -23,28 +23,28 @@ public class FileService(IAppDbContext dbContext, IMapper mapper): IFileService
             StoragePath = storagePath,
             SizeBytes = (uint)fileContent.Length
         };
-        
+
         if (!Directory.Exists(_storageDirectory))
         {
             Directory.CreateDirectory(_storageDirectory);
         }
-        
+
         await File.WriteAllBytesAsync(storagePath, fileContent);
-        
+
         dbContext.Files.Add(file);
 
         return mapper.Map<FileDto>(file);
     }
-    
+
     public async Task<GetFileDto?> GetFileAsync(Guid id)
     {
         var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == id);
-        
+
         if (file is null)
         {
             return null;
         }
-        
+
         var filePath = file.StoragePath;
         // TODO: add security check if path is within scope
         if (!File.Exists(filePath))
@@ -53,18 +53,18 @@ public class FileService(IAppDbContext dbContext, IMapper mapper): IFileService
         }
 
         var stream = new FileStream(
-            file.StoragePath, 
-            FileMode.Open, 
-            FileAccess.Read, 
+            file.StoragePath,
+            FileMode.Open,
+            FileAccess.Read,
             FileShare.Read);
 
-        return new GetFileDto(){Stream = stream, ContentType = file.ContentType, FileName = file.OriginalFileName};
+        return new GetFileDto() { Stream = stream, ContentType = file.ContentType, FileName = file.OriginalFileName };
     }
 
     public async Task<FileDto> CloneFileAsync(Guid fileId)
     {
         var file = await dbContext.Files.FirstAsync(f => f.Id == fileId);
-        
+
         var fileBytes = await File.ReadAllBytesAsync(file.StoragePath);
         return await UploadFileAsync(fileBytes, file.OriginalFileName, file.ContentType);
     }
