@@ -1,5 +1,6 @@
 using WebFormHTR.Domain.Entities.Base;
 using WebFormHTR.Domain.Enums;
+using WebFormHTR.Domain.ValueObjects;
 
 namespace WebFormHTR.Domain.Entities;
 
@@ -10,10 +11,7 @@ public class Roi: BaseEntity
     public string VariableName { get; set; } = String.Empty;
     public ERoiType Type { get; set; }
     
-    public int X { get; set; }
-    public int Y { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
+    public Coordinates Coordinates { get; set; }
     
     public Guid? ExtractedValueId { get; set; }
     public virtual ExtractedValue? ExtractedValue { get; set; }

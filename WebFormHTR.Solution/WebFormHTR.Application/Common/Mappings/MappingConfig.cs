@@ -4,6 +4,7 @@ using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
+using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
 using File = WebFormHTR.Domain.Entities.File;
@@ -55,5 +56,31 @@ public class MappingConfig : IRegister
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt);
+
+        config.NewConfig<CreateRoiDto, Roi>()
+            .Map(dest => dest.Type, src => src.Type)
+            .Map(dest => dest.VariableName, src => src.VariableName)
+            .Map(dest => dest.Coordinates, src => src.Coordinates);
+        
+        config.NewConfig<SetRoiDto, Roi>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.Type, src => src.Type)
+            .Map(dest => dest.VariableName, src => src.VariableName)
+            .Map(dest => dest.Coordinates, src => src.Coordinates); 
+        
+        config.NewConfig<Roi, RoiDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.VariableName, src => src.VariableName)
+            .Map(dest => dest.TemplateId, src => src.TemplateId)
+            .Map(dest => dest.Type, src => src.Type)
+            .Map(dest => dest.Coordinates, src => src.Coordinates);
+        
+        config.NewConfig<RoiDto, Roi>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.VariableName, src => src.VariableName)
+            .Map(dest => dest.TemplateId, src => src.TemplateId)
+            .Map(dest => dest.Type, src => src.Type)
+            .Map(dest => dest.Coordinates, src => src.Coordinates);
+            
     }
 }

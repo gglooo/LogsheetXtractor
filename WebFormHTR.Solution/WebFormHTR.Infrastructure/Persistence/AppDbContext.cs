@@ -16,6 +16,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Roi>()
+            .OwnsOne(r => r.Coordinates);
+        
+        modelBuilder.Entity<Residual>()
+            .OwnsOne(r => r.Coordinates);
+        
         modelBuilder.Entity<Template>()
             .HasOne(t => t.Parent)
             .WithMany(t => t.Children)

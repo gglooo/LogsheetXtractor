@@ -51,4 +51,19 @@ public static class LogsheetEndpoints
         
         return result.ToHttpResult();
     }
+    
+    [WolverinePost("/api/templates/{id}/process")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> ProcessLogsheetData(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new ProcessLogsheetDataCommand(id);
+        var result = await bus.InvokeAsync<Result>(command, ct);
+        
+        return result.ToHttpResult();
+    }
 }
