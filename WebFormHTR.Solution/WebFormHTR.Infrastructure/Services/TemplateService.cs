@@ -10,12 +10,13 @@ namespace WebFormHTR.Infrastructure.Services;
 
 public class TemplateService(IAppDbContext dbContext, IMapper mapper) : ITemplateService
 {
-    public async Task<TemplateDetailDto> CloneTemplateAsync(Guid templateId, string newTemplateName, Guid? fileId, CancellationToken cancellationToken)
+    public async Task<TemplateDetailDto> CloneTemplateAsync(Guid templateId, string newTemplateName, Guid fileId,
+        CancellationToken cancellationToken)
     {
         var parentTemplate = await dbContext
             .Templates
             .AsNoTracking()
-            .FirstAsync(t => t.Id == templateId, cancellationToken: cancellationToken);
+            .FirstAsync(t => t.Id == templateId, cancellationToken);
 
         var clonedTemplate = new Template
         {

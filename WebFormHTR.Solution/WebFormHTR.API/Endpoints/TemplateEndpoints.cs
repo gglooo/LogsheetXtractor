@@ -9,7 +9,7 @@ using Wolverine.Http;
 
 namespace WebFormHTR.API.Endpoints;
 
-public sealed record CreateTemplateRequest(string NewName, Guid? FileId);
+public sealed record CreateTemplateRequest(string NewName, Guid FileId);
 
 public static class TemplateEndpoints
 {
@@ -59,7 +59,7 @@ public static class TemplateEndpoints
         return result.ToHttpResult();
     }
 
-    [WolverineDelete(("/api/templates/{id}"))]
+    [WolverineDelete("/api/templates/{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     public static async Task<IResult> DeleteTemplate(
@@ -84,6 +84,20 @@ public static class TemplateEndpoints
     {
         var command = new CloneTemplateCommand(id, request.NewName, request.FileId);
 
+        var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/templates/{id}/detect-rois")]
+    [ProducesResponseType(200, Type = typeof(TemplateDetailDto))]
+    [ProducesResponseType(400)]
+    public static async Task<IResult> DetectRois(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new DetectRoisCommand(id);
         var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
 
         return result.ToHttpResult();

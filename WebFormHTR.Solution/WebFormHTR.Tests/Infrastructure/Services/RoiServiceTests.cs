@@ -1,6 +1,7 @@
 using FluentAssertions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Domain.Entities;
@@ -21,16 +22,30 @@ public class RoiServiceTests : IDisposable
 
     public RoiServiceTests()
     {
+        var inMemorySettings = new Dictionary<string, string>
+        {
+            { "TODO", "add mock config" },
+            { "TODOo", "add it" }
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
         _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
-        _roiService = new RoiService(_dbContext, _mapperMock.Object);
+
+        var scriptExecutor = new PythonScriptExecutor(configuration);
+        var scriptAdapter = new PythonHtrAdapter(scriptExecutor);
+        _roiService = new RoiService(_dbContext, _mapperMock.Object, scriptAdapter);
     }
 
     [Fact]
     public async Task SetRoisForTemplateAsync_ShouldAddNewRois()
     {
         var templateId = Guid.NewGuid();
-        var newRoiDto = new SetRoiDto(null, "New ROI", ERoiType.Text, new Coordinates { X = 10, Y = 10, Width = 100, Height = 100 });
+        var newRoiDto = new SetRoiDto(null, "New ROI", ERoiType.Text,
+            new Coordinates { X = 10, Y = 10, Width = 100, Height = 100 });
         var updateRois = new List<SetRoiDto> { newRoiDto };
 
         _mapperMock.Setup(m => m.Map<Roi>(It.IsAny<SetRoiDto>()))
@@ -43,9 +58,11 @@ public class RoiServiceTests : IDisposable
             });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
-            .Returns((IEnumerable<Roi> rois) => rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
+            .Returns((IEnumerable<Roi> rois) =>
+                rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
 
-        var result = (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
+        var result =
+            (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
         await _dbContext.SaveChangesAsync();
 
         var savedRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
@@ -74,7 +91,8 @@ public class RoiServiceTests : IDisposable
         _dbContext.Rois.Add(existingRoi);
         await _dbContext.SaveChangesAsync();
 
-        var updateDto = new SetRoiDto(existingRoiId, "Updated Name", ERoiType.Text, new Coordinates { X = 20, Y = 20, Width = 60, Height = 60 });
+        var updateDto = new SetRoiDto(existingRoiId, "Updated Name", ERoiType.Text,
+            new Coordinates { X = 20, Y = 20, Width = 60, Height = 60 });
         var updateRois = new List<SetRoiDto> { updateDto };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
@@ -86,9 +104,11 @@ public class RoiServiceTests : IDisposable
             });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
-             .Returns((IEnumerable<Roi> rois) => rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
+            .Returns((IEnumerable<Roi> rois) =>
+                rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
 
-        var result = (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
+        var result =
+            (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
         await _dbContext.SaveChangesAsync();
 
         var savedRoi = await _dbContext.Rois.FirstAsync(r => r.Id == existingRoiId);
@@ -103,8 +123,16 @@ public class RoiServiceTests : IDisposable
     public async Task SetRoisForTemplateAsync_ShouldDeleteMissingRois()
     {
         var templateId = Guid.NewGuid();
-        var roiToDelete = new Roi { Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "To Delete", Template = null!, Coordinates = new Coordinates() };
-        var roiToKeep = new Roi { Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "To Keep", Template = null!, Coordinates = new Coordinates() };
+        var roiToDelete = new Roi
+        {
+            Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "To Delete", Template = null!,
+            Coordinates = new Coordinates()
+        };
+        var roiToKeep = new Roi
+        {
+            Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "To Keep", Template = null!,
+            Coordinates = new Coordinates()
+        };
 
         _dbContext.Rois.AddRange(roiToDelete, roiToKeep);
         await _dbContext.SaveChangesAsync();
@@ -113,12 +141,14 @@ public class RoiServiceTests : IDisposable
         var updateRois = new List<SetRoiDto> { updateDto };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
-           .Callback<SetRoiDto, Roi>((dto, entity) => { }); // No changes needed for this test
+            .Callback<SetRoiDto, Roi>((dto, entity) => { }); // No changes needed for this test
 
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
-            .Returns((IEnumerable<Roi> rois) => rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
+            .Returns((IEnumerable<Roi> rois) =>
+                rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
 
-        var result = (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
+        var result =
+            (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
         await _dbContext.SaveChangesAsync();
 
         var allRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
@@ -133,13 +163,18 @@ public class RoiServiceTests : IDisposable
     public async Task SetRoisForTemplateAsync_ShouldHandleEmptyUpdateList()
     {
         var templateId = Guid.NewGuid();
-        var existingRoi = new Roi { Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing", Template = null!, Coordinates = new Coordinates() };
+        var existingRoi = new Roi
+        {
+            Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing", Template = null!,
+            Coordinates = new Coordinates()
+        };
         _dbContext.Rois.Add(existingRoi);
         await _dbContext.SaveChangesAsync();
 
         var updateRois = new List<SetRoiDto>();
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
-            .Returns((IEnumerable<Roi> rois) => rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
+            .Returns((IEnumerable<Roi> rois) =>
+                rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
 
         var result = await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None);
         await _dbContext.SaveChangesAsync();
@@ -155,8 +190,8 @@ public class RoiServiceTests : IDisposable
         var templateId = Guid.NewGuid();
         var newRois = new List<SetRoiDto>
         {
-            new SetRoiDto(null, "ROI 1", ERoiType.Text, new Coordinates()),
-            new SetRoiDto(null, "ROI 2", ERoiType.Checkbox, new Coordinates())
+            new(null, "ROI 1", ERoiType.Text, new Coordinates()),
+            new(null, "ROI 2", ERoiType.Checkbox, new Coordinates())
         };
 
         _mapperMock.Setup(m => m.Map<Roi>(It.IsAny<SetRoiDto>()))
@@ -169,7 +204,8 @@ public class RoiServiceTests : IDisposable
             });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
-            .Returns((IEnumerable<Roi> rois) => rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
+            .Returns((IEnumerable<Roi> rois) =>
+                rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
 
         var result = await _roiService.SetRoisForTemplateAsync(templateId, newRois, CancellationToken.None);
         await _dbContext.SaveChangesAsync();
@@ -185,8 +221,16 @@ public class RoiServiceTests : IDisposable
         var templateId = Guid.NewGuid();
         var existingRois = new List<Roi>
         {
-            new Roi { Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing 1", Template = null!, Coordinates = new Coordinates() },
-            new Roi { Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing 2", Template = null!, Coordinates = new Coordinates() }
+            new()
+            {
+                Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing 1", Template = null!,
+                Coordinates = new Coordinates()
+            },
+            new()
+            {
+                Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing 2", Template = null!,
+                Coordinates = new Coordinates()
+            }
         };
         _dbContext.Rois.AddRange(existingRois);
         await _dbContext.SaveChangesAsync();
@@ -202,8 +246,8 @@ public class RoiServiceTests : IDisposable
 
         var updateRois = new List<SetRoiDto>
         {
-            new SetRoiDto(existingRois[0].Id, "Updated Existing 1", ERoiType.Text, new Coordinates()),
-            new SetRoiDto(null, "New ROI", ERoiType.Checkbox, new Coordinates())
+            new(existingRois[0].Id, "Updated Existing 1", ERoiType.Text, new Coordinates()),
+            new(null, "New ROI", ERoiType.Checkbox, new Coordinates())
         };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
@@ -214,7 +258,8 @@ public class RoiServiceTests : IDisposable
                 entity.Coordinates = dto.Coordinates;
             });
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
-            .Returns((IEnumerable<Roi> rois) => rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
+            .Returns((IEnumerable<Roi> rois) =>
+                rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates)));
 
         var result = await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None);
         await _dbContext.SaveChangesAsync();

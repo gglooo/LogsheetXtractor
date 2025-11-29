@@ -5,6 +5,7 @@ using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
+using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
 using File = WebFormHTR.Domain.Entities.File;
@@ -91,5 +92,8 @@ public class MappingConfig : IRegister
 
         config.NewConfig<PatchLogsheetDto, Logsheet>()
             .IgnoreNullValues(true);
+
+        config.NewConfig<SelectRoisOutputDto, IEnumerable<RoiDto>>()
+            .Map(dest => dest, src => src.Rois);
     }
 }

@@ -11,14 +11,14 @@ public sealed record CreateTemplateCommand
 {
     public string Name { get; set; } = string.Empty;
     public Guid? ParentId { get; set; }
-    public Guid? FileId { get; set; }
+    public Guid FileId { get; set; }
 }
 
 public static class CreateTemplateHandler
 {
-    public static async Task<Result<TemplateDetailDto>> Handle(CreateTemplateCommand request, IAppDbContext dbContext, IMapper mapper, CancellationToken ct)
+    public static async Task<Result<TemplateDetailDto>> Handle(CreateTemplateCommand request, IAppDbContext dbContext,
+        IMapper mapper, CancellationToken ct)
     {
-
         if (request.ParentId is not null &&
             !await dbContext.Templates
                 .AnyAsync(t => t.Id == request.ParentId.Value, ct))
@@ -26,8 +26,8 @@ public static class CreateTemplateHandler
             return Result.Fail<TemplateDetailDto>(new NotFoundError("Parent template not found"));
         }
 
-        if (request.FileId is not null && !await dbContext.Files
-                .AnyAsync(f => f.Id == request.FileId.Value, ct))
+        if (!await dbContext.Files
+                .AnyAsync(f => f.Id == request.FileId, ct))
         {
             return Result.Fail<TemplateDetailDto>(new NotFoundError("File not found"));
         }

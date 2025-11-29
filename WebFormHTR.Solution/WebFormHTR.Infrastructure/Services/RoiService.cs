@@ -4,14 +4,17 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
+using WebFormHTR.Application.Features.Scripting;
+using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 
 namespace WebFormHTR.Infrastructure.Services;
 
-public class RoiService(IAppDbContext dbContext, IMapper mapper) : IRoiService
+public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngine scriptEngine) : IRoiService
 {
-    public async Task<IEnumerable<RoiDto>> SetRoisForTemplateAsync(Guid templateId, IEnumerable<SetRoiDto> updateRois, CancellationToken cancellationToken)
+    public async Task<IEnumerable<RoiDto>> SetRoisForTemplateAsync(Guid templateId, IEnumerable<SetRoiDto> updateRois,
+        CancellationToken cancellationToken)
     {
         IList<Roi> allEntities = [];
         var updateRoisList = updateRois.ToList();
@@ -48,7 +51,6 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper) : IRoiService
                 await dbContext.Rois.AddAsync(roi, cancellationToken);
 
                 allEntities.Add(roi);
-
             }
             else
             {
@@ -62,7 +64,8 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper) : IRoiService
         return mapper.Map<IEnumerable<RoiDto>>(allEntities);
     }
 
-    public async Task<RoiDto> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi, CancellationToken cancellationToken)
+    public async Task<RoiDto> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi,
+        CancellationToken cancellationToken)
     {
         var template = dbContext.Templates.FindFirst(t => t.Id == templateId);
         if (template is null)
@@ -82,5 +85,24 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper) : IRoiService
 
         await dbContext.Rois.AddAsync(roi, cancellationToken);
         return mapper.Map<RoiDto>(roi);
+    }
+
+    public async Task<IEnumerable<RoiDto>> DetectRoisAsync(Guid fileId,
+        CancellationToken cancellationToken)
+    {
+        var file = await dbContext.Files
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f => f.Id == fileId, cancellationToken);
+
+        if (file is null)
+        {
+            throw new Exception("Template not found");
+        }
+
+        var input = new SelectRoisInputDto(file.StoragePath);
+
+        var result = await scriptEngine.SelectRoisAsync(input, cancellationToken);
+
+        return mapper.Map<IEnumerable<RoiDto>>(result);
     }
 }
