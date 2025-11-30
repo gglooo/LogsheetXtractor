@@ -94,6 +94,6 @@ public class MappingConfig : IRegister
             .IgnoreNullValues(true);
 
         config.NewConfig<SelectRoisOutputDto, IEnumerable<RoiDto>>()
-            .Map(dest => dest, src => src.Rois);
+            .MapWith(src => src.Rois);
     }
 }

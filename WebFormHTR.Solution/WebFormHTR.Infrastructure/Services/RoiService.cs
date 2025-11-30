@@ -64,30 +64,58 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
         return mapper.Map<IEnumerable<RoiDto>>(allEntities);
     }
 
-    public async Task<RoiDto> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi,
+    public async Task<IEnumerable<RoiDto>> UpsertRoisForTemplateAsync(Guid templateId,
+        IEnumerable<UpsertRoiDto> upsertRois,
         CancellationToken cancellationToken)
     {
-        var template = dbContext.Templates.FindFirst(t => t.Id == templateId);
+        var template = await dbContext.Templates
+            .Include(t => t.Rois)
+            .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
+
         if (template is null)
         {
             throw new Exception("Template not found");
         }
 
-        var existingRoi = template.Rois.FirstOrDefault(r => r.Id == updateRoi.Id);
-        if (existingRoi is not null)
+        var existingRoisMap = template.Rois.ToDictionary(r => r.Id);
+
+        var newRois = new List<Roi>();
+        var allProcessedRois = new List<Roi>();
+
+        foreach (var dto in upsertRois)
         {
-            mapper.Map(updateRoi, existingRoi);
-            return mapper.Map<RoiDto>(existingRoi);
+            if (existingRoisMap.TryGetValue(dto.Id ?? Guid.Empty, out var existingRoi))
+            {
+                mapper.Map(dto, existingRoi);
+                allProcessedRois.Add(existingRoi);
+            }
+            else
+            {
+                var newRoi = mapper.Map<Roi>(dto);
+                newRoi.TemplateId = templateId;
+
+                newRois.Add(newRoi);
+                allProcessedRois.Add(newRoi);
+            }
         }
 
-        var roi = mapper.Map<Roi>(updateRoi);
-        roi.TemplateId = templateId;
+        if (newRois.Any())
+        {
+            await dbContext.Rois.AddRangeAsync(newRois, cancellationToken);
+        }
 
-        await dbContext.Rois.AddAsync(roi, cancellationToken);
-        return mapper.Map<RoiDto>(roi);
+        return mapper.Map<IEnumerable<RoiDto>>(allProcessedRois);
+    }
+
+    public Task<RoiDto> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi,
+        CancellationToken cancellationToken)
+    {
+        return UpsertRoisForTemplateAsync(templateId, [updateRoi], cancellationToken)
+            .ContinueWith(t => t.Result.First(), cancellationToken);
     }
 
     public async Task<IEnumerable<RoiDto>> DetectRoisAsync(Guid fileId,
+        Guid templateId,
         CancellationToken cancellationToken)
     {
         var file = await dbContext.Files
@@ -99,7 +127,7 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
             throw new Exception("Template not found");
         }
 
-        var input = new SelectRoisInputDto(file.StoragePath);
+        var input = new SelectRoisInputDto(file.StoragePath, templateId);
 
         var result = await scriptEngine.SelectRoisAsync(input, cancellationToken);
 

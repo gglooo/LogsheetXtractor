@@ -1,7 +1,5 @@
 .idea/
 
-FileStorage/
-
 *.db*
 
 # User-specific files

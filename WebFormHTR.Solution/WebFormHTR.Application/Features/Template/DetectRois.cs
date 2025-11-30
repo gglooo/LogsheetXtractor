@@ -3,6 +3,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.ROIs;
+using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
 
@@ -12,10 +13,10 @@ public sealed record DetectRoisCommand(Guid TemplateId);
 
 public static class DetectRoisHandler
 {
-    public static async Task<Result<TemplateDetailDto>> Handle(DetectRoisCommand request, IRoiService roiService,
+    public static async Task<Result<IEnumerable<RoiDto>>> Handle(DetectRoisCommand request, IRoiService roiService,
         IAppDbContext dbContext, IMapper mapper, CancellationToken ct)
     {
-        var template = await dbContext.Templates.AsNoTracking()
+        var template = await dbContext.Templates
             .FirstOrDefaultAsync(x => x.Id == request.TemplateId, ct);
 
         if (template is null)
@@ -25,12 +26,15 @@ public static class DetectRoisHandler
 
         try
         {
-            var detectedRoid = await roiService.DetectRoisAsync(template.FileId, ct);
+            var detectedRois = await roiService.DetectRoisAsync(template.FileId, template.Id, ct);
+
+            await dbContext.SaveChangesAsync(ct);
+
+            return Result.Ok(detectedRois);
         }
         catch (Exception e)
         {
+            return Result.Fail(e.Message);
         }
-
-        return await Task.FromResult(Result.Fail<TemplateDetailDto>("Not implemented"));
     }
 }

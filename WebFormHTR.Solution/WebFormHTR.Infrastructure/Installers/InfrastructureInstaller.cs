@@ -8,6 +8,9 @@ using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Infrastructure.Persistence.Interceptors;
 using WebFormHTR.Infrastructure.Services;
+using WebFormHTR.Infrastructure.Services.Credentials;
+using WebFormHTR.Infrastructure.Services.Scripting;
+using WebFormHTR.Infrastructure.Services.Storage;
 
 namespace WebFormHTR.Infrastructure.Installers;
 
@@ -30,5 +33,7 @@ public static class InfrastructureInstaller
         services.AddScoped<IRoiService, RoiService>();
         services.AddScoped<IHtrScriptEngine, PythonHtrAdapter>();
         services.AddScoped<IScriptExecutor, PythonScriptExecutor>();
+        services.AddScoped<ICredentialService, CredentialService>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
     }
 }

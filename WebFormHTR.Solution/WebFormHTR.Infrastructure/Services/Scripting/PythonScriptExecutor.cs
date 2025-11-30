@@ -7,24 +7,43 @@ namespace WebFormHTR.Infrastructure.Services;
 public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
 {
     private readonly string _pythonInterpreterPath = config["Python:InterpreterPath"] ?? "python3";
-    private readonly string _scriptsBasePath = config["Python:ScriptsFolder"] ?? "../../../formHTR";
+    private readonly string _scriptsBasePath = config["Python:ScriptsFolder"] ?? "../../formHTR";
 
-    public async Task<string> ExecuteScriptAsync(string scriptName, string jsonPayload,
+    public async Task<string> ExecuteScriptAsync(string scriptName, string args,
         CancellationToken cancellationToken)
     {
         var scriptPath = Path.Combine(_scriptsBasePath, scriptName);
-        var formattedArgs = $"\"{scriptPath}\" \"{jsonPayload.Replace("\"", "\\\"")}\"";
+        var formattedArgs = $"\"{scriptPath}\" {args.Replace("\"", "\\\"")}";
+
+        Console.WriteLine("Executing Python script:");
+        Console.WriteLine($"{_pythonInterpreterPath} {formattedArgs}");
 
         ProcessStartInfo startInfo = new()
         {
             FileName = _pythonInterpreterPath,
             Arguments = formattedArgs,
             UseShellExecute = false,
-            // TODO: change, leaving this for debug purposes
-            CreateNoWindow = false,
+            CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
+
+        var pythonEnvBinPath = Path.GetDirectoryName(_pythonInterpreterPath);
+
+        if (!string.IsNullOrEmpty(pythonEnvBinPath))
+        {
+            var pathVar =
+                System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform
+                    .Windows)
+                    ? "Path"
+                    : "PATH";
+
+            var currentPath = startInfo.EnvironmentVariables.ContainsKey(pathVar)
+                ? startInfo.EnvironmentVariables[pathVar]
+                : Environment.GetEnvironmentVariable(pathVar);
+
+            startInfo.EnvironmentVariables[pathVar] = $"{pythonEnvBinPath}{Path.PathSeparator}{currentPath}";
+        }
 
         using var process = Process.Start(startInfo);
 

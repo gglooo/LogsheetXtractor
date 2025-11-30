@@ -1,6 +1,7 @@
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using WebFormHTR.API.Extensions;
+using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Template;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
@@ -98,7 +99,7 @@ public static class TemplateEndpoints
         CancellationToken ct)
     {
         var command = new DetectRoisCommand(id);
-        var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
+        var result = await bus.InvokeAsync<Result<IEnumerable<RoiDto>>>(command, ct);
 
         return result.ToHttpResult();
     }
