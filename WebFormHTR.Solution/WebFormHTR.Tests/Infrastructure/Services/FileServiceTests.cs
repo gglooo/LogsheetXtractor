@@ -7,6 +7,7 @@ using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Infrastructure.Services;
 using Xunit;
 using WebFormHTR.Application.DTOs;
+using WebFormHTR.Infrastructure.Services.Storage;
 using WebFormHTR.Tests.Common;
 
 namespace WebFormHTR.Tests.Infrastructure.Services;
@@ -15,19 +16,15 @@ public class FileServiceTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly FileService _fileService;
-    private readonly string _storageDirectory = "FileStorage";
 
     public FileServiceTests()
     {
         _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
-        _fileService = new FileService(_dbContext, _mapperMock.Object);
-
-        if (Directory.Exists(_storageDirectory))
-        {
-            Directory.Delete(_storageDirectory, true);
-        }
+        _fileStorageServiceMock = new Mock<IFileStorageService>();
+        _fileService = new FileService(_dbContext, _mapperMock.Object, _fileStorageServiceMock.Object);
     }
 
     [Fact]
@@ -37,9 +34,13 @@ public class FileServiceTests : IDisposable
         var fileName = "test.txt";
         var contentType = "text/plain";
         var expectedDto = new FileDto(Guid.NewGuid(), fileName, contentType, (uint)content.Length, DateTime.UtcNow);
+        var storagePath = "some/path/test.txt";
 
         _mapperMock.Setup(x => x.Map<FileDto>(It.IsAny<WebFormHTR.Domain.Entities.File>()))
             .Returns(expectedDto);
+
+        _fileStorageServiceMock.Setup(x => x.SaveFileAsync(content, fileName))
+            .ReturnsAsync(storagePath);
 
         var result = await _fileService.UploadFileAsync(content, fileName, contentType);
         await _dbContext.SaveChangesAsync();
@@ -49,10 +50,9 @@ public class FileServiceTests : IDisposable
         var savedFile = await _dbContext.Files.FirstOrDefaultAsync();
         savedFile.Should().NotBeNull();
         savedFile!.OriginalFileName.Should().Be(fileName);
+        savedFile.StoragePath.Should().Be(storagePath);
 
-        File.Exists(savedFile.StoragePath).Should().BeTrue();
-        var savedContent = await File.ReadAllBytesAsync(savedFile.StoragePath);
-        savedContent.Should().BeEquivalentTo(content);
+        _fileStorageServiceMock.Verify(x => x.SaveFileAsync(content, fileName), Times.Once);
     }
 
     [Fact]
@@ -61,11 +61,8 @@ public class FileServiceTests : IDisposable
         var content = new byte[] { 4, 5, 6 };
         var fileName = "existing.txt";
         var contentType = "text/plain";
-
-        Directory.CreateDirectory(_storageDirectory);
         var storedFileName = $"{Guid.NewGuid()}_{fileName}";
-        var storagePath = Path.Combine(_storageDirectory, storedFileName);
-        await File.WriteAllBytesAsync(storagePath, content);
+        var storagePath = $"FileStorage/{storedFileName}";
 
         var fileEntity = new WebFormHTR.Domain.Entities.File
         {
@@ -78,6 +75,14 @@ public class FileServiceTests : IDisposable
         };
         _dbContext.Files.Add(fileEntity);
         await _dbContext.SaveChangesAsync();
+
+        var tempFile = Path.GetTempFileName();
+        await File.WriteAllBytesAsync(tempFile, content);
+        var fileStream = new FileStream(tempFile, FileMode.Open, FileAccess.Read, FileShare.Read, 4096,
+            FileOptions.DeleteOnClose);
+
+        _fileStorageServiceMock.Setup(x => x.GetFile(storagePath))
+            .Returns(fileStream);
 
         var result = await _fileService.GetFileAsync(fileEntity.Id);
 
@@ -95,17 +100,6 @@ public class FileServiceTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_storageDirectory))
-        {
-            try
-            {
-                Directory.Delete(_storageDirectory, true);
-            }
-            catch
-            {
-                // Ignore cleanup errors
-            }
-        }
         _dbContext.Dispose();
     }
 }

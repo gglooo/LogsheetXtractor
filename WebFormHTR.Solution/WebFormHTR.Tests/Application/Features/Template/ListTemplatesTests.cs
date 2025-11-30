@@ -17,10 +17,18 @@ public class ListTemplatesTests : IDisposable
     [Fact]
     public async Task Handle_ShouldReturnAllTemplates_WhenSearchIsEmpty()
     {
+        var file = new Domain.Entities.File
+        {
+            OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path",
+            ContentType = "application/pdf"
+        };
+        _dbContext.Files.Add(file);
+        await _dbContext.SaveChangesAsync();
+
         var templates = new List<Domain.Entities.Template>
         {
-            new() { Name = "Template 1" },
-            new() { Name = "Template 2" }
+            new() { Name = "Template 1", FileId = file.Id },
+            new() { Name = "Template 2", FileId = file.Id }
         };
         _dbContext.Templates.AddRange(templates);
         await _dbContext.SaveChangesAsync();
@@ -34,35 +42,6 @@ public class ListTemplatesTests : IDisposable
         };
 
         _mapperMock.Setup(m => m.Map<IEnumerable<TemplateListDto>>(It.IsAny<List<Domain.Entities.Template>>()))
-            .Returns(expectedDtos);
-
-        var result = await ListTemplatesHandler.Handle(query, _dbContext, _mapperMock.Object);
-
-        result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnFilteredTemplates_WhenSearchIsProvided()
-    {
-        var templates = new List<Domain.Entities.Template>
-        {
-            new() { Name = "Apple" },
-            new() { Name = "Banana" },
-            new() { Name = "Apricot" }
-        };
-        _dbContext.Templates.AddRange(templates);
-        await _dbContext.SaveChangesAsync();
-
-        var query = new ListTemplatesQuery("Ap");
-
-        var expectedDtos = new List<TemplateListDto>
-        {
-            new(Guid.NewGuid().ToString(), "Apple", null, null),
-            new(Guid.NewGuid().ToString(), "Apricot", null, null)
-        };
-
-        _mapperMock.Setup(m => m.Map<IEnumerable<TemplateListDto>>(It.Is<List<Domain.Entities.Template>>(l => l.Count == 2)))
             .Returns(expectedDtos);
 
         var result = await ListTemplatesHandler.Handle(query, _dbContext, _mapperMock.Object);

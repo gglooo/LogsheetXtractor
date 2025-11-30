@@ -19,7 +19,7 @@ public class FileStorageService(IConfiguration config) : IFileStorageService
         CheckAndCreateStorageDirectory();
 
         var storedFileName = $"{Guid.NewGuid()}_{fileName}";
-        var storagePath = GetResolvedPath(fileName);
+        var storagePath = GetResolvedPath(storedFileName);
 
         await File.WriteAllBytesAsync(storagePath, fileData);
 

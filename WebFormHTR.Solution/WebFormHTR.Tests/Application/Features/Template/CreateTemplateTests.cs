@@ -54,9 +54,14 @@ public class CreateTemplateTests : IDisposable
     [Fact]
     public async Task Handle_ShouldCreateTemplate_WhenValidRequest()
     {
+        var file = new Domain.Entities.File { OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        _dbContext.Files.Add(file);
+        await _dbContext.SaveChangesAsync();
+
         var command = new CreateTemplateCommand
         {
-            Name = "Test Template"
+            Name = "Test Template",
+            FileId = file.Id
         };
 
         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
@@ -71,19 +76,22 @@ public class CreateTemplateTests : IDisposable
         var templateInDb = await _dbContext.Templates.FirstOrDefaultAsync();
         templateInDb.Should().NotBeNull();
         templateInDb!.Name.Should().Be(command.Name);
+        templateInDb.FileId.Should().Be(file.Id);
     }
 
     [Fact]
     public async Task Handle_ShouldCreateTemplateWithParent_WhenParentExists()
     {
-        var parent = new Domain.Entities.Template { Name = "Parent" };
+        var file = new Domain.Entities.File { OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        var parent = new Domain.Entities.Template { Name = "Parent", File = file };
         _dbContext.Templates.Add(parent);
         await _dbContext.SaveChangesAsync();
 
         var command = new CreateTemplateCommand
         {
             Name = "Child Template",
-            ParentId = parent.Id
+            ParentId = parent.Id,
+            FileId = file.Id
         };
 
         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
@@ -97,6 +105,7 @@ public class CreateTemplateTests : IDisposable
         var templateInDb = await _dbContext.Templates.FirstOrDefaultAsync(t => t.Name == command.Name);
         templateInDb.Should().NotBeNull();
         templateInDb!.ParentId.Should().Be(parent.Id);
+        templateInDb.FileId.Should().Be(file.Id);
     }
 
     public void Dispose()

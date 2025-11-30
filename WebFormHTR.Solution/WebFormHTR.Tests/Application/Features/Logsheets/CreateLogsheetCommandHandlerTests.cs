@@ -33,7 +33,10 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
 
-        var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template" };
+        var templateFile = new Domain.Entities.File { Id = Guid.NewGuid(), OriginalFileName = "template.pdf", StoredFileName = "template.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        _dbContext.Files.Add(templateFile);
+
+        var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template", FileId = templateFile.Id };
         var file = new Domain.Entities.File { Id = fileId, OriginalFileName = "test.jpg", StoragePath = "path/to/file" };
 
         _dbContext.Templates.Add(template);
@@ -69,7 +72,10 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
 
-        var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template" };
+        var templateFile = new Domain.Entities.File { Id = Guid.NewGuid(), OriginalFileName = "template.pdf", StoredFileName = "template.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        _dbContext.Files.Add(templateFile);
+
+        var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template", FileId = templateFile.Id };
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 

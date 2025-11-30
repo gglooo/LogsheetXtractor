@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using WebFormHTR.Application.Features.ROIs.DTOs;
+using WebFormHTR.Application.Features.Scripting;
+using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Domain.ValueObjects;
@@ -18,26 +20,16 @@ public class RoiServiceTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<IHtrScriptEngine> _scriptEngineMock;
     private readonly RoiService _roiService;
 
     public RoiServiceTests()
     {
-        var inMemorySettings = new Dictionary<string, string>
-        {
-            { "TODO", "add mock config" },
-            { "TODOo", "add it" }
-        };
-
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-
         _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
+        _scriptEngineMock = new Mock<IHtrScriptEngine>();
 
-        var scriptExecutor = new PythonScriptExecutor(configuration);
-        var scriptAdapter = new PythonHtrAdapter(scriptExecutor);
-        _roiService = new RoiService(_dbContext, _mapperMock.Object, scriptAdapter);
+        _roiService = new RoiService(_dbContext, _mapperMock.Object, _scriptEngineMock.Object);
     }
 
     [Fact]
@@ -54,7 +46,7 @@ public class RoiServiceTests : IDisposable
                 VariableName = dto.VariableName,
                 Type = dto.Type,
                 Coordinates = dto.Coordinates,
-                Template = null! // Required but not used in this test logic directly
+                Template = null!
             });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))

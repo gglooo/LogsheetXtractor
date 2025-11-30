@@ -10,11 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddInfrastructure();
-builder.Host.UseWolverine(opts =>
-{
-    opts.Discovery.IncludeAssembly(typeof(ApplicationAssemblyReference).Assembly);
-});
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Host.UseWolverine(opts => { opts.Discovery.IncludeAssembly(typeof(ApplicationAssemblyReference).Assembly); });
 builder.Services.AddWolverineHttp();
 builder.Services.AddMapster();
 TypeAdapterConfig.GlobalSettings.Scan(typeof(ApplicationAssemblyReference).Assembly);

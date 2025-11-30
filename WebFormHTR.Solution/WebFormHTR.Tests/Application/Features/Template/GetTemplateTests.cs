@@ -17,7 +17,11 @@ public class GetTemplateTests : IDisposable
     [Fact]
     public async Task Handle_ShouldReturnTemplate_WhenFound()
     {
-        var template = new Domain.Entities.Template { Name = "Test Template" };
+        var file = new Domain.Entities.File { OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        _dbContext.Files.Add(file);
+        await _dbContext.SaveChangesAsync();
+
+        var template = new Domain.Entities.Template { Name = "Test Template", FileId = file.Id };
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 

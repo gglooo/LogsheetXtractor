@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.ROIs;
@@ -16,12 +17,13 @@ namespace WebFormHTR.Infrastructure.Installers;
 
 public static class InfrastructureInstaller
 {
-    public static void AddInfrastructure(this IServiceCollection services)
+    public static void AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
+        var connectionString = config.GetConnectionString("DefaultConnection");
+
         services.AddSingleton<SoftDeleteInterceptor>();
         services.AddDbContext<AppDbContext>((sp, options) => options
-            // TODO: allow user to configure
-            .UseSqlite("Data Source=app.db")
+            .UseSqlite(connectionString)
             .UseLazyLoadingProxies()
             .AddInterceptors(
                 sp.GetRequiredService<SoftDeleteInterceptor>()));

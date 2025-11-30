@@ -20,8 +20,12 @@ public class GetTemplateQueryHandlerTests
     [Fact]
     public async Task Handle_ShouldReturnTemplate_WhenTemplateExists()
     {
+        var file = new Domain.Entities.File { OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        _dbContext.Files.Add(file);
+        await _dbContext.SaveChangesAsync();
+
         var templateId = Guid.NewGuid();
-        var template = new WebFormHTR.Domain.Entities.Template { Id = templateId, Name = "Existing Template" };
+        var template = new WebFormHTR.Domain.Entities.Template { Id = templateId, Name = "Existing Template", FileId = file.Id };
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 
