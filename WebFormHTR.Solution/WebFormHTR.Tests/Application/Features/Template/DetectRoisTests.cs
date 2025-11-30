@@ -53,7 +53,7 @@ public class DetectRoisTests : IDisposable
 
         var detectedRois = new List<RoiDto>
         {
-            new(Guid.NewGuid(), "ROI 1", template.Id, ERoiType.Text,
+            new(Guid.NewGuid(), "ROI 1", template.Id, ERoiType.Handwritten,
                 new Coordinates { X = 10, Y = 10, Width = 100, Height = 50 }),
             new(Guid.NewGuid(), "ROI 2", template.Id, ERoiType.Checkbox,
                 new Coordinates { X = 20, Y = 20, Width = 50, Height = 50 })

@@ -7,6 +7,6 @@ public record RoiDto(
     Guid? Id,
     string VariableName,
     Guid TemplateId,
-    ERoiType Type,
+    ERoiType? Type,
     Coordinates Coordinates
 );

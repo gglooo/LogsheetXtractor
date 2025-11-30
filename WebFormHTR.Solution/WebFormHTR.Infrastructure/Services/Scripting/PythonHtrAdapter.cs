@@ -21,7 +21,6 @@ public class PythonHtrAdapter(
 
     public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
-        // TODO: get any credentials, not just google
         var availableCredentials = credentialService.GetAvailableCredentialsPath().ToList();
 
         if (!availableCredentials.Any())

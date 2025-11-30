@@ -44,8 +44,11 @@ public class PythonHtrAdapterTests
         var resolvedInputPath = "/resolved/input.pdf";
         var resolvedOutputPath = "/resolved/output.json";
 
-        _credentialServiceMock.Setup(x => x.GetCredentialFilePath(ECredentialType.Google))
-            .Returns((ECredentialType.Google, credentialsPath));
+        _credentialServiceMock.Setup(x => x.GetAvailableCredentialsPath())
+            .Returns(new List<(ECredentialType, string)>
+            {
+                (ECredentialType.Google, credentialsPath)
+            });
 
         _fileStorageServiceMock.Setup(x => x.GetResolvedPath(input.FilePath))
             .Returns(resolvedInputPath);
@@ -72,8 +75,7 @@ public class PythonHtrAdapterTests
                     VarName = "TestROI",
                     Type = "Text"
                 }
-            }
-            ,
+            },
             ToIgnore = new List<PythonResidualDto>
             {
                 new()
@@ -116,11 +118,8 @@ public class PythonHtrAdapterTests
     {
         var input = new SelectRoisInputDto("input.pdf", Guid.NewGuid());
 
-        _credentialServiceMock.Setup(x => x.GetCredentialFilePath(ECredentialType.Google))
-            .Returns(((ECredentialType, string)?)null);
-
-        _credentialServiceMock.Setup(x => x.GetCredentialFilePath(ECredentialType.Google))
-            .Returns((ValueTuple<ECredentialType, string>?)null);
+        _credentialServiceMock.Setup(x => x.GetAvailableCredentialsPath())
+            .Returns([]);
 
         var act = async () => await _adapter.SelectRoisAsync(input, CancellationToken.None);
 

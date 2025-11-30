@@ -35,16 +35,13 @@ public static class PythonMapper
 
             var coordinates = MapCoordinates(roi.Coords);
 
-            if (!Enum.TryParse(roi.Type, true, out ERoiType roiType))
-            {
-                roiType = ERoiType.Text;
-            }
+            ERoiType? parsedRoiType = Enum.TryParse(roi.Type, true, out ERoiType roiType) ? roiType : null;
 
             var roiDto = new RoiDto(
                 null,
                 roi.VarName ?? "Unnamed",
                 templateId,
-                roiType,
+                parsedRoiType,
                 coordinates
             );
 

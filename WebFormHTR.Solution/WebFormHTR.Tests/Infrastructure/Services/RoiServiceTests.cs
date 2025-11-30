@@ -36,7 +36,7 @@ public class RoiServiceTests : IDisposable
     public async Task SetRoisForTemplateAsync_ShouldAddNewRois()
     {
         var templateId = Guid.NewGuid();
-        var newRoiDto = new SetRoiDto(null, "New ROI", ERoiType.Text,
+        var newRoiDto = new SetRoiDto(null, "New ROI", ERoiType.Handwritten,
             new Coordinates { X = 10, Y = 10, Width = 100, Height = 100 });
         var updateRois = new List<SetRoiDto> { newRoiDto };
 
@@ -76,14 +76,14 @@ public class RoiServiceTests : IDisposable
             Id = existingRoiId,
             TemplateId = templateId,
             VariableName = "Old Name",
-            Type = ERoiType.Text,
+            Type = ERoiType.Handwritten,
             Coordinates = new Coordinates { X = 0, Y = 0, Width = 50, Height = 50 },
             Template = null!
         };
         _dbContext.Rois.Add(existingRoi);
         await _dbContext.SaveChangesAsync();
 
-        var updateDto = new SetRoiDto(existingRoiId, "Updated Name", ERoiType.Text,
+        var updateDto = new SetRoiDto(existingRoiId, "Updated Name", ERoiType.Handwritten,
             new Coordinates { X = 20, Y = 20, Width = 60, Height = 60 });
         var updateRois = new List<SetRoiDto> { updateDto };
 
@@ -129,7 +129,7 @@ public class RoiServiceTests : IDisposable
         _dbContext.Rois.AddRange(roiToDelete, roiToKeep);
         await _dbContext.SaveChangesAsync();
 
-        var updateDto = new SetRoiDto(roiToKeep.Id, "To Keep", ERoiType.Text, new Coordinates());
+        var updateDto = new SetRoiDto(roiToKeep.Id, "To Keep", ERoiType.Handwritten, new Coordinates());
         var updateRois = new List<SetRoiDto> { updateDto };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
@@ -182,7 +182,7 @@ public class RoiServiceTests : IDisposable
         var templateId = Guid.NewGuid();
         var newRois = new List<SetRoiDto>
         {
-            new(null, "ROI 1", ERoiType.Text, new Coordinates()),
+            new(null, "ROI 1", ERoiType.Handwritten, new Coordinates()),
             new(null, "ROI 2", ERoiType.Checkbox, new Coordinates())
         };
 
@@ -238,7 +238,7 @@ public class RoiServiceTests : IDisposable
 
         var updateRois = new List<SetRoiDto>
         {
-            new(existingRois[0].Id, "Updated Existing 1", ERoiType.Text, new Coordinates()),
+            new(existingRois[0].Id, "Updated Existing 1", ERoiType.Handwritten, new Coordinates()),
             new(null, "New ROI", ERoiType.Checkbox, new Coordinates())
         };
 
