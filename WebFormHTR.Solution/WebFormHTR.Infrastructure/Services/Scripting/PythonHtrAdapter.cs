@@ -35,7 +35,7 @@ public class PythonHtrAdapter(
         var outputFilePath = fileStorageService.GetResolvedPath(uniqueStoragePath);
         var result =
             await scriptExecutor.ExecuteScriptAsync("select_rois.py",
-                $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --credentials {googleCredentials.Value.Item2}",
+                $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {googleCredentials.Value.Item2}",
                 ct);
 
         var rois = ParseRoisFromFile(outputFilePath, input.TemplateId);
