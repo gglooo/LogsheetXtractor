@@ -22,21 +22,29 @@ public class PythonHtrAdapter(
     public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
         // TODO: get any credentials, not just google
-        var googleCredentials = credentialService.GetCredentialFilePath(ECredentialType.Google);
+        var availableCredentials = credentialService.GetAvailableCredentialsPath().ToList();
 
-        if (googleCredentials is null)
+        if (!availableCredentials.Any())
         {
             throw new InvalidOperationException("Credentials not found");
         }
+
+        // Prefer Google credentials if available
+        var googleCredentials = availableCredentials
+            .FirstOrDefault(c => c.Item1 == ECredentialType.Google);
+
+        var usedCredentials = !googleCredentials.Equals(default)
+            ? googleCredentials.Item2
+            : availableCredentials.First().Item2;
 
         var uniqueStoragePath = $"{Guid.NewGuid()}_{_selectRoisOutputPath}";
 
         var inputFilePath = fileStorageService.GetResolvedPath(input.FilePath);
         var outputFilePath = fileStorageService.GetResolvedPath(uniqueStoragePath);
-        var result =
-            await scriptExecutor.ExecuteScriptAsync("select_rois.py",
-                $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {googleCredentials.Value.Item2}",
-                ct);
+
+        await scriptExecutor.ExecuteScriptAsync("select_rois.py",
+            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials}",
+            ct);
 
         var rois = ParseRoisFromFile(outputFilePath, input.TemplateId);
 
