@@ -93,7 +93,6 @@ public class MappingConfig : IRegister
         config.NewConfig<PatchLogsheetDto, Logsheet>()
             .IgnoreNullValues(true);
 
-        config.NewConfig<SelectRoisOutputDto, IEnumerable<RoiDto>>()
-            .MapWith(src => src.Rois);
+        config.NewConfig<SelectRoisOutputDto, DetectRoisResponseDto>();
     }
 }

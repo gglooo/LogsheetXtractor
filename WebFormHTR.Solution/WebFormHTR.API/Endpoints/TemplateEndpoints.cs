@@ -91,7 +91,7 @@ public static class TemplateEndpoints
     }
 
     [WolverinePost("/api/templates/{id}/detect-rois")]
-    [ProducesResponseType(200, Type = typeof(TemplateDetailDto))]
+    [ProducesResponseType(200, Type = typeof(DetectRoisResponseDto))]
     [ProducesResponseType(400)]
     public static async Task<IResult> DetectRois(
         Guid id,
@@ -99,7 +99,7 @@ public static class TemplateEndpoints
         CancellationToken ct)
     {
         var command = new DetectRoisCommand(id);
-        var result = await bus.InvokeAsync<Result<IEnumerable<RoiDto>>>(command, ct);
+        var result = await bus.InvokeAsync<Result<DetectRoisResponseDto>>(command, ct);
 
         return result.ToHttpResult();
     }

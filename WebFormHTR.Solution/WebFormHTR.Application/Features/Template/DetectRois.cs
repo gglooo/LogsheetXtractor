@@ -13,7 +13,7 @@ public sealed record DetectRoisCommand(Guid TemplateId);
 
 public static class DetectRoisHandler
 {
-    public static async Task<Result<IEnumerable<RoiDto>>> Handle(DetectRoisCommand request, IRoiService roiService,
+    public static async Task<Result<DetectRoisResponseDto>> Handle(DetectRoisCommand request, IRoiService roiService,
         IAppDbContext dbContext, IMapper mapper, CancellationToken ct)
     {
         var template = await dbContext.Templates

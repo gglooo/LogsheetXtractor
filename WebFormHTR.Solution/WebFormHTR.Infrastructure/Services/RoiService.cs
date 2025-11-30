@@ -6,6 +6,7 @@ using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
+using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 
@@ -114,7 +115,7 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
             .ContinueWith(t => t.Result.First(), cancellationToken);
     }
 
-    public async Task<IEnumerable<RoiDto>> DetectRoisAsync(Guid fileId,
+    public async Task<DetectRoisResponseDto> DetectRoisAsync(Guid fileId,
         Guid templateId,
         CancellationToken cancellationToken)
     {
@@ -131,6 +132,6 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
 
         var result = await scriptEngine.SelectRoisAsync(input, cancellationToken);
 
-        return mapper.Map<IEnumerable<RoiDto>>(result);
+        return mapper.Map<DetectRoisResponseDto>(result);
     }
 }

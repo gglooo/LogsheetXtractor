@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using WebFormHTR.Application.Features.Residuals.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
@@ -37,11 +38,11 @@ public class PythonHtrAdapter(
                 $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --credentials {googleCredentials.Value.Item2}",
                 ct);
 
-        var rois = LoadRoisFromFile(outputFilePath, input.TemplateId);
+        var rois = ParseRoisFromFile(outputFilePath, input.TemplateId);
 
         fileStorageService.DeleteFile(uniqueStoragePath);
 
-        return new SelectRoisOutputDto(rois);
+        return rois;
     }
 
     public Task<string> AnnotateRoisAsync(Guid executionId, CancellationToken ct)
@@ -59,12 +60,12 @@ public class PythonHtrAdapter(
         throw new NotImplementedException();
     }
 
-    private List<RoiDto> LoadRoisFromFile(string filePath, Guid templateId)
+    private SelectRoisOutputDto ParseRoisFromFile(string filePath, Guid templateId)
     {
         var jsonContent = fileStorageService.ReadAllText(filePath);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var rois = JsonSerializer.Deserialize<PythonSelectRoisOutputDto>(jsonContent, options);
 
-        return rois?.ToRoiDtoList(templateId) ?? [];
+        return rois?.ToSelectRoisOutputDtoList(templateId) ?? new SelectRoisOutputDto([], []);
     }
 }

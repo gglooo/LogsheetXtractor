@@ -73,6 +73,15 @@ public class PythonHtrAdapterTests
                     Type = "Text"
                 }
             }
+            ,
+            ToIgnore = new List<PythonResidualDto>
+            {
+                new()
+                {
+                    Coords = new List<float> { 200, 200, 250, 250 }, // x, y, x2, y2 -> w=50, h=50
+                    Content = "Ignored Content"
+                }
+            }
         };
         var jsonOutput = JsonSerializer.Serialize(pythonOutput);
 
@@ -89,6 +98,14 @@ public class PythonHtrAdapterTests
         roi.Coordinates.Width.Should().Be(100);
         roi.Coordinates.Height.Should().Be(50);
         roi.VariableName.Should().Be("TestROI");
+
+        result.Residuals.Should().HaveCount(1);
+        var residual = result.Residuals.First();
+        residual.Coordinates.X.Should().Be(200);
+        residual.Coordinates.Y.Should().Be(200);
+        residual.Coordinates.Width.Should().Be(50);
+        residual.Coordinates.Height.Should().Be(50);
+        residual.Content.Should().Be("Ignored Content");
 
         _fileStorageServiceMock.Verify(x => x.DeleteFile(It.Is<string>(s => s.EndsWith("selected_rois.json"))),
             Times.Once);

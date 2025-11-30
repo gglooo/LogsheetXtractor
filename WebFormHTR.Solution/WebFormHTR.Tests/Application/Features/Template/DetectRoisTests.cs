@@ -6,6 +6,8 @@ using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Template;
+using WebFormHTR.Application.Features.Template.DTOs;
+using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Domain.ValueObjects;
@@ -57,8 +59,10 @@ public class DetectRoisTests : IDisposable
                 new Coordinates { X = 20, Y = 20, Width = 50, Height = 50 })
         };
 
+        var responseDto = new DetectRoisResponseDto(detectedRois, []);
+
         _roiServiceMock.Setup(x => x.DetectRoisAsync(file.Id, template.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(detectedRois);
+            .ReturnsAsync(responseDto);
 
         var command = new DetectRoisCommand(template.Id);
 
@@ -66,7 +70,7 @@ public class DetectRoisTests : IDisposable
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeEquivalentTo(detectedRois);
+        result.Value.Should().BeEquivalentTo(responseDto);
         _roiServiceMock.Verify(x => x.DetectRoisAsync(file.Id, template.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
