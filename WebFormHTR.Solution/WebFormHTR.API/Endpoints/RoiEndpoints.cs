@@ -16,6 +16,10 @@ public sealed record UpsertRoiRequest(
     UpsertRoiDto Roi
 );
 
+public sealed record CreateRoisRequest(
+    IEnumerable<CreateRoiDto> Rois
+);
+
 public static class RoiEndpoints
 {
     [WolverinePost("/api/templates/{templateId}/rois/set")]
@@ -63,6 +67,22 @@ public static class RoiEndpoints
         var command = new UpsertRoiCommand(templateId, request.Roi);
 
         var result = await bus.InvokeAsync<Result<RoiDto>>(command, ct);
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/templates/{templateId}/rois")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> CreateRois(
+        Guid templateId,
+        CreateRoisRequest request,
+        IMessageBus bus,
+        CancellationToken ct
+    )
+    {
+        var command = new CreateRoisCommand(templateId, request.Rois);
+        var result = await bus.InvokeAsync<Result>(command, ct);
+
         return result.ToHttpResult();
     }
 }
