@@ -67,11 +67,14 @@ public class PythonHtrAdapter(
         var logsheetPath = fileStorageService.GetResolvedPath(input.Logsheet.File.StoragePath);
         var templatePath = fileStorageService.GetResolvedPath(input.Logsheet.Template.File.StoragePath);
 
-        var backsideTemplatePath = input.Logsheet.BacksideTemplate?.File.StoragePath;
+        var backsideTemplatePath = input.Logsheet.BacksideTemplate is not null
+            ? fileStorageService.GetResolvedPath(input.Logsheet.BacksideTemplate.File.StoragePath)
+            : null;
 
         var stdOut = await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.AutomaticAlignment,
-            $"--pdf_logsheet {logsheetPath} --pdf_template {templatePath}" + (backsideTemplatePath is not null
-                ? $"--backside_template {backsideTemplatePath}"
+            $"--pdf_logsheet {logsheetPath} --pdf_template {templatePath}" +
+            (backsideTemplatePath is not null
+                ? $" --backside_template {backsideTemplatePath}"
                 : ""),
             ct);
 
