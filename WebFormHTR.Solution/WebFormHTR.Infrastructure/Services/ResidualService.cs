@@ -9,7 +9,8 @@ namespace WebFormHTR.Infrastructure.Services;
 
 public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidualService
 {
-    public async Task<IEnumerable<ResidualDto>> SetResidualsForTemplateAsync(Guid templateId, IEnumerable<SetResidualDto> updateResiduals,
+    public async Task<IEnumerable<ResidualDto>> SetResidualsForTemplateAsync(Guid templateId,
+        IEnumerable<SetResidualDto> updateResiduals,
         CancellationToken cancellationToken)
     {
         IList<Residual> allEntities = [];
@@ -112,5 +113,27 @@ public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidua
     {
         return UpsertResidualsForTemplateAsync(templateId, [updateResidual], cancellationToken)
             .ContinueWith(t => t.Result.First(), cancellationToken);
+    }
+
+    public async Task<IEnumerable<ResidualDto>> CloneResidualsForTemplateAsync(Guid sourceTemplateId,
+        Guid targetTemplateId,
+        CancellationToken cancellationToken)
+    {
+        var sourceResiduals = await dbContext.Residuals
+            .AsNoTracking()
+            .Where(r => r.TemplateId == sourceTemplateId)
+            .ToListAsync(cancellationToken);
+
+        var clonedResiduals = sourceResiduals.Select(r =>
+        {
+            var cloned = mapper.Map<Residual>(r);
+            cloned.Id = Guid.NewGuid();
+            cloned.TemplateId = targetTemplateId;
+            return cloned;
+        }).ToList();
+
+        await dbContext.Residuals.AddRangeAsync(clonedResiduals, cancellationToken);
+
+        return mapper.Map<IEnumerable<ResidualDto>>(clonedResiduals);
     }
 }

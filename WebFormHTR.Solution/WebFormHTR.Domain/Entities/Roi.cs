@@ -7,8 +7,8 @@ namespace WebFormHTR.Domain.Entities;
 public class Roi : BaseEntity
 {
     public Guid TemplateId { get; set; }
-    public virtual required Template Template { get; set; }
-    public string VariableName { get; set; } = String.Empty;
+    public virtual Template Template { get; set; }
+    public string VariableName { get; set; } = string.Empty;
     public ERoiType Type { get; set; }
 
     public Coordinates Coordinates { get; set; }

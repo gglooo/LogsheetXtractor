@@ -30,7 +30,7 @@ public class CreateTemplateCommandHandlerTests
         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "New Template", null,
             new FileDto(file.Id, file.StoredFileName, file.ContentType, file.SizeBytes, file.CreatedAt),
             DateTime.UtcNow,
-            DateTime.UtcNow, []);
+            DateTime.UtcNow, [], []);
 
         _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<WebFormHTR.Domain.Entities.Template>()))
             .Returns(expectedDto);

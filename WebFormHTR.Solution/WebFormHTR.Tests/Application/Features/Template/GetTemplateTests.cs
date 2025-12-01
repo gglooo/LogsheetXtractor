@@ -17,7 +17,11 @@ public class GetTemplateTests : IDisposable
     [Fact]
     public async Task Handle_ShouldReturnTemplate_WhenFound()
     {
-        var file = new Domain.Entities.File { OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        var file = new Domain.Entities.File
+        {
+            OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path",
+            ContentType = "application/pdf"
+        };
         _dbContext.Files.Add(file);
         await _dbContext.SaveChangesAsync();
 
@@ -27,7 +31,8 @@ public class GetTemplateTests : IDisposable
 
         var query = new GetTemplateQuery(template.Id);
 
-        var expectedDto = new TemplateDetailDto(template.Id, template.Name, null, null, DateTime.Now, DateTime.Now, []);
+        var expectedDto =
+            new TemplateDetailDto(template.Id, template.Name, null, null, DateTime.Now, DateTime.Now, [], []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto?>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
 

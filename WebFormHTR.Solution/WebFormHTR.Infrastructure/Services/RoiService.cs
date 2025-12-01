@@ -134,4 +134,25 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
 
         return mapper.Map<DetectRoisResponseDto>(result);
     }
+
+    public async Task<IEnumerable<RoiDto>> CloneRoisForTemplateAsync(Guid sourceTemplateId, Guid targetTemplateId,
+        CancellationToken cancellationToken)
+    {
+        var sourceRois = await dbContext.Rois
+            .AsNoTracking()
+            .Where(r => r.TemplateId == sourceTemplateId)
+            .ToListAsync(cancellationToken);
+
+        var clonedRois = sourceRois.Select(r =>
+        {
+            var clonedRoi = mapper.Map<Roi>(r);
+            clonedRoi.Id = Guid.NewGuid();
+            clonedRoi.TemplateId = targetTemplateId;
+            return clonedRoi;
+        }).ToList();
+
+        await dbContext.Rois.AddRangeAsync(clonedRois, cancellationToken);
+
+        return mapper.Map<IEnumerable<RoiDto>>(clonedRois);
+    }
 }

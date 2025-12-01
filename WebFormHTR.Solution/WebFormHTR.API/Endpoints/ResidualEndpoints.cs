@@ -48,7 +48,7 @@ public static class ResidualEndpoints
     )
     {
         var command = new CreateResidualCommand(templateId, request.Residuals);
-        var result = await bus.InvokeAsync<Result>(command, ct);
+        var result = await bus.InvokeAsync<Result<IEnumerable<ResidualDto>>>(command, ct);
 
         return result.ToHttpResult();
     }

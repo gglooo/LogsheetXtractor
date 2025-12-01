@@ -21,14 +21,19 @@ public class CreateRoisCommandHandlerTests : IDisposable
     [Fact]
     public async Task Handle_ShouldCreateRois_WhenRequestIsValid()
     {
-        var templateId = Guid.NewGuid();
+        var template = new Domain.Entities.Template
+            { Id = Guid.NewGuid(), Name = "Test Template", FileId = Guid.NewGuid() };
+
+        await _dbContext.Templates.AddAsync(template);
+        await _dbContext.SaveChangesAsync();
+
         var roiDtos = new List<CreateRoiDto>
         {
             new("ROI 1", ERoiType.Handwritten, new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }),
             new("ROI 2", ERoiType.Handwritten, new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
         };
 
-        var command = new CreateRoisCommand(templateId, roiDtos);
+        var command = new CreateRoisCommand(template.Id, roiDtos);
 
         _mapperMock.Setup(x => x.Map<List<Roi>>(roiDtos))
             .Returns([
@@ -46,7 +51,9 @@ public class CreateRoisCommandHandlerTests : IDisposable
 
         await CreateRoisHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
-        var rois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
+        await _dbContext.SaveChangesAsync();
+
+        var rois = await _dbContext.Rois.Where(r => r.TemplateId == template.Id).ToListAsync();
         rois.Should().HaveCount(2);
         rois.Should().Contain(r => r.VariableName == "ROI 1");
         rois.Should().Contain(r => r.VariableName == "ROI 2");

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Template.Interfaces;
@@ -37,5 +38,6 @@ public static class InfrastructureInstaller
         services.AddScoped<IScriptExecutor, PythonScriptExecutor>();
         services.AddScoped<ICredentialService, CredentialService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<IResidualService, ResidualService>();
     }
 }

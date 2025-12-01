@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore WebFormHTR.Solution/WebFormHTR.Solution.sln
+
+      - name: Build
+        run: dotnet build WebFormHTR.Solution/WebFormHTR.Solution.sln --no-restore
+
+      - name: Test
+        run: dotnet test WebFormHTR.Solution/WebFormHTR.Tests/WebFormHTR.Tests.csproj --no-build --verbosity normal
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the Docker image
+        run: docker build . --file WebFormHTR.Solution/WebFormHTR.API/Dockerfile --tag webformhtr-api:latest

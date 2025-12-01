@@ -4,6 +4,7 @@ using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
+using WebFormHTR.Application.Features.Residuals.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
@@ -94,5 +95,23 @@ public class MappingConfig : IRegister
             .IgnoreNullValues(true);
 
         config.NewConfig<SelectRoisOutputDto, DetectRoisResponseDto>();
+
+        config.NewConfig<Residual, ResidualDto>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.TemplateId, src => src.TemplateId)
+            .Map(dest => dest.Content, src => src.Content)
+            .Map(dest => dest.Coordinates, src => src.Coordinates);
+
+        config.NewConfig<ResidualDto, Residual>()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.TemplateId, src => src.TemplateId)
+            .Map(dest => dest.Content, src => src.Content)
+            .Map(dest => dest.Coordinates, src => src.Coordinates);
+
+        config.NewConfig<Residual, Residual>()
+            .Ignore(dest => dest.Template);
+
+        config.NewConfig<Roi, Roi>()
+            .Ignore(dest => dest.Template);
     }
 }

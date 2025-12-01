@@ -16,4 +16,7 @@ public interface IRoiService
         CancellationToken cancellationToken);
 
     Task<DetectRoisResponseDto> DetectRoisAsync(Guid fileId, Guid templateId, CancellationToken cancellationToken);
+
+    Task<IEnumerable<RoiDto>> CloneRoisForTemplateAsync(Guid sourceTemplateId, Guid targetTemplateId,
+        CancellationToken cancellationToken);
 }

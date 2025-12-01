@@ -28,7 +28,8 @@ public class CreateTemplateTests : IDisposable
             ParentId = Guid.NewGuid()
         };
 
-        var result = await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -44,7 +45,8 @@ public class CreateTemplateTests : IDisposable
             FileId = Guid.NewGuid()
         };
 
-        var result = await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -54,7 +56,11 @@ public class CreateTemplateTests : IDisposable
     [Fact]
     public async Task Handle_ShouldCreateTemplate_WhenValidRequest()
     {
-        var file = new Domain.Entities.File { OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        var file = new Domain.Entities.File
+        {
+            OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path",
+            ContentType = "application/pdf"
+        };
         _dbContext.Files.Add(file);
         await _dbContext.SaveChangesAsync();
 
@@ -64,11 +70,13 @@ public class CreateTemplateTests : IDisposable
             FileId = file.Id
         };
 
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
+        var expectedDto =
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, [], []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
 
-        var result = await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(expectedDto);
@@ -82,7 +90,11 @@ public class CreateTemplateTests : IDisposable
     [Fact]
     public async Task Handle_ShouldCreateTemplateWithParent_WhenParentExists()
     {
-        var file = new Domain.Entities.File { OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        var file = new Domain.Entities.File
+        {
+            OriginalFileName = "test.pdf", StoredFileName = "test.pdf", StoragePath = "path",
+            ContentType = "application/pdf"
+        };
         var parent = new Domain.Entities.Template { Name = "Parent", File = file };
         _dbContext.Templates.Add(parent);
         await _dbContext.SaveChangesAsync();
@@ -94,11 +106,13 @@ public class CreateTemplateTests : IDisposable
             FileId = file.Id
         };
 
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, []);
+        var expectedDto =
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, [], []);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
 
-        var result = await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
 
