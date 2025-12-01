@@ -33,11 +33,17 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
 
-        var templateFile = new Domain.Entities.File { Id = Guid.NewGuid(), OriginalFileName = "template.pdf", StoredFileName = "template.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        var templateFile = new Domain.Entities.File
+        {
+            Id = Guid.NewGuid(), OriginalFileName = "template.pdf", StoredFileName = "template.pdf",
+            StoragePath = "path", ContentType = "application/pdf"
+        };
         _dbContext.Files.Add(templateFile);
 
-        var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template", FileId = templateFile.Id };
-        var file = new Domain.Entities.File { Id = fileId, OriginalFileName = "test.jpg", StoragePath = "path/to/file" };
+        var template = new Domain.Entities.Template
+            { Id = templateId, Name = "Test Template", FileId = templateFile.Id };
+        var file = new Domain.Entities.File
+            { Id = fileId, OriginalFileName = "test.jpg", StoragePath = "path/to/file" };
 
         _dbContext.Templates.Add(template);
         _dbContext.Files.Add(file);
@@ -47,15 +53,18 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
 
         var templateDto = new TemplateListDto(templateId.ToString(), "Test Template", null, null);
         var fileDto = new FileDto(fileId, "test.jpg", "image/jpeg", 100, DateTime.UtcNow);
-        var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, fileDto, ELogSheetStatus.Pending, DateTime.UtcNow, null);
+        var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, fileDto, ELogSheetStatus.Pending,
+            DateTime.UtcNow, null);
 
-        _mapperMock.Setup(x => x.Map<Domain.Entities.Logsheet>(command))
-            .Returns(new Domain.Entities.Logsheet { Id = expectedDto.Id, TemplateId = templateId, FileId = fileId, Template = null!, File = null! });
+        _mapperMock.Setup(x => x.Map<Logsheet>(command))
+            .Returns(new Logsheet
+                { Id = expectedDto.Id, TemplateId = templateId, FileId = fileId, Template = null!, File = null! });
 
-        _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.IsAny<Domain.Entities.Logsheet>()))
+        _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.IsAny<Logsheet>()))
             .Returns(expectedDto);
 
-        var result = await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result =
+            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -72,16 +81,22 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
 
-        var templateFile = new Domain.Entities.File { Id = Guid.NewGuid(), OriginalFileName = "template.pdf", StoredFileName = "template.pdf", StoragePath = "path", ContentType = "application/pdf" };
+        var templateFile = new Domain.Entities.File
+        {
+            Id = Guid.NewGuid(), OriginalFileName = "template.pdf", StoredFileName = "template.pdf",
+            StoragePath = "path", ContentType = "application/pdf"
+        };
         _dbContext.Files.Add(templateFile);
 
-        var template = new Domain.Entities.Template { Id = templateId, Name = "Test Template", FileId = templateFile.Id };
+        var template = new Domain.Entities.Template
+            { Id = templateId, Name = "Test Template", FileId = templateFile.Id };
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 
         var command = new CreateLogsheetCommand(templateId, fileId);
 
-        var result = await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result =
+            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "File not found");
@@ -93,13 +108,15 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var templateId = Guid.NewGuid();
         var fileId = Guid.NewGuid();
 
-        var file = new Domain.Entities.File { Id = fileId, OriginalFileName = "test.jpg", StoragePath = "path/to/file" };
+        var file = new Domain.Entities.File
+            { Id = fileId, OriginalFileName = "test.jpg", StoragePath = "path/to/file" };
         _dbContext.Files.Add(file);
         await _dbContext.SaveChangesAsync();
 
         var command = new CreateLogsheetCommand(templateId, fileId);
 
-        var result = await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result =
+            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Template not found");

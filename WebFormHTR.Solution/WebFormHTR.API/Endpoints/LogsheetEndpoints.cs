@@ -32,7 +32,7 @@ public static class LogsheetEndpoints
         Guid id,
         PatchLogsheetDto request,
         IMessageBus bus,
-         CancellationToken ct)
+        CancellationToken ct)
     {
         var command = new PatchLogsheetCommand(id, request);
         var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
@@ -79,6 +79,21 @@ public static class LogsheetEndpoints
     {
         var command = new ProcessLogsheetDataCommand(id);
         var result = await bus.InvokeAsync<Result>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/logsheets/{id}/align")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> AlignLogsheet(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new AlignLogsheetCommand(id);
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
 
         return result.ToHttpResult();
     }

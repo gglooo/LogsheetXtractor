@@ -15,4 +15,5 @@ public class Template : BaseEntity
     public virtual ICollection<Residual> Residuals { get; set; } = new List<Residual>();
     public virtual ICollection<Roi> Rois { get; set; } = new List<Roi>();
     public virtual ICollection<Logsheet> Logsheets { get; set; } = new List<Logsheet>();
+    public virtual ICollection<Logsheet> BacksideLogsheets { get; set; } = new List<Logsheet>();
 }

@@ -9,6 +9,7 @@ using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
+using WebFormHTR.Domain.ValueObjects;
 using File = WebFormHTR.Domain.Entities.File;
 
 namespace WebFormHTR.Application.Common.Mappings;
@@ -46,7 +47,21 @@ public class MappingConfig : IRegister
             .Map(dest => dest.File, src => src.File)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
-            .Map(dest => dest.AlignmentData, src => src.AlignmentData);
+            .Map(dest => dest.AlignmentData, src => src.AlignmentDataModelConfig)
+            .Map(dest => dest.BacksideTemplate, src => src.BacksideTemplate);
+
+        config.NewConfig<AlignmentContainer, AlignmentDataDto>();
+
+        config.NewConfig<AlignmentDataModel, AlignmentDetailDto>()
+            .Map(dest => dest.Dimensions, src => src.ReferenceDimensions)
+            .Map(dest => dest.LogsheetPoints, src => src.TargetPoints)
+            .Map(dest => dest.TemplatePoints, src => src.TemplatePoints);
+
+        config.NewConfig<PointCoordinate, PointCoordinateDto>();
+
+        config.NewConfig<ImageDimensions, DimensionsDto>()
+            .Map(dest => dest.Height, src => src.Height)
+            .Map(dest => dest.Width, src => src.Width);
 
         config.NewConfig<CreateLogsheetCommand, Logsheet>()
             .Map(dest => dest.TemplateId, src => src.TemplateId)
@@ -58,7 +73,8 @@ public class MappingConfig : IRegister
             .Map(dest => dest.FileId, src => src.FileId)
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Status, src => src.Status)
-            .Map(dest => dest.ProcessedAt, src => src.ProcessedAt);
+            .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
+            .Map(dest => dest.BacksideTemplateId, src => src.BacksideTemplateId);
 
         config.NewConfig<CreateRoiDto, Roi>()
             .Map(dest => dest.Type, src => src.Type)

@@ -59,6 +59,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Template>(l => l.Template)
             .WithMany(t => t.Logsheets)
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Logsheet>()
+            .HasOne<Template>(l => l.BacksideTemplate)
+            .WithMany(t => t.BacksideLogsheets)
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         modelBuilder.Entity<ExtractedValue>()
             .HasQueryFilter(e => e.DeletedAt == null)

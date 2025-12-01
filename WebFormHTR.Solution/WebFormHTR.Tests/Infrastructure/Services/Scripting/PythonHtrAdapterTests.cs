@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using MapsterMapper;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using WebFormHTR.Application.Features.Scripting;
@@ -20,6 +21,7 @@ public class PythonHtrAdapterTests
     private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly Mock<IConfiguration> _configMock;
     private readonly PythonHtrAdapter _adapter;
+    private readonly IMapper _mapper;
 
     public PythonHtrAdapterTests()
     {
@@ -27,11 +29,13 @@ public class PythonHtrAdapterTests
         _credentialServiceMock = new Mock<ICredentialService>();
         _fileStorageServiceMock = new Mock<IFileStorageService>();
         _configMock = new Mock<IConfiguration>();
+        _mapper = new Mock<IMapper>().Object;
 
         _adapter = new PythonHtrAdapter(
             _scriptExecutorMock.Object,
             _credentialServiceMock.Object,
             _fileStorageServiceMock.Object,
+            _mapper,
             _configMock.Object);
     }
 

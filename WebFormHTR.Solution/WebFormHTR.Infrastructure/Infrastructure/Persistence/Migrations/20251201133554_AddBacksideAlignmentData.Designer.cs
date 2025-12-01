@@ -2,17 +2,20 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebFormHTR.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace WebFormHTR.Infrastructure.Migrations
+namespace WebFormHTR.Infrastructure.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251201133554_AddBacksideAlignmentData")]
+    partial class AddBacksideAlignmentData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
@@ -100,10 +103,7 @@ namespace WebFormHTR.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("AlignmentData")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("BacksideTemplateId")
+                    b.Property<string>("BackAlignmentData")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -116,6 +116,9 @@ namespace WebFormHTR.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("FileId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FrontAlignmentData")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ProcessedAt")
@@ -131,8 +134,6 @@ namespace WebFormHTR.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BacksideTemplateId");
 
                     b.HasIndex("FileId")
                         .IsUnique();
@@ -257,10 +258,6 @@ namespace WebFormHTR.Infrastructure.Migrations
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Logsheet", b =>
                 {
-                    b.HasOne("WebFormHTR.Domain.Entities.Template", "BacksideTemplate")
-                        .WithMany("BacksideLogsheets")
-                        .HasForeignKey("BacksideTemplateId");
-
                     b.HasOne("WebFormHTR.Domain.Entities.File", "File")
                         .WithOne()
                         .HasForeignKey("WebFormHTR.Domain.Entities.Logsheet", "FileId")
@@ -272,8 +269,6 @@ namespace WebFormHTR.Infrastructure.Migrations
                         .HasForeignKey("TemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("BacksideTemplate");
 
                     b.Navigation("File");
 
@@ -396,8 +391,6 @@ namespace WebFormHTR.Infrastructure.Migrations
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Template", b =>
                 {
-                    b.Navigation("BacksideLogsheets");
-
                     b.Navigation("Children");
 
                     b.Navigation("Logsheets");

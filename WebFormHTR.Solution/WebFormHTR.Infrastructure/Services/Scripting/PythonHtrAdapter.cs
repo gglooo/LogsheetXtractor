@@ -1,10 +1,14 @@
 using System.Text.Json;
+using MapsterMapper;
 using Microsoft.Extensions.Configuration;
+using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Residuals.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
+using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Domain.ValueObjects;
 using WebFormHTR.Infrastructure.Services.Credentials;
 using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 using WebFormHTR.Infrastructure.Services.Storage;
@@ -15,6 +19,7 @@ public class PythonHtrAdapter(
     IScriptExecutor scriptExecutor,
     ICredentialService credentialService,
     IFileStorageService fileStorageService,
+    IMapper mapper,
     IConfiguration config) : IHtrScriptEngine
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
@@ -41,8 +46,8 @@ public class PythonHtrAdapter(
         var inputFilePath = fileStorageService.GetResolvedPath(input.FilePath);
         var outputFilePath = fileStorageService.GetResolvedPath(uniqueStoragePath);
 
-        await scriptExecutor.ExecuteScriptAsync("select_rois.py",
-            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials}",
+        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois,
+            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials} --headless",
             ct);
 
         var rois = ParseRoisFromFile(outputFilePath, input.TemplateId);
@@ -57,9 +62,22 @@ public class PythonHtrAdapter(
         throw new NotImplementedException();
     }
 
-    public Task ManualAlignAsync(Guid templateId, CancellationToken ct)
+    public async Task<LogsheetDetailDto> AutomaticAlignAsync(AutomaticAlignmentInputDto input, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var logsheetPath = fileStorageService.GetResolvedPath(input.Logsheet.File.StoragePath);
+        var templatePath = fileStorageService.GetResolvedPath(input.Logsheet.Template.File.StoragePath);
+
+        var backsideTemplatePath = input.Logsheet.BacksideTemplate?.File.StoragePath;
+
+        var stdOut = await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.AutomaticAlignment,
+            $"--pdf_logsheet {logsheetPath} --pdf_template {templatePath}" + (backsideTemplatePath is not null
+                ? $"--backside_template {backsideTemplatePath}"
+                : ""),
+            ct);
+
+        input.Logsheet.AlignmentData = stdOut;
+
+        return mapper.Map<LogsheetDetailDto>(input.Logsheet);
     }
 
     public Task<ProcessLogsheetOutputDto> ProcessLogsheetAsync(ProcessLogsheetInputDto input, CancellationToken ct)

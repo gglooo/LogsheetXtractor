@@ -10,6 +10,9 @@ public class Logsheet : BaseEntity
     public Guid TemplateId { get; set; }
     public virtual required Template Template { get; set; }
 
+    public Guid? BacksideTemplateId { get; set; }
+    public virtual Template? BacksideTemplate { get; set; }
+
     public Guid FileId { get; set; }
     public virtual required File File { get; set; }
 
@@ -17,14 +20,15 @@ public class Logsheet : BaseEntity
     public string? AlignmentData { get; set; }
 
     [NotMapped]
-    public AlignmentDataModel AlignmentDataModelConfig
+    public AlignmentContainer AlignmentDataModelConfig
     {
-        get => AlignmentDataModel.FromJson(AlignmentData);
+        get => AlignmentContainer.FromJson(AlignmentData);
         set => AlignmentData = value.ToJson();
     }
 
     public string? ErrorMessage { get; set; }
     public DateTime? ProcessedAt { get; set; }
 
-    public virtual ICollection<ExtractedValue> ExtractedValues { get; set; } = new List<ExtractedValue>();
+    public virtual ICollection<ExtractedValue> ExtractedValues { get; set; } =
+        new List<ExtractedValue>();
 }

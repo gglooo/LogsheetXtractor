@@ -7,30 +7,33 @@ using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
-public sealed record CreateLogsheetCommand
-(
+public sealed record CreateLogsheetCommand(
     Guid TemplateId,
+    Guid? BacksideTemplateId,
     Guid FileId
 );
 
 public static class CreateLogsheetHandler
 {
-    public static async Task<Result<LogsheetDetailDto>> Handle(CreateLogsheetCommand request, CancellationToken ct, IAppDbContext dbContext, IMapper mapper)
+    public static async Task<Result<LogsheetDetailDto>> Handle(CreateLogsheetCommand request, CancellationToken ct,
+        IAppDbContext dbContext, IMapper mapper)
     {
-        var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == request.FileId, cancellationToken: ct);
+        var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == request.FileId, ct);
         if (file is null)
         {
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("File not found"));
         }
 
-        var fileIsAssignedToAnotherLogsheet = await dbContext.Logsheets.AnyAsync(l => l.FileId == request.FileId, cancellationToken: ct);
+        var fileIsAssignedToAnotherLogsheet = await dbContext.Logsheets.AnyAsync(l => l.FileId == request.FileId, ct);
         if (fileIsAssignedToAnotherLogsheet)
         {
             return Result.Fail<LogsheetDetailDto>(new ConstraintError("File is already assigned to another logsheet"));
         }
 
-        var template = await dbContext.Templates.FirstOrDefaultAsync(t => t.Id == request.TemplateId, cancellationToken: ct);
-        if (template is null)
+        var templates = await dbContext.Templates
+            .Where(t => t.Id == request.TemplateId || t.Id == request.BacksideTemplateId)
+            .ToListAsync(ct);
+        if (templates.Count != (request.BacksideTemplateId.HasValue ? 2 : 1))
         {
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("Template not found"));
         }

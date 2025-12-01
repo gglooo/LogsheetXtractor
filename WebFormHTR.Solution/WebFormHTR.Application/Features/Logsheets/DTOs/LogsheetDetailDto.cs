@@ -4,13 +4,13 @@ using WebFormHTR.Domain.Enums;
 
 namespace WebFormHTR.Application.Features.Logsheets.DTOs;
 
-public record LogsheetDetailDto
-(
+public record LogsheetDetailDto(
     Guid Id,
     TemplateListDto Template,
+    TemplateListDto BacksideTemplate,
     FileDto File,
     ELogSheetStatus Status,
     DateTime? ProcessedAt,
-    string? AlignmentData
+    AlignmentDataDto? AlignmentData
 // TODO: add extracted values list if needed
 );
