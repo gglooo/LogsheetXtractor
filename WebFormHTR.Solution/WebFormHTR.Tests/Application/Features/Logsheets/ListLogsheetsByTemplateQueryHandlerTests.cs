@@ -30,9 +30,9 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
         var templateId = Guid.NewGuid();
         var otherTemplateId = Guid.NewGuid();
 
-        var logsheet1 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, File = null! };
-        var logsheet2 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, File = null! };
-        var logsheet3 = new Logsheet { Id = Guid.NewGuid(), TemplateId = otherTemplateId, Template = null!, File = null! };
+        var logsheet1 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, FileId = Guid.NewGuid(), File = null! };
+        var logsheet2 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, FileId = Guid.NewGuid(), File = null! };
+        var logsheet3 = new Logsheet { Id = Guid.NewGuid(), TemplateId = otherTemplateId, Template = null!, FileId = Guid.NewGuid(), File = null! };
 
         _dbContext.Logsheets.AddRange(logsheet1, logsheet2, logsheet3);
         await _dbContext.SaveChangesAsync();
@@ -40,8 +40,8 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
         var query = new ListLogsheetsByTemplateQuery(templateId);
         var expectedDtos = new List<LogsheetListDto>
         {
-            new LogsheetListDto(logsheet1.Id, templateId, Guid.NewGuid(), ELogSheetStatus.Pending, DateTime.UtcNow),
-            new LogsheetListDto(logsheet2.Id, templateId, Guid.NewGuid(), ELogSheetStatus.Pending, DateTime.UtcNow)
+            new LogsheetListDto(logsheet1.Id, templateId, null, logsheet1.FileId, ELogSheetStatus.Pending, DateTime.UtcNow),
+            new LogsheetListDto(logsheet2.Id, templateId, null, logsheet2.FileId, ELogSheetStatus.Pending, DateTime.UtcNow)
         };
 
         _mapperMock.Setup(x => x.Map<IEnumerable<LogsheetListDto>>(It.IsAny<IEnumerable<Logsheet>>()))

@@ -49,11 +49,11 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         _dbContext.Files.Add(file);
         await _dbContext.SaveChangesAsync();
 
-        var command = new CreateLogsheetCommand(templateId, fileId);
+        var command = new CreateLogsheetCommand(templateId, null, fileId);
 
         var templateDto = new TemplateListDto(templateId.ToString(), "Test Template", null, null);
         var fileDto = new FileDto(fileId, "test.jpg", "image/jpeg", 100, DateTime.UtcNow);
-        var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, fileDto, ELogSheetStatus.Pending,
+        var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, null!, fileDto, ELogSheetStatus.Pending,
             DateTime.UtcNow, null);
 
         _mapperMock.Setup(x => x.Map<Logsheet>(command))
@@ -93,7 +93,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 
-        var command = new CreateLogsheetCommand(templateId, fileId);
+        var command = new CreateLogsheetCommand(templateId, null, fileId);
 
         var result =
             await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
@@ -113,7 +113,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         _dbContext.Files.Add(file);
         await _dbContext.SaveChangesAsync();
 
-        var command = new CreateLogsheetCommand(templateId, fileId);
+        var command = new CreateLogsheetCommand(templateId, null, fileId);
 
         var result =
             await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
