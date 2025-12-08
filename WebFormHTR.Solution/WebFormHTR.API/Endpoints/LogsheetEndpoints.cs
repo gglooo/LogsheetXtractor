@@ -10,6 +10,20 @@ namespace WebFormHTR.API.Endpoints;
 
 public static class LogsheetEndpoints
 {
+    [WolverineGet("/api/logsheets/{id}")]
+    [ProducesResponseType(200, Type = typeof(LogsheetDetailDto))]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> GetLogsheet(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var query = new GetLogsheetQuery(id);
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(query, ct);
+
+        return result.ToHttpResult();
+    }
+
     [WolverinePost("/api/logsheets")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]

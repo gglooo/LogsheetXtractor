@@ -3,6 +3,6 @@ using WebFormHTR.Application.Features.ROIs.DTOs;
 
 namespace WebFormHTR.Application.Features.Scripting.DTOs;
 
-public record SelectRoisInputDto(string FilePath, Guid TemplateId);
+public record SelectRoisInputDto(Domain.Entities.Template Template);
 
 public record SelectRoisOutputDto(IEnumerable<RoiDto> Rois, IEnumerable<ResidualDto> Residuals);

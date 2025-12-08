@@ -8,7 +8,7 @@ public class PythonSelectRoisOutputDto
 
     [JsonPropertyName("to_ignore")] public List<PythonResidualDto> ToIgnore { get; set; } = [];
 
-    [JsonPropertyName("height")] public int Height { get; set; }
+    [JsonPropertyName("height")] public float Height { get; set; }
 
-    [JsonPropertyName("width")] public int Width { get; set; }
+    [JsonPropertyName("width")] public float Width { get; set; }
 }

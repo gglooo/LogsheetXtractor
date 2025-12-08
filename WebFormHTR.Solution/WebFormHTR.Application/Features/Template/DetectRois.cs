@@ -17,6 +17,7 @@ public static class DetectRoisHandler
         IAppDbContext dbContext, IMapper mapper, CancellationToken ct)
     {
         var template = await dbContext.Templates
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == request.TemplateId, ct);
 
         if (template is null)
@@ -26,7 +27,7 @@ public static class DetectRoisHandler
 
         try
         {
-            var detectedRois = await roiService.DetectRoisAsync(template.FileId, template.Id, ct);
+            var detectedRois = await roiService.DetectRoisAsync(template, ct);
 
             await dbContext.SaveChangesAsync(ct);
 

@@ -115,20 +115,11 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
             .ContinueWith(t => t.Result.First(), cancellationToken);
     }
 
-    public async Task<DetectRoisResponseDto> DetectRoisAsync(Guid fileId,
-        Guid templateId,
+    public async Task<DetectRoisResponseDto> DetectRoisAsync(
+        Template template,
         CancellationToken cancellationToken)
     {
-        var file = await dbContext.Files
-            .AsNoTracking()
-            .FirstOrDefaultAsync(f => f.Id == fileId, cancellationToken);
-
-        if (file is null)
-        {
-            throw new Exception("Template not found");
-        }
-
-        var input = new SelectRoisInputDto(file.StoragePath, templateId);
+        var input = new SelectRoisInputDto(template);
 
         var result = await scriptEngine.SelectRoisAsync(input, cancellationToken);
 

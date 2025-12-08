@@ -8,6 +8,8 @@ namespace WebFormHTR.Application.Features.Template.DTOs;
 public record TemplateDetailDto(
     Guid Id,
     string Name,
+    float Width,
+    float Height,
     TemplateWithoutParentDto? Parent,
     FileDto? File,
     DateTime CreatedAt,

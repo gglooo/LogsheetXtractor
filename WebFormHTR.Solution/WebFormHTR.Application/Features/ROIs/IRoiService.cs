@@ -15,7 +15,7 @@ public interface IRoiService
     Task<IEnumerable<RoiDto>> UpsertRoisForTemplateAsync(Guid templateId, IEnumerable<UpsertRoiDto> updateRois,
         CancellationToken cancellationToken);
 
-    Task<DetectRoisResponseDto> DetectRoisAsync(Guid fileId, Guid templateId, CancellationToken cancellationToken);
+    Task<DetectRoisResponseDto> DetectRoisAsync(Domain.Entities.Template template, CancellationToken cancellationToken);
 
     Task<IEnumerable<RoiDto>> CloneRoisForTemplateAsync(Guid sourceTemplateId, Guid targetTemplateId,
         CancellationToken cancellationToken);

@@ -61,7 +61,7 @@ public class DetectRoisTests : IDisposable
 
         var responseDto = new DetectRoisResponseDto(detectedRois, []);
 
-        _roiServiceMock.Setup(x => x.DetectRoisAsync(file.Id, template.Id, It.IsAny<CancellationToken>()))
+        _roiServiceMock.Setup(x => x.DetectRoisAsync(It.Is<Domain.Entities.Template>(t => t.Id == template.Id), It.IsAny<CancellationToken>()))
             .ReturnsAsync(responseDto);
 
         var command = new DetectRoisCommand(template.Id);
@@ -71,7 +71,7 @@ public class DetectRoisTests : IDisposable
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(responseDto);
-        _roiServiceMock.Verify(x => x.DetectRoisAsync(file.Id, template.Id, It.IsAny<CancellationToken>()), Times.Once);
+        _roiServiceMock.Verify(x => x.DetectRoisAsync(It.Is<Domain.Entities.Template>(t => t.Id == template.Id), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class DetectRoisTests : IDisposable
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
         result.Errors.First().Message.Should().Be("Template not found");
         _roiServiceMock.Verify(
-            x => x.DetectRoisAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+            x => x.DetectRoisAsync(It.IsAny<Domain.Entities.Template>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class DetectRoisTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var errorMessage = "Service failure";
-        _roiServiceMock.Setup(x => x.DetectRoisAsync(file.Id, template.Id, It.IsAny<CancellationToken>()))
+        _roiServiceMock.Setup(x => x.DetectRoisAsync(It.Is<Domain.Entities.Template>(t => t.Id == template.Id), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception(errorMessage));
 
         var command = new DetectRoisCommand(template.Id);

@@ -34,7 +34,7 @@ public class GetTemplateQueryHandlerTests
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 
-        var expectedDto = new TemplateDetailDto(templateId, "Existing Template", null, null, DateTime.UtcNow,
+        var expectedDto = new TemplateDetailDto(templateId, "Existing Template", 0f, 0f, null, null, DateTime.UtcNow,
             DateTime.UtcNow, [], []);
         _mapperMock.Setup(x =>
                 x.Map<TemplateDetailDto>(It.Is<WebFormHTR.Domain.Entities.Template>(t => t.Id == templateId)))

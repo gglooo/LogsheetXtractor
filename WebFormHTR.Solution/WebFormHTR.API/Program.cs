@@ -27,6 +27,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapWolverineEndpoints();
+app.MapWolverineEndpoints(x => x.WarmUpRoutes = RouteWarmup.Eager);
 
 app.Run();

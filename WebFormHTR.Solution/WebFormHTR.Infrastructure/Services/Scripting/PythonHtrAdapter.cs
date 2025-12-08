@@ -1,17 +1,13 @@
 using System.Text.Json;
 using MapsterMapper;
-using Microsoft.Extensions.Configuration;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
-using WebFormHTR.Application.Features.Residuals.DTOs;
-using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
-using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
-using WebFormHTR.Domain.ValueObjects;
 using WebFormHTR.Infrastructure.Services.Credentials;
 using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 using WebFormHTR.Infrastructure.Services.Storage;
+using File = WebFormHTR.Domain.Entities.File;
 
 namespace WebFormHTR.Infrastructure.Services.Scripting;
 
@@ -19,8 +15,7 @@ public class PythonHtrAdapter(
     IScriptExecutor scriptExecutor,
     ICredentialService credentialService,
     IFileStorageService fileStorageService,
-    IMapper mapper,
-    IConfiguration config) : IHtrScriptEngine
+    IMapper mapper) : IHtrScriptEngine
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
 
@@ -43,14 +38,14 @@ public class PythonHtrAdapter(
 
         var uniqueStoragePath = $"{Guid.NewGuid()}_{_selectRoisOutputPath}";
 
-        var inputFilePath = fileStorageService.GetResolvedPath(input.FilePath);
+        var inputFilePath = fileStorageService.GetResolvedPath(input.Template.File.StoragePath);
         var outputFilePath = fileStorageService.GetResolvedPath(uniqueStoragePath);
 
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois,
             $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials} --headless",
             ct);
 
-        var rois = ParseRoisFromFile(outputFilePath, input.TemplateId);
+        var rois = ParseRoisFromFile(outputFilePath, input.Template.Id);
 
         fileStorageService.DeleteFile(uniqueStoragePath);
 
@@ -86,6 +81,17 @@ public class PythonHtrAdapter(
     public Task<ProcessLogsheetOutputDto> ProcessLogsheetAsync(ProcessLogsheetInputDto input, CancellationToken ct)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<PdfDimensionsDto> GetPdfDimensionsAsync(File file, CancellationToken ct)
+    {
+        var filePath = fileStorageService.GetResolvedPath(file.StoragePath);
+
+        var dimensions = await scriptExecutor.ExecuteScriptWithJsonOutputAsync<PdfDimensionsDto>(
+            PythonScriptTypes.PdfDimensions,
+            $"--pdf_file {filePath}", ct);
+
+        return dimensions;
     }
 
     private SelectRoisOutputDto ParseRoisFromFile(string filePath, Guid templateId)

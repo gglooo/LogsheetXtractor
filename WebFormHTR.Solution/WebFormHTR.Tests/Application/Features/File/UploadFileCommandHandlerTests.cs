@@ -24,7 +24,7 @@ public class UploadFileCommandHandlerTests
     public async Task Handle_ShouldUploadFileAndSaveChanges_WhenSuccessful()
     {
         var command = new UploadFileCommand([1, 2, 3], "test.txt", "text/plain");
-        var expectedFileDto = new FileDto(Guid.NewGuid(), "test.txt", "text/plain", 3, DateTime.UtcNow);
+        var expectedFileDto = new FileDto(Guid.NewGuid(), "test.txt", "text/plain", 3u, DateTime.UtcNow);
 
         _fileServiceMock.Setup(x => x.UploadFileAsync(command.FileContent, command.FileName, command.ContentType))
             .ReturnsAsync(expectedFileDto);

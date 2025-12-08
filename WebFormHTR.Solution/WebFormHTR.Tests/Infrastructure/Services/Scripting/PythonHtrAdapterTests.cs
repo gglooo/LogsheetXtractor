@@ -35,14 +35,18 @@ public class PythonHtrAdapterTests
             _scriptExecutorMock.Object,
             _credentialServiceMock.Object,
             _fileStorageServiceMock.Object,
-            _mapper,
-            _configMock.Object);
+            _mapper);
     }
 
     [Fact]
     public async Task SelectRoisAsync_ShouldExecuteScriptAndReturnRois()
     {
-        var input = new SelectRoisInputDto("input.pdf", Guid.NewGuid());
+        var template = new Domain.Entities.Template
+        {
+            Id = Guid.NewGuid(),
+            File = new Domain.Entities.File { StoragePath = "input.pdf" }
+        };
+        var input = new SelectRoisInputDto(template);
         var ct = CancellationToken.None;
         var credentialsPath = "/path/to/creds.json";
         var resolvedInputPath = "/resolved/input.pdf";
@@ -54,7 +58,7 @@ public class PythonHtrAdapterTests
                 (ECredentialType.Google, credentialsPath)
             });
 
-        _fileStorageServiceMock.Setup(x => x.GetResolvedPath(input.FilePath))
+        _fileStorageServiceMock.Setup(x => x.GetResolvedPath(template.File.StoragePath))
             .Returns(resolvedInputPath);
         _fileStorageServiceMock.Setup(x => x.GetResolvedPath(It.Is<string>(s => s.EndsWith("selected_rois.json"))))
             .Returns(resolvedOutputPath);
@@ -120,7 +124,8 @@ public class PythonHtrAdapterTests
     [Fact]
     public async Task SelectRoisAsync_ShouldThrow_WhenCredentialsMissing()
     {
-        var input = new SelectRoisInputDto("input.pdf", Guid.NewGuid());
+        var template = new Domain.Entities.Template { File = new Domain.Entities.File { StoragePath = "input.pdf" } };
+        var input = new SelectRoisInputDto(template);
 
         _credentialServiceMock.Setup(x => x.GetAvailableCredentialsPath())
             .Returns([]);

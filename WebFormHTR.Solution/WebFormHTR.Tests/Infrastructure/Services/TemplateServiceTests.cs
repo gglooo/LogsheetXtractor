@@ -5,6 +5,7 @@ using Moq;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.Scripting;
+using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.ValueObjects;
@@ -18,6 +19,7 @@ public class TemplateServiceTests
 {
     private readonly AppDbContext _dbContext;
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<IHtrScriptEngine> _scriptEngineMock;
     private readonly TemplateService _templateService;
 
     public TemplateServiceTests()
@@ -26,7 +28,8 @@ public class TemplateServiceTests
         _mapperMock = new Mock<IMapper>();
         var residualServiceMock = new ResidualService(_dbContext, _mapperMock.Object);
         var roiServiceMock = new RoiService(_dbContext, _mapperMock.Object, new Mock<IHtrScriptEngine>().Object);
-        _templateService = new TemplateService(_dbContext, _mapperMock.Object, residualServiceMock, roiServiceMock);
+        _scriptEngineMock = new Mock<IHtrScriptEngine>();
+        _templateService = new TemplateService(_dbContext, _mapperMock.Object, residualServiceMock, roiServiceMock, _scriptEngineMock.Object);
     }
 
     [Fact]
@@ -59,6 +62,8 @@ public class TemplateServiceTests
         var expectedDto = new TemplateDetailDto(
             Guid.NewGuid(),
             newTemplateName,
+            0f,
+            0f,
             null,
             null,
             DateTime.UtcNow,
@@ -67,6 +72,8 @@ public class TemplateServiceTests
             []
         );
         _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<Template>())).Returns(expectedDto);
+        _scriptEngineMock.Setup(x => x.GetPdfDimensionsAsync(It.IsAny<Domain.Entities.File>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PdfDimensionsDto { Width = 100, Height = 200 });
 
         var result = await _templateService.CloneTemplateAsync(
             parentId,
@@ -129,6 +136,8 @@ public class TemplateServiceTests
             .Returns(new TemplateDetailDto(
                 Guid.NewGuid(),
                 newTemplateName,
+                0f,
+                0f,
                 null,
                 null,
                 DateTime.UtcNow,
@@ -144,6 +153,9 @@ public class TemplateServiceTests
                 Content = r.Content,
                 Coordinates = r.Coordinates
             });
+
+        _scriptEngineMock.Setup(x => x.GetPdfDimensionsAsync(It.IsAny<Domain.Entities.File>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PdfDimensionsDto { Width = 100, Height = 200 });
 
         _mapperMock.Setup(x => x.Map<Roi>(It.IsAny<Roi>()))
             .Returns((Roi r) => new Roi

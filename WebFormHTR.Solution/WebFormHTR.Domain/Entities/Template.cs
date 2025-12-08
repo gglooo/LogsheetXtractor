@@ -6,6 +6,9 @@ public class Template : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
 
+    public float? Width { get; set; }
+    public float? Height { get; set; }
+
     public Guid? ParentId { get; set; }
     public virtual Template? Parent { get; set; }
     public Guid FileId { get; set; }

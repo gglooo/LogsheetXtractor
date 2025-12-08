@@ -67,4 +67,12 @@ public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
 
         return result;
     }
+
+    public async Task<T> ExecuteScriptWithJsonOutputAsync<T>(string scriptName, string args,
+        CancellationToken cancellationToken)
+    {
+        var stdout = await ExecuteScriptAsync(scriptName, args, cancellationToken);
+        return System.Text.Json.JsonSerializer.Deserialize<T>(stdout)
+               ?? throw new InvalidOperationException("Failed to deserialize JSON output from Python script.");
+    }
 }

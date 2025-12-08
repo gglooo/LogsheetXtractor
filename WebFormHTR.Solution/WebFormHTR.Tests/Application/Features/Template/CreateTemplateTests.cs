@@ -6,6 +6,7 @@ using Moq;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Template;
 using WebFormHTR.Application.Features.Template.DTOs;
+using WebFormHTR.Application.Features.Template.Interfaces;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
@@ -18,6 +19,8 @@ public class CreateTemplateTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IMapper> _mapperMock = new();
+    private readonly Mock<ITemplateService> _templateServiceMock = new();
+
 
     [Fact]
     public async Task Handle_ShouldReturnError_WhenParentIdNotFound()
@@ -29,7 +32,7 @@ public class CreateTemplateTests : IDisposable
         };
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -46,7 +49,7 @@ public class CreateTemplateTests : IDisposable
         };
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -71,20 +74,17 @@ public class CreateTemplateTests : IDisposable
         };
 
         var expectedDto =
-            new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, [], []);
-        _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
-            .Returns(expectedDto);
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0f, 0f, null, null, DateTime.Now, DateTime.Now, [], []);
+        _templateServiceMock.Setup(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedDto);
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(expectedDto);
 
-        var templateInDb = await _dbContext.Templates.FirstOrDefaultAsync();
-        templateInDb.Should().NotBeNull();
-        templateInDb!.Name.Should().Be(command.Name);
-        templateInDb.FileId.Should().Be(file.Id);
+        _templateServiceMock.Verify(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -107,19 +107,16 @@ public class CreateTemplateTests : IDisposable
         };
 
         var expectedDto =
-            new TemplateDetailDto(Guid.NewGuid(), command.Name, null, null, DateTime.Now, DateTime.Now, [], []);
-        _mapperMock.Setup(m => m.Map<TemplateDetailDto>(It.IsAny<Domain.Entities.Template>()))
-            .Returns(expectedDto);
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0f, 0f, null, null, DateTime.Now, DateTime.Now, [], []);
+        _templateServiceMock.Setup(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedDto);
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
 
-        var templateInDb = await _dbContext.Templates.FirstOrDefaultAsync(t => t.Name == command.Name);
-        templateInDb.Should().NotBeNull();
-        templateInDb!.ParentId.Should().Be(parent.Id);
-        templateInDb.FileId.Should().Be(file.Id);
+        _templateServiceMock.Verify(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     public void Dispose()

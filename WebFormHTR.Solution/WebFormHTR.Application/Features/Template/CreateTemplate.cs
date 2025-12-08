@@ -3,6 +3,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Template.DTOs;
+using WebFormHTR.Application.Features.Template.Interfaces;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.Template;
@@ -17,7 +18,7 @@ public sealed record CreateTemplateCommand
 public static class CreateTemplateHandler
 {
     public static async Task<Result<TemplateDetailDto>> Handle(CreateTemplateCommand request, IAppDbContext dbContext,
-        IMapper mapper, CancellationToken ct)
+        IMapper mapper, ITemplateService templateService, CancellationToken ct)
     {
         if (request.ParentId is not null &&
             !await dbContext.Templates
@@ -32,22 +33,13 @@ public static class CreateTemplateHandler
             return Result.Fail<TemplateDetailDto>(new NotFoundError("File not found"));
         }
 
-        var template = new Domain.Entities.Template
+        try
         {
-            Name = request.Name,
-            ParentId = request.ParentId,
-            FileId = request.FileId
-        };
-
-        dbContext.Templates.Add(template);
-        await dbContext.SaveChangesAsync(ct);
-
-        var createdTemplate = await dbContext.Templates
-            .AsNoTracking()
-            .Include(t => t.File)
-            .Include(t => t.Parent)
-            .FirstOrDefaultAsync(t => t.Id == template.Id, ct);
-
-        return Result.Ok(mapper.Map<TemplateDetailDto>(createdTemplate!));
+            return await templateService.CreateTemplateAsync(request, ct);
+        }
+        catch (Exception e)
+        {
+            return Result.Fail<TemplateDetailDto>(e.Message);
+        }
     }
 }
