@@ -20,6 +20,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasQueryFilter(e => e.DeletedAt == null)
             .OwnsOne(r => r.Coordinates);
 
+        modelBuilder.Entity<Roi>(entity =>
+        {
+            entity.HasQueryFilter(e => e.DeletedAt == null);
+            entity.OwnsOne(r => r.Coordinates);
+            entity.HasOne<Template>(r => r.Template)
+                .WithMany(t => t.Rois)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(r => new { r.TemplateId, r.VariableName })
+                .IsUnique()
+                .HasFilter("[DeletedAt] IS NULL");
+        });
+
         modelBuilder.Entity<Residual>()
             .HasQueryFilter(e => e.DeletedAt == null)
             .OwnsOne(r => r.Coordinates);
@@ -37,11 +50,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Residual>()
             .HasOne<Template>(r => r.Template)
             .WithMany(t => t.Residuals)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Roi>()
-            .HasOne<Template>(r => r.Template)
-            .WithMany(t => t.Rois)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Logsheet>()

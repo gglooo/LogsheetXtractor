@@ -39,7 +39,7 @@ public static class PythonMapper
 
             var roiDto = new RoiDto(
                 null,
-                roi.VarName ?? "Unnamed",
+                roi.VarName ?? $"Unnamed-{Guid.NewGuid()}",
                 templateId,
                 parsedRoiType,
                 coordinates

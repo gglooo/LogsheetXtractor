@@ -94,7 +94,7 @@ public class PythonHtrAdapter(
         var outputFilePath =
             fileStorageService
                 .GetResolvedPath(
-                    "result.xlsx"); //fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_processed_logsheet.json");
+                    "result.csv"); //fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_processed_logsheet.csv");
 
         var templateConfig = mapper.Map<PythonTemplateConfig>(logsheet.Template);
         var configJson = JsonSerializer.Serialize(templateConfig);
@@ -105,12 +105,12 @@ public class PythonHtrAdapter(
         // TODO: support backside template
         // TODO: align the image before processing
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet,
-            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} --google {UsedCredentials} --aligned",
+            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} --google {UsedCredentials} --aligned --store_csv",
             ct);
 
-        var excelSheet = outputFilePath;
+        var parsedData = ParseProcessedLogsheetFromCsv(outputFilePath);
 
-        return new ProcessLogsheetOutputDto(new Dictionary<string, string>());
+        return new ProcessLogsheetOutputDto(parsedData);
     }
 
     public async Task<PdfDimensionsDto> GetPdfDimensionsAsync(File file, CancellationToken ct)
@@ -131,5 +131,23 @@ public class PythonHtrAdapter(
         var rois = JsonSerializer.Deserialize<PythonSelectRoisOutputDto>(jsonContent, options);
 
         return rois?.ToSelectRoisOutputDtoList(templateId) ?? new SelectRoisOutputDto([], []);
+    }
+
+    private Dictionary<string, string> ParseProcessedLogsheetFromCsv(string filePath)
+    {
+        var csvContent = fileStorageService.ReadAllText(filePath);
+        var result = new Dictionary<string, string>();
+
+        var lines = csvContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        foreach (var line in lines)
+        {
+            var parts = line.Split(',', 2);
+            if (parts.Length == 2)
+            {
+                result[parts[0]] = parts[1];
+            }
+        }
+
+        return result;
     }
 }

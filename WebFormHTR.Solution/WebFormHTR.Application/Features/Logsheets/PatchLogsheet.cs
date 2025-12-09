@@ -26,7 +26,7 @@ public static class PatchLogsheetHandler
             .FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
         if (logsheet is null)
         {
-            return Result.Fail(new NotFoundError("Template not found"));
+            return Result.Fail(new NotFoundError("Logsheet not found"));
         }
 
         request.PatchLogsheet.Adapt(logsheet);
