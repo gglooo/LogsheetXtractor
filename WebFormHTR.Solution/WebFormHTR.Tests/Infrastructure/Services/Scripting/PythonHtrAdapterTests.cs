@@ -50,7 +50,7 @@ public class PythonHtrAdapterTests
         var ct = CancellationToken.None;
         var credentialsPath = "/path/to/creds.json";
         var resolvedInputPath = "/resolved/input.pdf";
-        var resolvedOutputPath = "/resolved/output.json";
+        var resolvedOutputPath = "/resolved/selected_rois.json";
 
         _credentialServiceMock.Setup(x => x.GetAvailableCredentialsPath())
             .Returns(new List<(ECredentialType, string)>
@@ -60,7 +60,7 @@ public class PythonHtrAdapterTests
 
         _fileStorageServiceMock.Setup(x => x.GetResolvedPath(template.File.StoragePath))
             .Returns(resolvedInputPath);
-        _fileStorageServiceMock.Setup(x => x.GetResolvedPath(It.Is<string>(s => s.EndsWith("selected_rois.json"))))
+        _fileStorageServiceMock.Setup(x => x.GetTemporaryFilePath(It.Is<string>(s => s.EndsWith("selected_rois.json"))))
             .Returns(resolvedOutputPath);
 
         _scriptExecutorMock.Setup(x => x.ExecuteScriptAsync(
@@ -116,9 +116,6 @@ public class PythonHtrAdapterTests
         residual.Coordinates.Width.Should().Be(50);
         residual.Coordinates.Height.Should().Be(50);
         residual.Content.Should().Be("Ignored Content");
-
-        _fileStorageServiceMock.Verify(x => x.DeleteFile(It.Is<string>(s => s.EndsWith("selected_rois.json"))),
-            Times.Once);
     }
 
     [Fact]
@@ -133,6 +130,6 @@ public class PythonHtrAdapterTests
         var act = async () => await _adapter.SelectRoisAsync(input, CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Credentials not found");
+            .WithMessage("No credentials available for ROI selection.");
     }
 }

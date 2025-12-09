@@ -4,5 +4,6 @@ public enum ERoiType
 {
     Handwritten,
     Number,
-    Checkbox
+    Checkbox,
+    Barcode
 }

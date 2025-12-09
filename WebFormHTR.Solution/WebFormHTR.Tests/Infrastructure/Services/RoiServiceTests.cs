@@ -44,7 +44,7 @@ public class RoiServiceTests : IDisposable
             .Returns((SetRoiDto dto) => new Roi
             {
                 VariableName = dto.VariableName,
-                Type = dto.Type,
+                Type = dto.Type ?? ERoiType.Handwritten,
                 Coordinates = dto.Coordinates,
                 Template = null!
             });
@@ -91,7 +91,7 @@ public class RoiServiceTests : IDisposable
             .Callback<SetRoiDto, Roi>((dto, entity) =>
             {
                 entity.VariableName = dto.VariableName;
-                entity.Type = dto.Type;
+                entity.Type = dto.Type ?? ERoiType.Handwritten;
                 entity.Coordinates = dto.Coordinates;
             });
 
@@ -190,7 +190,7 @@ public class RoiServiceTests : IDisposable
             .Returns((SetRoiDto dto) => new Roi
             {
                 VariableName = dto.VariableName,
-                Type = dto.Type,
+                Type = dto.Type ?? ERoiType.Handwritten,
                 Coordinates = dto.Coordinates,
                 Template = null!
             });
@@ -231,7 +231,7 @@ public class RoiServiceTests : IDisposable
             .Returns((SetRoiDto dto) => new Roi
             {
                 VariableName = dto.VariableName,
-                Type = dto.Type,
+                Type = dto.Type ?? ERoiType.Handwritten,
                 Coordinates = dto.Coordinates,
                 Template = null!
             });
@@ -246,7 +246,7 @@ public class RoiServiceTests : IDisposable
             .Callback<SetRoiDto, Roi>((dto, entity) =>
             {
                 entity.VariableName = dto.VariableName;
-                entity.Type = dto.Type;
+                entity.Type = dto.Type ?? ERoiType.Handwritten;
                 entity.Coordinates = dto.Coordinates;
             });
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
