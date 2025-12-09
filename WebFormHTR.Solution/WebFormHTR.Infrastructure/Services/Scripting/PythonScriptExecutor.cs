@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using WebFormHTR.Application.Interfaces;
 
-namespace WebFormHTR.Infrastructure.Services;
+namespace WebFormHTR.Infrastructure.Services.Scripting;
 
 public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
 {

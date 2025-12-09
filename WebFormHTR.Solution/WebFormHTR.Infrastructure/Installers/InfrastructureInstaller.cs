@@ -1,6 +1,9 @@
+using System.Reflection;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WebFormHTR.Application;
 using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
@@ -21,6 +24,8 @@ public static class InfrastructureInstaller
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
         var connectionString = config.GetConnectionString("DefaultConnection");
+
+        TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
 
         services.AddSingleton<SoftDeleteInterceptor>();
         services.AddDbContext<AppDbContext>((sp, options) => options

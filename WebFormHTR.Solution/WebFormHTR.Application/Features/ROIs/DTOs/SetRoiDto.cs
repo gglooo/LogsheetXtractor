@@ -3,10 +3,9 @@ using WebFormHTR.Domain.ValueObjects;
 
 namespace WebFormHTR.Application.Features.ROIs.DTOs;
 
-public record SetRoiDto
-(
+public record SetRoiDto(
     Guid? Id,
     string VariableName,
-    ERoiType Type,
+    ERoiType? Type,
     Coordinates Coordinates
 );

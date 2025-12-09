@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using MapsterMapper;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
@@ -19,35 +20,35 @@ public class PythonHtrAdapter(
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
 
+    private string? UsedCredentials
+    {
+        get
+        {
+            // TODO: get credentials other than Google as well
+            var availableCredentials = credentialService.GetAvailableCredentialsPath();
+            var googleCredentials = availableCredentials
+                .FirstOrDefault(c => c.Item1 == ECredentialType.Google);
+            return googleCredentials != default ? googleCredentials.Item2 : null;
+        }
+    }
+
     public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
-        var availableCredentials = credentialService.GetAvailableCredentialsPath().ToList();
-
-        if (!availableCredentials.Any())
+        if (UsedCredentials is null)
         {
-            throw new InvalidOperationException("Credentials not found");
+            throw new InvalidOperationException("No credentials available for ROI selection.");
         }
-
-        // Prefer Google credentials if available
-        var googleCredentials = availableCredentials
-            .FirstOrDefault(c => c.Item1 == ECredentialType.Google);
-
-        var usedCredentials = !googleCredentials.Equals(default)
-            ? googleCredentials.Item2
-            : availableCredentials.First().Item2;
 
         var uniqueStoragePath = $"{Guid.NewGuid()}_{_selectRoisOutputPath}";
 
         var inputFilePath = fileStorageService.GetResolvedPath(input.Template.File.StoragePath);
-        var outputFilePath = fileStorageService.GetResolvedPath(uniqueStoragePath);
+        var outputFilePath = fileStorageService.GetTemporaryFilePath(uniqueStoragePath);
 
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois,
-            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials} --headless",
+            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {UsedCredentials} --headless",
             ct);
 
         var rois = ParseRoisFromFile(outputFilePath, input.Template.Id);
-
-        fileStorageService.DeleteFile(uniqueStoragePath);
 
         return rois;
     }
@@ -78,9 +79,38 @@ public class PythonHtrAdapter(
         return mapper.Map<LogsheetDetailDto>(input.Logsheet);
     }
 
-    public Task<ProcessLogsheetOutputDto> ProcessLogsheetAsync(ProcessLogsheetInputDto input, CancellationToken ct)
+    public async Task<ProcessLogsheetOutputDto> ProcessLogsheetAsync(ProcessLogsheetInputDto input,
+        CancellationToken ct)
     {
-        throw new NotImplementedException();
+        if (UsedCredentials is null)
+        {
+            throw new InvalidOperationException("No §credentials available for ROI selection.");
+        }
+
+        var logsheet = input.Logsheet;
+        var logsheetPath = fileStorageService.GetResolvedPath(logsheet.File.StoragePath);
+        var templatePath = fileStorageService.GetResolvedPath(logsheet.Template.File.StoragePath);
+
+        var outputFilePath =
+            fileStorageService
+                .GetResolvedPath(
+                    "result.xlsx"); //fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_processed_logsheet.json");
+
+        var templateConfig = mapper.Map<PythonTemplateConfig>(logsheet.Template);
+        var configJson = JsonSerializer.Serialize(templateConfig);
+        var configBytes = Encoding.UTF8.GetBytes(configJson);
+        var configPath = await fileStorageService.SaveTemporaryFileAsync(configBytes, Guid.NewGuid() + ".json", ct);
+
+        // TODO: support other credentials
+        // TODO: support backside template
+        // TODO: align the image before processing
+        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet,
+            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} --google {UsedCredentials} --aligned",
+            ct);
+
+        var excelSheet = outputFilePath;
+
+        return new ProcessLogsheetOutputDto(new Dictionary<string, string>());
     }
 
     public async Task<PdfDimensionsDto> GetPdfDimensionsAsync(File file, CancellationToken ct)

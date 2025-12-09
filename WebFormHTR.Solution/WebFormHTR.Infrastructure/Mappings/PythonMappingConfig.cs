@@ -15,8 +15,8 @@ public class PythonMappingConfig : IRegister
             {
                 src.Coordinates.X,
                 src.Coordinates.Y,
-                src.Coordinates.Width,
-                src.Coordinates.Height
+                src.Coordinates.Width + src.Coordinates.X,
+                src.Coordinates.Height + src.Coordinates.Y
             });
         config.NewConfig<Roi, PythonRoiDto>()
             .Map(dest => dest.VarName, src => src.VariableName)
@@ -25,8 +25,8 @@ public class PythonMappingConfig : IRegister
             {
                 src.Coordinates.X,
                 src.Coordinates.Y,
-                src.Coordinates.Width,
-                src.Coordinates.Height
+                src.Coordinates.Width + src.Coordinates.X,
+                src.Coordinates.Height + src.Coordinates.Y
             });
 
 

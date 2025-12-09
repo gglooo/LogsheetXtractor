@@ -8,4 +8,6 @@ public interface IFileStorageService
     string GetResolvedPath(string filePath);
     bool DeleteFile(string filePath);
     string ReadAllText(string filePath);
+    string GetTemporaryFilePath(string fileName);
+    Task<string> SaveTemporaryFileAsync(byte[] fileData, string fileName, CancellationToken ct);
 }

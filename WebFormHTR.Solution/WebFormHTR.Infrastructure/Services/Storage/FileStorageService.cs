@@ -82,4 +82,17 @@ public class FileStorageService(IConfiguration config) : IFileStorageService
 
         return File.ReadAllText(fullPath);
     }
+
+    public string GetTemporaryFilePath(string fileName)
+    {
+        return Path.Combine(Path.GetTempPath(), fileName);
+    }
+
+    public async Task<string> SaveTemporaryFileAsync(byte[] fileData, string fileName, CancellationToken ct)
+    {
+        var tempFilePath = GetTemporaryFilePath(fileName);
+        await File.WriteAllBytesAsync(tempFilePath, fileData, ct);
+
+        return tempFilePath;
+    }
 }
