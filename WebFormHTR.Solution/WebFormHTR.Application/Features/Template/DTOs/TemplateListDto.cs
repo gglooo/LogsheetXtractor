@@ -1,9 +1,10 @@
 namespace WebFormHTR.Application.Features.Template.DTOs;
 
-public record TemplateListDto
-(
+public record TemplateListDto(
     string Id,
     string Name,
     Guid? ParentId,
-    Guid? FileId
+    Guid? FileId,
+    int RoiCount,
+    DateTime CreatedAt
 );

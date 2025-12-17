@@ -42,7 +42,9 @@ public static class PythonMapper
                 roi.VarName ?? $"Unnamed-{Guid.NewGuid()}",
                 templateId,
                 parsedRoiType,
-                coordinates
+                coordinates,
+                DateTime.UtcNow,
+                null
             );
 
             rois.Add(roiDto);
@@ -60,7 +62,9 @@ public static class PythonMapper
                 null,
                 templateId,
                 residual.Content ?? string.Empty,
-                coordinates
+                coordinates,
+                DateTime.UtcNow,
+                null
             );
 
             residuals.Add(residualDto);

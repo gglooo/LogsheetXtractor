@@ -8,5 +8,7 @@ public record RoiDto(
     string VariableName,
     Guid TemplateId,
     ERoiType? Type,
-    Coordinates Coordinates
+    Coordinates Coordinates,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt
 );

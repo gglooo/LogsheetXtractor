@@ -16,5 +16,5 @@ public record TemplateDetailDto(
     DateTime? UpdatedAt,
     IEnumerable<RoiDto> Rois,
     IEnumerable<ResidualDto> Residuals
-    // TODO: add logsheets, etc
+// TODO: add logsheets, etc
 );

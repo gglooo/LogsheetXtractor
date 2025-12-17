@@ -6,5 +6,7 @@ public record ResidualDto(
     Guid? Id,
     Guid TemplateId,
     string Content,
-    Coordinates Coordinates
+    Coordinates Coordinates,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt
 );

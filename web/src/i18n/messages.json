@@ -1,0 +1,21 @@
+{
+  "common.cancel": "Cancel",
+  "navbar.login": "Log in",
+  "navbar.logo": "LOGO",
+  "navbar.menu": "Menu",
+  "navbar.newTemplate": "New template",
+  "navbar.toggleMenu": "Toggle menu",
+  "templates.actions.clone": "Clone Template",
+  "templates.actions.clone.description": "Upload a new PDF to create a cloned template. All ROIs from the original template will be copied to the new one.",
+  "templates.actions.clone.title": "Clone a template",
+  "templates.actions.create": "Create Template",
+  "templates.actions.delete": "Delete",
+  "templates.actions.edit": "Edit template",
+  "templates.actions.editRois": "Edit ROIs",
+  "templates.actions.processLogsheet": "Process logsheet",
+  "templates.form.nameLabel": "Template name",
+  "templates.form.namePlaceholder": "Enter template name",
+  "templates.form.pdfLabel": "Template PDF",
+  "templates.upload.dragDrop": "or drag and drop",
+  "templates.upload.prompt": "Click to upload PDF"
+}
