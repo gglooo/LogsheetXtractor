@@ -19,7 +19,8 @@ public class PythonMappingConfig : IRegister
                 src.Coordinates.Height + src.Coordinates.Y
             });
         config.NewConfig<Roi, PythonRoiDto>()
-            .Map(dest => dest.VarName, src => src.VariableName)
+            // We map ID to VarName to then map it back to the ROI more easily
+            .Map(dest => dest.VarName, src => src.Id)
             .Map(dest => dest.Type, src => src.Type.ToString())
             .Map(dest => dest.Coords, src => new List<float>
             {

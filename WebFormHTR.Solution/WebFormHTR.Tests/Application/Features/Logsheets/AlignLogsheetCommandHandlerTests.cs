@@ -6,6 +6,7 @@ using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
+using WebFormHTR.Application.Features.ExtractedValues.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Tests.Common;
@@ -44,7 +45,8 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
             new WebFormHTR.Application.Features.File.DTOs.FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt), 
             logsheet.Status, 
             null, 
-            null);
+            null,
+            new List<ExtractedValueDto>());
 
         _scriptEngineMock.Setup(x => x.AutomaticAlignAsync(It.IsAny<AutomaticAlignmentInputDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);

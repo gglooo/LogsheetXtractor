@@ -1,6 +1,7 @@
 using System.Net;
 using Mapster;
 using WebFormHTR.Application.DTOs;
+using WebFormHTR.Application.Features.ExtractedValues.DTOs;
 using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
@@ -48,7 +49,8 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
             .Map(dest => dest.AlignmentData, src => src.AlignmentDataModelConfig)
-            .Map(dest => dest.BacksideTemplate, src => src.BacksideTemplate);
+            .Map(dest => dest.BacksideTemplate, src => src.BacksideTemplate)
+            .Map(dest => dest.ExtractedValues, src => src.ExtractedValues);
 
         config.NewConfig<AlignmentContainer, AlignmentDataDto>();
 
@@ -129,5 +131,16 @@ public class MappingConfig : IRegister
 
         config.NewConfig<Roi, Roi>()
             .Ignore(dest => dest.Template);
+
+        config.NewConfig<Dictionary<string, string>, IEnumerable<ExtractedValue>>()
+            .MapWith(src => src.Select(kv => new ExtractedValue
+            {
+                RoiId = Guid.Parse(kv.Key),
+                Value = kv.Value,
+                LogsheetId = (Guid)MapContext.Current!.Parameters["LogsheetId"]
+            }).ToList());
+
+        config.NewConfig<ExtractedValue, ExtractedValueDto>()
+            .Map(dest => dest.VariableName, src => src.Roi.VariableName);
     }
 }

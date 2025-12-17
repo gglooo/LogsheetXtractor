@@ -92,7 +92,7 @@ public static class LogsheetEndpoints
         CancellationToken ct)
     {
         var command = new ProcessLogsheetDataCommand(id);
-        var result = await bus.InvokeAsync<Result>(command, ct);
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
 
         return result.ToHttpResult();
     }

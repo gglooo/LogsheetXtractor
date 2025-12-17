@@ -91,10 +91,7 @@ public class PythonHtrAdapter(
         var logsheetPath = fileStorageService.GetResolvedPath(logsheet.File.StoragePath);
         var templatePath = fileStorageService.GetResolvedPath(logsheet.Template.File.StoragePath);
 
-        var outputFilePath =
-            fileStorageService
-                .GetResolvedPath(
-                    "result.csv"); //fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_processed_logsheet.csv");
+        var outputFilePath = fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_processed_logsheet.csv");
 
         var templateConfig = mapper.Map<PythonTemplateConfig>(logsheet.Template);
         var configJson = JsonSerializer.Serialize(templateConfig);
@@ -138,7 +135,7 @@ public class PythonHtrAdapter(
         var csvContent = fileStorageService.ReadAllText(filePath);
         var result = new Dictionary<string, string>();
 
-        var lines = csvContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        var lines = csvContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1);
         foreach (var line in lines)
         {
             var parts = line.Split(',', 2);

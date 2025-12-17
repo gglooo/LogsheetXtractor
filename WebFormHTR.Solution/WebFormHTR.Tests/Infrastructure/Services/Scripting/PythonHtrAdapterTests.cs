@@ -3,14 +3,12 @@ using FluentAssertions;
 using MapsterMapper;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Infrastructure.Services.Credentials;
 using WebFormHTR.Infrastructure.Services.Scripting;
 using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 using WebFormHTR.Infrastructure.Services.Storage;
-using Xunit;
 
 namespace WebFormHTR.Tests.Infrastructure.Services.Scripting;
 

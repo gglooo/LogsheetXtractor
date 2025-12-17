@@ -1,9 +1,12 @@
 using FluentAssertions;
 using FluentResults;
+using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using WebFormHTR.Application.Common.Mappings;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.ExtractedValues.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Domain.Entities;
@@ -23,12 +26,13 @@ public class GetLogsheetQueryHandlerTests : IDisposable
     [Fact]
     public async Task Handle_ShouldReturnLogsheet_WhenLogsheetExists()
     {
-        var template = new Domain.Entities.Template { Id = Guid.NewGuid(), Name = "Template", File = new Domain.Entities.File { StoredFileName = "t.pdf"} };
+        var template = new Domain.Entities.Template
+            { Id = Guid.NewGuid(), Name = "Template", File = new Domain.Entities.File { StoredFileName = "t.pdf" } };
         var file = new Domain.Entities.File { Id = Guid.NewGuid(), StoredFileName = "l.pdf" };
-        
-        var logsheet = new Logsheet 
-        { 
-            Id = Guid.NewGuid(), 
+
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
             Template = template,
             File = file,
             Status = Domain.Enums.ELogSheetStatus.Pending
@@ -38,13 +42,14 @@ public class GetLogsheetQueryHandlerTests : IDisposable
 
         var query = new GetLogsheetQuery(logsheet.Id);
 
-        var expectedDto = new LogsheetDetailDto(logsheet.Id, 
-            new TemplateListDto(template.Id.ToString(), template.Name, null, null), 
-            null, 
-            new WebFormHTR.Application.Features.File.DTOs.FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt), 
-            logsheet.Status, 
-            null, 
-            null);
+        var expectedDto = new LogsheetDetailDto(logsheet.Id,
+            new TemplateListDto(template.Id.ToString(), template.Name, null, null),
+            null,
+            new FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt),
+            logsheet.Status,
+            null,
+            null,
+            new List<ExtractedValueDto>());
 
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.IsAny<Logsheet>()))
             .Returns(expectedDto);
@@ -65,6 +70,73 @@ public class GetLogsheetQueryHandlerTests : IDisposable
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
         result.Errors.First().Message.Should().Be("Logsheet not found");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnLogsheetWithRoiVariableNames_WhenLogsheetExists_WithRealMapper()
+    {
+        var config = new TypeAdapterConfig();
+        new MappingConfig().Register(config);
+        var mapper = new Mapper(config);
+
+        var template = new Domain.Entities.Template
+        {
+            Id = Guid.NewGuid(),
+            Name = "Template",
+            File = new Domain.Entities.File { Id = Guid.NewGuid(), StoredFileName = "t.pdf" }
+        };
+
+        var roi = new Roi
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = template.Id,
+            Template = template,
+            VariableName = "TestVariable",
+            Type = Domain.Enums.ERoiType.Handwritten,
+            Coordinates = new Domain.ValueObjects.Coordinates { X = 1, Y = 1, Width = 10, Height = 10 }
+        };
+
+        var file = new Domain.Entities.File
+            { Id = Guid.NewGuid(), StoredFileName = "l.pdf" };
+
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = template.Id,
+            Template = template,
+            FileId = file.Id,
+            File = file,
+            Status = Domain.Enums.ELogSheetStatus.Pending
+        };
+
+        var extractedValue = new ExtractedValue
+        {
+            Id = Guid.NewGuid(),
+            LogsheetId = logsheet.Id,
+            RoiId = roi.Id,
+            Value = "ExtractedText",
+            Status = Domain.Enums.EVerificationStatus.Unverified
+        };
+
+        _dbContext.Templates.Add(template);
+        _dbContext.Rois.Add(roi);
+        _dbContext.Files.Add(file);
+        _dbContext.Logsheets.Add(logsheet);
+        _dbContext.ExtractedValues.Add(extractedValue);
+        await _dbContext.SaveChangesAsync();
+
+        var query = new GetLogsheetQuery(logsheet.Id);
+
+        _dbContext.ChangeTracker.Clear();
+
+        var result = await GetLogsheetHandler.Handle(query, _dbContext, mapper, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.ExtractedValues.Should().NotBeEmpty();
+        var dto = result.Value.ExtractedValues.First();
+
+        dto.VariableName.Should().Be("TestVariable");
+        dto.RoiId.Should().Be(roi.Id);
     }
 
     public void Dispose()

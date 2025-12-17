@@ -75,8 +75,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<ExtractedValue>()
             .HasQueryFilter(e => e.DeletedAt == null)
             .HasOne<Roi>(ev => ev.Roi)
-            .WithOne(r => r.ExtractedValue)
-            .HasForeignKey<Roi>(r => r.ExtractedValueId)
+            .WithMany()
+            .HasForeignKey(ev => ev.RoiId)
             .OnDelete(DeleteBehavior.Restrict);
 
         base.OnModelCreating(modelBuilder);

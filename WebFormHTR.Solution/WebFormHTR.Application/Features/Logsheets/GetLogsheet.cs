@@ -20,6 +20,8 @@ public static class GetLogsheetHandler
     {
         var logsheet = await dbContext.Logsheets
             .Include(l => l.File)
+            .Include(l => l.ExtractedValues)
+            .ThenInclude(e => e.Roi)
             .FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
 
         if (logsheet is null)

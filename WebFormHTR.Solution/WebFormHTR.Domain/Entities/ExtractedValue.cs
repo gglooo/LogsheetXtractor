@@ -6,12 +6,12 @@ namespace WebFormHTR.Domain.Entities;
 public class ExtractedValue : BaseEntity
 {
     public Guid LogsheetId { get; set; }
-    public virtual required Logsheet Logsheet { get; set; }
+    public virtual Logsheet Logsheet { get; set; }
 
     public Guid RoiId { get; set; }
-    public virtual required Roi Roi { get; set; }
+    public virtual Roi Roi { get; set; }
 
-    public string Value { get; set; } = String.Empty;
+    public string Value { get; set; } = string.Empty;
     public string? CorrectedValue { get; set; }
 
     // maybe add this if possible?

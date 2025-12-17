@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.File.DTOs;
+using WebFormHTR.Application.Features.ExtractedValues.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
@@ -54,7 +55,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var templateDto = new TemplateListDto(templateId.ToString(), "Test Template", null, null);
         var fileDto = new FileDto(fileId, "test.jpg", "image/jpeg", 100, DateTime.UtcNow);
         var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, null!, fileDto, ELogSheetStatus.Pending,
-            DateTime.UtcNow, null);
+            DateTime.UtcNow, null, new List<ExtractedValueDto>());
 
         _mapperMock.Setup(x => x.Map<Logsheet>(command))
             .Returns(new Logsheet

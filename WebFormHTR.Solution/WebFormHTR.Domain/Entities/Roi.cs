@@ -13,6 +13,4 @@ public class Roi : BaseEntity
 
     public Coordinates Coordinates { get; set; }
 
-    public Guid? ExtractedValueId { get; set; }
-    public virtual ExtractedValue? ExtractedValue { get; set; }
 }

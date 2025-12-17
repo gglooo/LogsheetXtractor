@@ -1,3 +1,4 @@
+using WebFormHTR.Application.Features.ExtractedValues.DTOs;
 using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Enums;
@@ -11,6 +12,6 @@ public record LogsheetDetailDto(
     FileDto File,
     ELogSheetStatus Status,
     DateTime? ProcessedAt,
-    AlignmentDataDto? AlignmentData
-// TODO: add extracted values list if needed
+    AlignmentDataDto? AlignmentData,
+    IEnumerable<ExtractedValueDto> ExtractedValues
 );

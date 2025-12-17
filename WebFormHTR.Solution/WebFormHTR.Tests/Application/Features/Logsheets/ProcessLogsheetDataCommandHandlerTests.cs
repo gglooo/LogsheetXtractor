@@ -1,5 +1,7 @@
 using FluentAssertions;
 using FluentResults;
+using FluentResults;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WebFormHTR.Application.Errors;
@@ -16,6 +18,7 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IHtrScriptEngine> _scriptEngineMock = new();
+    private readonly Mock<IMapper> _mapperMock = new();
 
     [Fact]
     public async Task Handle_ShouldFail_WhenLogsheet_NotFound()
@@ -23,7 +26,7 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
         var command = new ProcessLogsheetDataCommand(Guid.NewGuid());
 
         var result =
-            await ProcessLogsheetDataHandler.Handle(command, _dbContext, _scriptEngineMock.Object,
+            await ProcessLogsheetDataHandler.Handle(command, _dbContext, _scriptEngineMock.Object, _mapperMock.Object,
                 CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
