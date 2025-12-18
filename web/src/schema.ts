@@ -34,3 +34,9 @@ export const coordinateSchema = z.object({
     width: z.number(),
     height: z.number(),
 });
+
+export type Coordinates = z.infer<typeof coordinateSchema>;
+
+export const pdfFileSchema = z
+    .file()
+    .refine((file) => file.type === "application/pdf");

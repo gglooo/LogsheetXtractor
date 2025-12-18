@@ -7,6 +7,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CreateTemplateAction } from "@/modules/templates/actions/create-template-action";
 import { Menu, PlusIcon } from "lucide-react";
 import { useIntl } from "react-intl";
 
@@ -34,13 +35,7 @@ export function Navbar() {
                             defaultMessage: "Log in",
                         })}
                     </Button>
-                    <Button size="sm">
-                        <PlusIcon />
-                        {intl.formatMessage({
-                            id: "navbar.newTemplate",
-                            defaultMessage: "New template",
-                        })}
-                    </Button>
+                    <CreateTemplateAction />
                 </div>
 
                 {/* Mobile Section */}

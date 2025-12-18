@@ -8,3 +8,9 @@ export const residualSchema = baseSchema.extend({
 });
 
 export type Residual = z.infer<typeof residualSchema>;
+
+export const detectedResidualSchema = residualSchema.extend({
+    id: z.uuid().nullable(),
+});
+
+export type DetectedResidualType = z.infer<typeof detectedResidualSchema>;

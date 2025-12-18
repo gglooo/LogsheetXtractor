@@ -13,11 +13,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DetectRoisAction } from "@/modules/rois/actions/detect-rois-action";
+import { baseTemplateEditorPath } from "@/modules/template-editor/routes";
 import { CloneTemplateAction } from "@/modules/templates/actions/clone-template-action";
 import { useDeleteTemplateMutation } from "@/modules/templates/api";
 import type { TemplateListItemType } from "@/modules/templates/schema";
 import { Edit, EditIcon, MoreVertical, Trash2, UploadIcon } from "lucide-react";
 import { useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const TemplateListItem = ({
     template,
@@ -25,11 +29,32 @@ export const TemplateListItem = ({
     template: TemplateListItemType;
 }) => {
     const intl = useIntl();
+    const navigate = useNavigate();
 
     const deleteTemplateMutation = useDeleteTemplateMutation();
 
     const handleDeleteTemplate = async () => {
-        await deleteTemplateMutation.mutate(template.id);
+        try {
+            await deleteTemplateMutation.mutateAsync(template.id);
+            toast.success(
+                intl.formatMessage({
+                    id: "templates.actions.delete.success",
+                    defaultMessage: "Template deleted successfully!",
+                })
+            );
+        } catch (error) {
+            console.error("Error deleting template:", error);
+            toast.error(
+                intl.formatMessage({
+                    id: "templates.actions.delete.error",
+                    defaultMessage: "Failed to delete template",
+                })
+            );
+        }
+    };
+
+    const handleEditTemplate = () => {
+        navigate(`${baseTemplateEditorPath}/${template.id}`);
     };
 
     return (
@@ -56,6 +81,10 @@ export const TemplateListItem = ({
                                     defaultMessage: "Edit ROIs",
                                 })}
                             </DropdownMenuItem>
+                            <DetectRoisAction
+                                inDropdown
+                                templateId={template.id}
+                            />
                             <CloneTemplateAction templateId={template.id} />
                             <DropdownMenuItem
                                 className="text-destructive"
@@ -84,6 +113,7 @@ export const TemplateListItem = ({
                         variant="outline"
                         size="sm"
                         className="flex-1 gap-2"
+                        onClick={handleEditTemplate}
                     >
                         <EditIcon />
                         {intl.formatMessage({

@@ -1,5 +1,8 @@
-import { Navbar } from "@/components/navbar";
-import { DashboardRoutes } from "@/modules/dashboard/routes";
+import { baseDashboardPath, DashboardRoutes } from "@/modules/dashboard/routes";
+import {
+    baseTemplateEditorPath,
+    TemplateEditorRoutes,
+} from "@/modules/template-editor/routes";
 import { useIntl } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
@@ -9,15 +12,20 @@ function App() {
 
     return (
         <div className="min-h-screen bg-background text-foreground font-mono">
-            <Navbar />
             <Routes>
                 <Route
                     path="/"
-                    element={<Navigate to="/dashboard" replace />}
+                    element={<Navigate to={`${baseDashboardPath}`} replace />}
                 />
 
-                <Route path="/dashboard/*" element={<DashboardRoutes />} />
-
+                <Route
+                    path={`${baseDashboardPath}/*`}
+                    element={<DashboardRoutes />}
+                />
+                <Route
+                    path={`${baseTemplateEditorPath}/*`}
+                    element={<TemplateEditorRoutes />}
+                />
                 <Route
                     path="*"
                     element={

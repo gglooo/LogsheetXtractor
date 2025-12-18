@@ -33,3 +33,5 @@ export const templateSchema = baseSchema.extend({
     rois: z.array(roiSchema),
     residuals: z.array(residualSchema),
 });
+
+export type TemplateType = z.infer<typeof templateSchema>;

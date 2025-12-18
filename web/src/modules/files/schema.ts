@@ -8,3 +8,11 @@ export const fileSchema = baseSchema.extend({
 });
 
 export type FileType = z.infer<typeof fileSchema>;
+
+export const downloadedFileSchema = z.object({
+    bytes: z.instanceof(ArrayBuffer),
+    fileName: z.string(),
+    contentType: z.string().nullable(),
+});
+
+export type DownloadedFileType = z.infer<typeof downloadedFileSchema>;

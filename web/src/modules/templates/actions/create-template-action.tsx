@@ -9,90 +9,75 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Form } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
 import { useUploadFileMutation } from "@/modules/files/api";
-import { useCloneTemplateMutation } from "@/modules/templates/api";
+import { useCreateTemplateMutation } from "@/modules/templates/api";
 import { pdfFileSchema } from "@/schema";
-import { Copy } from "lucide-react";
 import { useState } from "react";
+import { useFormState } from "react-hook-form";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
 import z from "zod";
 
-const cloneSchema = z.object({
+const createTemplateSchema = z.object({
     name: z.string().min(1).trim(),
     file: pdfFileSchema,
 });
 
-type CloneFormValues = z.infer<typeof cloneSchema>;
+type CreateTemplateFormValues = z.infer<typeof createTemplateSchema>;
 
-const CloneTemplateFormContent = ({
-    onClose,
-    templateId,
-}: {
-    onClose: () => void;
-    templateId: string;
-}) => {
+const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
     const intl = useIntl();
+    const { isSubmitting } = useFormState();
 
-    const cloneTemplateMutation = useCloneTemplateMutation();
     const uploadFileMutation = useUploadFileMutation();
+    const createTemplateMutation = useCreateTemplateMutation();
 
-    const onSubmit = async (values: CloneFormValues) => {
+    const onSubmit = async (values: CreateTemplateFormValues) => {
         try {
             const uploadedFile = await uploadFileMutation.mutateAsync(
                 values.file
             );
 
-            await cloneTemplateMutation.mutateAsync({
-                templateId,
-                newName: values.name,
+            await createTemplateMutation.mutateAsync({
+                name: values.name,
                 fileId: uploadedFile.id,
             });
-
             onClose();
-
             toast.success(
                 intl.formatMessage({
-                    id: "templates.actions.clone.success",
-                    defaultMessage: "Template cloned successfully!",
+                    id: "templates.actions.createTemplate.success",
+                    defaultMessage: "Template created successfully!",
                 })
             );
         } catch (error) {
-            console.error("Error cloning template:", error);
+            console.log(error);
             toast.error(
                 intl.formatMessage({
-                    id: "templates.actions.clone.error",
-                    defaultMessage: "Failed to clone template",
+                    id: "templates.actions.createTemplate.error",
+                    defaultMessage:
+                        "An error occurred while creating the template.",
                 })
             );
         }
     };
-
-    const isSubmitting =
-        uploadFileMutation.isPending || cloneTemplateMutation.isPending;
 
     return (
         <div className="space-y-4 py-4">
             <FormInput
                 name="name"
                 label={intl.formatMessage({
-                    id: "templates.form.nameLabel",
+                    id: "templates.actions.createTemplate.form.name.label",
                     defaultMessage: "Template name",
-                })}
-                placeholder={intl.formatMessage({
-                    id: "templates.form.namePlaceholder",
-                    defaultMessage: "Enter template name",
                 })}
             />
 
             <FormFileUpload
                 name="file"
                 label={intl.formatMessage({
-                    id: "templates.form.fileLabel",
-                    defaultMessage: "Upload PDF",
+                    id: "templates.actions.createTemplate.form.file.label",
+                    defaultMessage: "Upload PDF File",
                 })}
             />
 
@@ -113,8 +98,8 @@ const CloneTemplateFormContent = ({
                         <Spinner />
                     ) : (
                         intl.formatMessage({
-                            id: "templates.actions.clone",
-                            defaultMessage: "Clone template",
+                            id: "templates.actions.createTemplate.submit",
+                            defaultMessage: "Create template",
                         })
                     )}
                 </SubmitButton>
@@ -123,51 +108,48 @@ const CloneTemplateFormContent = ({
     );
 };
 
-export const CloneTemplateAction = ({ templateId }: { templateId: string }) => {
-    const [showModal, setShowModal] = useState(false);
+export const CreateTemplateAction = () => {
     const intl = useIntl();
+    const [showModal, setShowModal] = useState(false);
 
     return (
         <>
-            <DropdownMenuItem
-                onSelect={(e) => {
-                    e.preventDefault();
-                    setShowModal(true);
-                }}
-            >
-                <Copy className="mr-2 h-4 w-4" />
+            <Button onClick={() => setShowModal(true)}>
                 {intl.formatMessage({
-                    id: "templates.actions.clone",
-                    defaultMessage: "Clone Template",
+                    id: "templates.actions.createTemplate",
+                    defaultMessage: "Create template",
                 })}
-            </DropdownMenuItem>
+            </Button>
+
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="sm:max-w-125">
+                <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
                             {intl.formatMessage({
-                                id: "templates.actions.clone.title",
-                                defaultMessage: "Clone a template",
+                                id: "templates.actions.createTemplate",
+                                defaultMessage: "Create template",
                             })}
                         </DialogTitle>
                         <DialogDescription>
                             {intl.formatMessage({
-                                id: "templates.actions.clone.description",
+                                id: "templates.actions.createTemplate.description",
                                 defaultMessage:
-                                    "Upload a new PDF to create a cloned template. All ROIs from the original template will be copied to the new one.",
+                                    "Create a new template by uploading a PDF file.",
                             })}
                         </DialogDescription>
                     </DialogHeader>
+
                     <Form
-                        schema={cloneSchema}
+                        schema={createTemplateSchema}
                         defaultValues={{
                             name: "",
                             file: undefined,
                         }}
                     >
-                        <CloneTemplateFormContent
-                            onClose={() => setShowModal(false)}
-                            templateId={templateId}
+                        <CreateTemplateFormContent
+                            onClose={() => {
+                                setShowModal(false);
+                            }}
                         />
                     </Form>
                 </DialogContent>
