@@ -1,3 +1,4 @@
+import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
 import type { Coordinates } from "@/schema";
 
 export const getScaleFromReferenceScale = (
@@ -26,4 +27,16 @@ export const scaleCoordinatesToReference = (
         width: coordinates.width * scale,
         height: coordinates.height * scale,
     };
+};
+
+export const getCoordinatesFromPositions = (
+    startPos: Position,
+    currentPos: Position
+): Coordinates => {
+    const x = Math.min(startPos.x, currentPos.x);
+    const y = Math.min(startPos.y, currentPos.y);
+    const width = Math.abs(startPos.x - currentPos.x);
+    const height = Math.abs(startPos.y - currentPos.y);
+
+    return { x, y, width, height };
 };

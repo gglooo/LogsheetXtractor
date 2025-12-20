@@ -1,8 +1,20 @@
+import { getCoordinatesFromPositions } from "@/modules/template-editor/utils/coordinates";
 import { useState } from "react";
 
 export type Position = {
     x: number;
     y: number;
+};
+
+const MIN_SIZE = 5;
+
+const isRoiReasonablySized = (coordinates: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}) => {
+    return coordinates.width >= MIN_SIZE && coordinates.height >= MIN_SIZE;
 };
 
 export const useDrawRectangle = (canDraw: boolean) => {
@@ -41,7 +53,13 @@ export const useDrawRectangle = (canDraw: boolean) => {
             return;
         }
 
-        if (startPos && currentPos) {
+        if (
+            startPos &&
+            currentPos &&
+            isRoiReasonablySized(
+                getCoordinatesFromPositions(startPos, currentPos)
+            )
+        ) {
             onFinishDrawing(startPos, currentPos);
         }
 

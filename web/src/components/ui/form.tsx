@@ -180,8 +180,26 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
     );
 }
 
+const FormAutoSubmit = <T extends FieldValues>({
+    onSubmit,
+}: {
+    onSubmit: (values: T) => Promise<void>;
+}) => {
+    const { watch, handleSubmit } = useFormContext<T>();
+
+    React.useEffect(() => {
+        const subscription = watch(() => {
+            handleSubmit(onSubmit)();
+        });
+        return () => subscription.unsubscribe();
+    }, [watch, handleSubmit, onSubmit]);
+
+    return null;
+};
+
 export {
     Form,
+    FormAutoSubmit,
     FormControl,
     FormDescription,
     FormField,

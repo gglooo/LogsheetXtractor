@@ -3,29 +3,19 @@ import {
     useDrawRectangle,
     type Position,
 } from "@/modules/pdf/hooks/use-draw-rectangle";
+import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import {
+    getCoordinatesFromPositions,
     getScaleToReferenceScale,
     scaleCoordinatesToReference,
 } from "@/modules/template-editor/utils/coordinates";
-import type { Coordinates } from "@/schema";
 import type { PropsWithChildren } from "react";
-
-const getCoordinatesFromPositions = (
-    startPos: Position,
-    currentPos: Position
-): Coordinates => {
-    const x = Math.min(startPos.x, currentPos.x);
-    const y = Math.min(startPos.y, currentPos.y);
-    const width = Math.abs(startPos.x - currentPos.x);
-    const height = Math.abs(startPos.y - currentPos.y);
-
-    return { x, y, width, height };
-};
 
 export const PdfSvgOverlay = ({ children }: PropsWithChildren) => {
     const { addRoi, template, mode } = useTemplateEditor();
     const { width: pdfWidth, scale } = usePdfZoom();
+    const { setSelectedRoiIds } = useSelectedRois();
 
     const canDraw = mode === "draw";
 
@@ -46,7 +36,12 @@ export const PdfSvgOverlay = ({ children }: PropsWithChildren) => {
             template!.width
         );
 
-        addRoi(scaleCoordinatesToReference(coordinates, referenceScale));
+        const newId = addRoi(
+            scaleCoordinatesToReference(coordinates, referenceScale)
+        );
+        if (newId) {
+            setSelectedRoiIds([newId]);
+        }
     };
 
     return (
@@ -55,7 +50,7 @@ export const PdfSvgOverlay = ({ children }: PropsWithChildren) => {
             onMouseDown={(e) => handleStartDrawing(e)}
             onMouseMove={(e) => handleDraw(e)}
             onMouseUp={() => handleStopDrawing(handleCreateRoi)}
-            style={{ zIndex: 50 }}
+            style={{ zIndex: 20 }}
         >
             {children}
             {startPos && currentPos

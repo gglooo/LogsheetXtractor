@@ -1,9 +1,11 @@
+import { Separator } from "@/components/ui/separator";
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
 } from "@/components/ui/sidebar";
+import { SelectedRoiSidebarGroup } from "@/modules/template-editor/sidebar/selected-roi";
 import { ToolsSidebarGroup } from "@/modules/template-editor/sidebar/tools";
 import { useIntl } from "react-intl";
 
@@ -20,10 +22,12 @@ export const EditorSidebar = ({ className }: EditorSidebarProps) => {
                 {intl.formatMessage({
                     id: "templateEditor.sidebar.header",
                     defaultMessage: "Template editor",
-                })}{" "}
+                })}
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent className="px-2 flex flex-col gap-2">
                 <ToolsSidebarGroup />
+                <Separator />
+                <SelectedRoiSidebarGroup />
             </SidebarContent>
             <SidebarFooter>Footer</SidebarFooter>
         </Sidebar>

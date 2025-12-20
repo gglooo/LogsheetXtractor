@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { PdfZoomContext } from "@/modules/pdf/context/pdf-zoom-context";
+import { HistoryControls } from "@/modules/template-editor/components/history-controls";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 
@@ -32,26 +33,33 @@ export const PdfWrapper = ({ children }: PdfWrapperProps) => {
 
     return (
         <div className="flex flex-col w-full">
-            <div className="flex justify-end gap-2 mb-4 shrink-0 px-4 pt-4">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleZoomOut}
-                    disabled={scale <= 0.1}
-                >
-                    <ZoomOut className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleReset}
-                    disabled={scale === 1}
-                >
-                    <RotateCcw className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={handleZoomIn}>
-                    <ZoomIn className="h-4 w-4" />
-                </Button>
+            <div className="flex flex-row justify-between px-8">
+                <HistoryControls />
+                <div className="flex gap-2 mb-4 shrink-0 ">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleZoomOut}
+                        disabled={scale <= 0.1}
+                    >
+                        <ZoomOut className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleReset}
+                        disabled={scale === 1}
+                    >
+                        <RotateCcw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleZoomIn}
+                    >
+                        <ZoomIn className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
 
             <div

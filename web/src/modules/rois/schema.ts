@@ -1,3 +1,4 @@
+import type { SelectOption } from "@/components/form/form-select";
 import { detectedResidualSchema } from "@/modules/residuals/schema";
 import { baseSchema, coordinateSchema } from "@/schema";
 import z from "zod";
@@ -8,6 +9,13 @@ export const roiTypeSchema = z.enum([
     "Checkbox",
     "Barcode",
 ]);
+
+export const roiTypeSelectOptions: SelectOption[] = roiTypeSchema.options.map(
+    (type) => ({
+        label: type,
+        value: type,
+    })
+);
 
 export const roiSchema = baseSchema.extend({
     id: z.uuid(),

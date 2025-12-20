@@ -1,8 +1,10 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Spinner } from "@/components/ui/spinner";
 import { DrawablePdfViewer } from "@/modules/pdf/components/drawable-pdf-viewer";
 import { PdfWrapper } from "@/modules/pdf/components/pdf-wrapper";
 import { EditorNavbar } from "@/modules/template-editor/components/navbar";
-import { TemplateEditorProvider } from "@/modules/template-editor/context";
+import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
+import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { EditorSidebar } from "@/modules/template-editor/sidebar/sidebar";
 import { useTemplate } from "@/modules/templates/api";
@@ -13,20 +15,25 @@ export const TemplateEditorPage = () => {
 
     const templateQuery = useTemplate(id!);
 
-    if (templateQuery.isPending) {
-        return <div>Loading template...</div>;
+    if (templateQuery.isLoading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <Spinner />
+            </div>
+        );
     }
 
-    if (templateQuery.isError) {
-        console.log("Template loading error:", templateQuery.error);
-        return <div>Error loading template: {templateQuery.error.message}</div>;
+    if (templateQuery.isError || !templateQuery.data) {
+        return <div className="p-4">Failed to load template.</div>;
     }
 
     return (
         <TemplateEditorProvider template={templateQuery.data}>
-            <SidebarProvider>
-                <TemplateEditorContent />
-            </SidebarProvider>
+            <SelectedRoisProvider>
+                <SidebarProvider>
+                    <TemplateEditorContent />
+                </SidebarProvider>
+            </SelectedRoisProvider>
         </TemplateEditorProvider>
     );
 };
@@ -50,20 +57,24 @@ export const TemplateEditorContent = () => {
                             Template Editor - {template.id}
                         </h1>
 
-                        <div
-                            className={
-                                mode === "draw" ? "cursor-crosshair" : ""
-                            }
-                        >
-                            {template.file?.id ? (
-                                <PdfWrapper>
-                                    <DrawablePdfViewer
-                                        fileId={template.file.id}
-                                        template={template}
-                                    />
-                                </PdfWrapper>
-                            ) : null}
-                        </div>
+                        {template ? (
+                            <div
+                                className={
+                                    mode === "draw" ? "cursor-crosshair" : ""
+                                }
+                            >
+                                {template.file?.id ? (
+                                    <PdfWrapper>
+                                        <DrawablePdfViewer
+                                            fileId={template.file.id}
+                                            template={template}
+                                        />
+                                    </PdfWrapper>
+                                ) : null}
+                            </div>
+                        ) : (
+                            <Spinner />
+                        )}
                     </main>
                 </SidebarInset>
             </div>

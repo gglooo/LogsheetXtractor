@@ -12,10 +12,12 @@ export const DetectRoisAction = ({
     onResult,
     templateId,
     inDropdown,
+    className,
 }: {
     templateId: string;
     inDropdown?: boolean;
     onResult?: (result: DetectRoiResponseType) => void;
+    className?: string;
 }) => {
     const intl = useIntl();
 
@@ -60,11 +62,16 @@ export const DetectRoisAction = ({
                         e.preventDefault();
                         handleDetectRois();
                     }}
+                    className={className}
                 >
                     {ButtonContent}
                 </DropdownMenuItem>
             ) : (
-                <Button variant="outline" onClick={handleDetectRois}>
+                <Button
+                    variant="outline"
+                    onClick={handleDetectRois}
+                    className={className}
+                >
                     {ButtonContent}
                 </Button>
             )}

@@ -13,8 +13,17 @@ export type TemplateEditorContextType = {
     setRois: React.Dispatch<SetStateAction<DetectedRoiType[]>>;
     residuals: DetectedResidualType[];
     setResiduals: React.Dispatch<SetStateAction<DetectedResidualType[]>>;
-    addRoi: (coordinates: Coordinates) => void;
+    setRoisAndResiduals: (
+        rois: DetectedRoiType[],
+        residuals: DetectedResidualType[]
+    ) => void;
+    addRoi: (coordinates: Coordinates) => string | undefined;
+    removeRoi: (variableName: string) => void;
     template?: TemplateType;
+    undo: () => void;
+    redo: () => void;
+    canUndo: boolean;
+    canRedo: boolean;
 };
 
 export const TemplateEditorContext = createContext<
