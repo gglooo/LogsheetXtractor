@@ -14,10 +14,11 @@ namespace WebFormHTR.Infrastructure.Services;
 
 public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngine scriptEngine) : IRoiService
 {
-    public async Task<IEnumerable<RoiDto>> SetRoisForTemplateAsync(Guid templateId, IEnumerable<SetRoiDto> updateRois,
+    public async Task<IEnumerable<RoiDto>> SetRoisForTemplateAsync(
+        Guid templateId,
+        IEnumerable<SetRoiDto> updateRois,
         CancellationToken cancellationToken)
     {
-        IList<Roi> allEntities = [];
         var updateRoisList = updateRois.ToList();
 
         var existingRois = await dbContext.Rois
@@ -25,44 +26,44 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
             .Where(r => r.TemplateId == templateId)
             .ToDictionaryAsync(r => r.Id, cancellationToken);
 
-        var updateIds = updateRoisList
-            .Where(x => x.Id != Guid.Empty && x.Id != null)
-            .Select(x => x.Id)
+        var incomingGuids = updateRoisList
+            .Select(x => Guid.TryParse(x.Id, out var g) ? g : Guid.Empty)
+            .Where(g => g != Guid.Empty)
             .ToHashSet();
 
-        var roisToDelete = existingRois
-            .Values
-            .Where(r => !updateIds.Contains(r.Id))
+        var roisToDelete = existingRois.Values
+            .Where(r => !incomingGuids.Contains(r.Id))
             .ToList();
 
-        if (roisToDelete.Count != 0)
+        if (roisToDelete.Any())
         {
             dbContext.Rois.RemoveRange(roisToDelete);
         }
 
+        var processedEntities = new List<Roi>();
         foreach (var dto in updateRoisList)
         {
-            if (dto.Id == Guid.Empty || dto.Id is null)
+            Roi entity;
+            var isValidGuid = Guid.TryParse(dto.Id, out var guid);
+
+            if (isValidGuid && existingRois.TryGetValue(guid, out var existingRoi))
             {
-                var roi = mapper.Map<Roi>(dto);
-
-                roi.Id = Guid.NewGuid();
-                roi.TemplateId = templateId;
-
-                await dbContext.Rois.AddAsync(roi, cancellationToken);
-
-                allEntities.Add(roi);
+                mapper.Map(dto, existingRoi);
+                entity = existingRoi;
             }
             else
             {
-                var existingRoi = existingRois[dto.Id!.Value];
-                mapper.Map(dto, existingRoi);
+                entity = mapper.Map<Roi>(dto);
+                entity.Id = Guid.NewGuid();
+                entity.TemplateId = templateId;
 
-                allEntities.Add(existingRoi);
+                await dbContext.Rois.AddAsync(entity, cancellationToken);
             }
+
+            processedEntities.Add(entity);
         }
 
-        return mapper.Map<IEnumerable<RoiDto>>(allEntities);
+        return mapper.Map<IEnumerable<RoiDto>>(processedEntities);
     }
 
     public async Task<IEnumerable<RoiDto>> UpsertRoisForTemplateAsync(Guid templateId,

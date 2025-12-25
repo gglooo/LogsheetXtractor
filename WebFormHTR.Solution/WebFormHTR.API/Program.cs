@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using WebFormHTR.Application;
 using Wolverine;
 using Wolverine.Http;
@@ -14,6 +15,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Host.UseWolverine(opts => { opts.Discovery.IncludeAssembly(typeof(ApplicationAssemblyReference).Assembly); });
 builder.Services.AddWolverineHttp();
 builder.Services.AddMapster();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 TypeAdapterConfig.GlobalSettings.Scan(typeof(ApplicationAssemblyReference).Assembly);
 
 var app = builder.Build();

@@ -4,7 +4,7 @@ using WebFormHTR.Domain.ValueObjects;
 namespace WebFormHTR.Application.Features.ROIs.DTOs;
 
 public record SetRoiDto(
-    Guid? Id,
+    string? Id,
     string VariableName,
     ERoiType? Type,
     Coordinates Coordinates

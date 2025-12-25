@@ -86,7 +86,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Coordinates, src => src.Coordinates);
 
         config.NewConfig<SetRoiDto, Roi>()
-            .Map(dest => dest.Id, src => src.Id)
+            .Ignore(dest => dest.Id)
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.VariableName, src => src.VariableName)
             .Map(dest => dest.Coordinates, src => src.Coordinates);
