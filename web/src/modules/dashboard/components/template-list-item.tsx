@@ -92,12 +92,12 @@ export const TemplateListItem = ({
                 </CardAction>
             </CardHeader>
             <CardContent>
-                <div className="flex flex-row gap-2 w-full">
+                <div className="flex flex-row lg:flex-row gap-2 w-full">
                     <Button size="sm" className="flex-1 gap-2">
                         <UploadIcon />
                         {intl.formatMessage({
-                            id: "templates.actions.processLogsheet",
-                            defaultMessage: "Process logsheet",
+                            id: "templates.actions.process",
+                            defaultMessage: "Process",
                         })}
                     </Button>
                     <Button
@@ -109,7 +109,7 @@ export const TemplateListItem = ({
                         <EditIcon />
                         {intl.formatMessage({
                             id: "templates.actions.edit",
-                            defaultMessage: "Edit template",
+                            defaultMessage: "Edit",
                         })}
                     </Button>
                 </div>

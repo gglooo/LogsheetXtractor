@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { SidebarGroup } from "@/components/ui/sidebar";
 import { DetectRoisAction } from "@/modules/rois/actions/detect-rois-action";
-import type { DetectRoiResponseType } from "@/modules/rois/schema";
+import type { DetectRoiResponseType, RoiType } from "@/modules/rois/schema";
 import { ShortcutLabel } from "@/modules/template-editor/components/shortcut-label";
 import {
     CLEAR_ROIS_KEY,
@@ -11,10 +11,27 @@ import {
 } from "@/modules/template-editor/hooks/use-keyboard-shortcuts";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { copy, paste } from "@/modules/template-editor/utils/copy-paste";
 import { MousePointer, Square, X } from "lucide-react";
 import { useCallback } from "react";
 import { useIntl } from "react-intl";
 import { useParams } from "react-router-dom";
+
+const PASTE_OFFSET = 80;
+
+const adjustRoiAfterPaste = (rois: RoiType[]) => {
+    return rois.map((roi) => {
+        return {
+            ...roi,
+            coordinates: {
+                ...roi.coordinates,
+                x: roi.coordinates.x + PASTE_OFFSET,
+                y: roi.coordinates.y + PASTE_OFFSET,
+            },
+            id: crypto.randomUUID(),
+        };
+    });
+};
 
 export const ToolsSidebarGroup = () => {
     const intl = useIntl();
@@ -41,14 +58,40 @@ export const ToolsSidebarGroup = () => {
     };
 
     const setSelectTool = useCallback(() => setMode("select"), [setMode]);
+
     const setDrawTool = useCallback(() => setMode("draw"), [setMode]);
+
     const clearRois = useCallback(() => setRois([]), [setRois]);
+
     const selectAll = useCallback(() => {
         setSelectedRoiIds(rois.filter((roi) => roi.id).map((roi) => roi.id!));
     }, [rois, setSelectedRoiIds]);
+
     const deleteTool = useCallback(() => {
         setRois(rois.filter((roi) => !isSelectedRoi(roi.id ?? "")));
     }, [isSelectedRoi, rois, setRois]);
+
+    const copyTool = useCallback(async () => {
+        await copy(rois.filter((roi) => isSelectedRoi(roi.id ?? "")));
+    }, [isSelectedRoi, rois]);
+
+    const pasteTool = useCallback(async () => {
+        const pastedRois = await paste<RoiType>();
+        const adjustedRois = adjustRoiAfterPaste(pastedRois ?? []);
+        if (!((pastedRois?.length ?? 0) > 0)) {
+            return;
+        }
+
+        setRois([...rois, ...adjustedRois]);
+        setSelectedRoiIds(adjustedRois.map((roi) => roi.id!));
+        setMode("select");
+    }, [rois, setMode, setRois, setSelectedRoiIds]);
+
+    const cutTool = useCallback(() => {
+        const roisToCut = rois.filter((roi) => isSelectedRoi(roi.id ?? ""));
+        copy(roisToCut);
+        deleteTool();
+    }, [deleteTool, isSelectedRoi, rois]);
 
     useKeyboardShortcuts({
         selectTool: setSelectTool,
@@ -58,6 +101,9 @@ export const ToolsSidebarGroup = () => {
         redo,
         selectAll,
         deleteTool,
+        copyTool,
+        pasteTool,
+        cutTool,
     });
 
     return (

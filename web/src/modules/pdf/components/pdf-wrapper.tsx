@@ -8,7 +8,7 @@ type PdfWrapperProps = {
     children: React.ReactNode;
 };
 
-const DEFAULT_SCALE = 0.8;
+const DEFAULT_SCALE = 0.6;
 
 export const PdfWrapper = ({ children }: PdfWrapperProps) => {
     const [scale, setScale] = useState(DEFAULT_SCALE);

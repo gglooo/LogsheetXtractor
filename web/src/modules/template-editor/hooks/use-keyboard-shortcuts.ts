@@ -6,6 +6,9 @@ export const CLEAR_ROIS_KEY = "r";
 export const UNDO_KEY = "z";
 export const SELECT_ALL_KEY = "a";
 export const DELETE_KEY = "Delete";
+export const COPY_KEY = "c";
+export const PASTE_KEY = "v";
+export const CUT_KEY = "x";
 
 export const useKeyboardShortcuts = ({
     selectTool,
@@ -15,6 +18,9 @@ export const useKeyboardShortcuts = ({
     redo,
     selectAll,
     deleteTool,
+    copyTool,
+    pasteTool,
+    cutTool,
 }: {
     selectTool: () => void;
     drawTool: () => void;
@@ -23,6 +29,9 @@ export const useKeyboardShortcuts = ({
     redo: () => void;
     selectAll: () => void;
     deleteTool: () => void;
+    copyTool: () => void;
+    pasteTool: () => void;
+    cutTool: () => void;
 }) => {
     const handleKeyDown = useCallback(
         (event: KeyboardEvent) => {
@@ -52,6 +61,20 @@ export const useKeyboardShortcuts = ({
                     selectAll();
                     return;
                 }
+                if (key === COPY_KEY) {
+                    event.preventDefault();
+                    copyTool();
+                    return;
+                }
+                if (key === PASTE_KEY) {
+                    event.preventDefault();
+                    pasteTool();
+                    return;
+                }
+                if (key === CUT_KEY) {
+                    event.preventDefault();
+                    cutTool();
+                }
                 return;
             }
 
@@ -79,7 +102,18 @@ export const useKeyboardShortcuts = ({
                     break;
             }
         },
-        [undo, redo, selectAll, selectTool, drawTool, clearRois, deleteTool]
+        [
+            undo,
+            redo,
+            selectAll,
+            copyTool,
+            pasteTool,
+            cutTool,
+            selectTool,
+            drawTool,
+            clearRois,
+            deleteTool,
+        ]
     );
 
     useEffect(() => {
