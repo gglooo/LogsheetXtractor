@@ -3,6 +3,7 @@ import {
     useDrawRectangle,
     type Position,
 } from "@/modules/pdf/hooks/use-draw-rectangle";
+import type { RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import {
@@ -10,9 +11,14 @@ import {
     getScaleToReferenceScale,
     scaleCoordinatesToReference,
 } from "@/modules/template-editor/utils/coordinates";
-import type { PropsWithChildren } from "react";
 
-export const PdfSvgOverlay = ({ children }: PropsWithChildren) => {
+export const PdfDrawingSvgOverlay = ({
+    rois,
+    render,
+}: {
+    rois: RoiType[];
+    render: (roi: RoiType) => React.ReactNode;
+}) => {
     const { addRoi, template, mode } = useTemplateEditor();
     const { width: pdfWidth, scale } = usePdfZoom();
     const { setSelectedRoiIds } = useSelectedRois();
@@ -52,7 +58,7 @@ export const PdfSvgOverlay = ({ children }: PropsWithChildren) => {
             onMouseUp={() => handleStopDrawing(handleCreateRoi)}
             style={{ zIndex: 20 }}
         >
-            {children}
+            {rois.map((roi) => render(roi))}
             {startPos && currentPos
                 ? (() => {
                       const coordinates = getCoordinatesFromPositions(

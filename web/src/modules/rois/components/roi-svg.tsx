@@ -5,16 +5,24 @@ type Props = {
     roi: DetectedRoiType;
     scale: number;
     isSelected?: boolean;
+    isResizeable?: boolean;
     onDelete: (id: string) => void;
     onRoiClick?: (e: React.MouseEvent, id: string) => void;
+    onRoiDrag?: (e: React.MouseEvent, id: string) => void;
+    onRoiDrop?: (e: React.MouseEvent, id: string) => void;
+    onRoiResizeStart?: (e: React.MouseEvent, id: string) => void;
 };
 
 export const RoiSvg = ({
     roi,
     scale,
     isSelected,
+    isResizeable = true,
     onDelete,
     onRoiClick,
+    onRoiDrag,
+    onRoiDrop,
+    onRoiResizeStart,
 }: Props) => {
     const [isHovered, setIsHovered] = useState(false);
     const { x, y, width, height } = roi.coordinates;
@@ -28,6 +36,14 @@ export const RoiSvg = ({
         <g
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onMouseDown={(e: React.MouseEvent) => {
+                if (roi.id) {
+                    onRoiDrag?.(e, roi.id);
+                }
+            }}
+            onMouseUp={(e: React.MouseEvent) =>
+                roi.id && onRoiDrop?.(e, roi.id)
+            }
             onClick={(e: React.MouseEvent) => roi.id && onRoiClick?.(e, roi.id)}
             className="cursor-pointer"
         >
@@ -52,30 +68,28 @@ export const RoiSvg = ({
                 className="text-[16px] font-bold fill-red-600 select-none pointer-events-none"
             ></text>
 
-            <svg width="100%" height="100%">
-                <defs>
-                    <filter x="0" y="0" width="1" height="1" id="solid">
-                        <feFlood floodColor="yellow" />
-                        <feComposite in="SourceGraphic" operator="xor" />
-                    </filter>
-                </defs>
-                <text
-                    filter="url(#solid)"
-                    x={scaledX}
-                    y={scaledY - 5}
-                    className="text-[16px] font-bold select-none pointer-events-none"
-                >
-                    {" "}
-                    {roi.variableName}
-                </text>
-                <text
-                    x={scaledX}
-                    y={scaledY - 5}
-                    className="text-[16px] font-bold select-none pointer-events-none"
-                >
-                    {roi.variableName}
-                </text>
-            </svg>
+            <defs>
+                <filter x="0" y="0" width="1" height="1" id="solid">
+                    <feFlood floodColor="yellow" />
+                    <feComposite in="SourceGraphic" operator="xor" />
+                </filter>
+            </defs>
+            <text
+                filter="url(#solid)"
+                x={scaledX}
+                y={scaledY - 5}
+                className="text-[16px] font-bold select-none pointer-events-none"
+            >
+                {" "}
+                {roi.variableName}
+            </text>
+            <text
+                x={scaledX}
+                y={scaledY - 5}
+                className="text-[16px] font-bold select-none pointer-events-none"
+            >
+                {roi.variableName}
+            </text>
 
             {isHovered && (
                 <g
@@ -101,6 +115,25 @@ export const RoiSvg = ({
                     </text>
                 </g>
             )}
+
+            {roi.id && isResizeable ? (
+                <g
+                    className="cursor-nwse-resize"
+                    onMouseDown={(e) => {
+                        e.stopPropagation();
+                        onRoiClick?.(e, roi.id!);
+                        onRoiResizeStart?.(e, roi.id!);
+                    }}
+                >
+                    <rect
+                        x={scaledX + scaledWidth - 5}
+                        y={scaledY + scaledHeight - 5}
+                        width="10"
+                        height="10"
+                        className="fill-transparent pointer-events-auto"
+                    />
+                </g>
+            ) : null}
         </g>
     );
 };

@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useSetRoisMutation } from "@/modules/rois/api";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const EditorNavbar = () => {
+    const navigate = useNavigate();
+
     const { rois, template } = useTemplateEditor();
     const setRoisMutation = useSetRoisMutation(template?.id);
 
@@ -27,12 +30,16 @@ export const EditorNavbar = () => {
         }
     };
 
+    const handleCancel = () => {
+        navigate(-1);
+    };
+
     return (
         <header className="sticky z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="flex justify-between">
                 <div className="p-4 text-lg font-bold">Template Editor</div>
                 <div className="flex items-center gap-2 p-4">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={handleCancel}>
                         Cancel
                     </Button>
                     <Button size="sm" onClick={handleSaveChanges}>

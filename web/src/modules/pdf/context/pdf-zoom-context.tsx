@@ -1,9 +1,9 @@
 import { createContext, useContext } from "react";
 
-interface PdfZoomContextType {
+type PdfZoomContextType = {
     scale: number;
     width: number;
-}
+};
 
 export const PdfZoomContext = createContext<PdfZoomContextType | undefined>(
     undefined

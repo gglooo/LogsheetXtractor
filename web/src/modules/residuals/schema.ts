@@ -7,7 +7,7 @@ export const residualSchema = baseSchema.extend({
     coordinates: coordinateSchema,
 });
 
-export type Residual = z.infer<typeof residualSchema>;
+export type ResidualType = z.infer<typeof residualSchema>;
 
 export const detectedResidualSchema = residualSchema.extend({
     id: z.uuid().nullable(),

@@ -1,5 +1,8 @@
-import type { DetectedResidualType } from "@/modules/residuals/schema";
-import type { DetectedRoiType } from "@/modules/rois/schema";
+import type {
+    DetectedResidualType,
+    ResidualType,
+} from "@/modules/residuals/schema";
+import type { DetectedRoiType, RoiType } from "@/modules/rois/schema";
 import { useHistory } from "@/modules/template-editor/hooks/use-history";
 import {
     TemplateEditorContext,
@@ -10,8 +13,25 @@ import type { Coordinates } from "@/schema";
 import { useState, type ReactNode } from "react";
 
 type EditorStateWithHistory = {
-    rois: DetectedRoiType[];
-    residuals: DetectedResidualType[];
+    rois: RoiType[];
+    residuals: ResidualType[];
+};
+
+const addRequiredParamsToRoi = (roi: DetectedRoiType): RoiType => {
+    return {
+        ...roi,
+        id: roi.id ?? crypto.randomUUID(),
+        type: roi.type ?? "Handwritten",
+    };
+};
+
+const addRequiredParamsToResidual = (
+    residual: DetectedResidualType
+): ResidualType => {
+    return {
+        ...residual,
+        id: residual.id ?? crypto.randomUUID(),
+    };
 };
 
 export const TemplateEditorProvider = ({
@@ -31,22 +51,31 @@ export const TemplateEditorProvider = ({
 
     const rois = state.rois;
     const setRois = (rois: React.SetStateAction<DetectedRoiType[]>) => {
-        set((prev) => ({
-            ...prev,
-            rois: typeof rois === "function" ? rois(prev.rois) : rois,
-        }));
+        set((prev) => {
+            if (typeof rois === "function") {
+                rois = rois(prev.rois);
+            }
+
+            return {
+                ...prev,
+                rois: rois.map(addRequiredParamsToRoi),
+            };
+        });
     };
     const residuals = state.residuals;
     const setResiduals = (
         residuals: React.SetStateAction<DetectedResidualType[]>
     ) => {
-        set((prev) => ({
-            ...prev,
-            residuals:
-                typeof residuals === "function"
-                    ? residuals(prev.residuals)
-                    : residuals,
-        }));
+        set((prev) => {
+            if (typeof residuals === "function") {
+                residuals = residuals(prev.residuals);
+            }
+
+            return {
+                ...prev,
+                residuals: residuals.map(addRequiredParamsToResidual),
+            };
+        });
     };
 
     const setRoisAndResiduals = (
@@ -55,8 +84,8 @@ export const TemplateEditorProvider = ({
     ) => {
         set((prev) => ({
             ...prev,
-            rois,
-            residuals,
+            rois: rois.map(addRequiredParamsToRoi),
+            residuals: residuals.map(addRequiredParamsToResidual),
         }));
     };
 
@@ -65,8 +94,8 @@ export const TemplateEditorProvider = ({
             return;
         }
 
-        const newRoi: DetectedRoiType = {
-            id: `roi-${Date.now()}`,
+        const newRoi: RoiType = {
+            id: crypto.randomUUID(),
             templateId: template.id,
             variableName: "unnamed_roi",
             type: "Handwritten",
