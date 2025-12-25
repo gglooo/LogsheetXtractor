@@ -13,12 +13,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DetectRoisAction } from "@/modules/rois/actions/detect-rois-action";
 import { baseTemplateEditorPath } from "@/modules/template-editor/routes";
 import { CloneTemplateAction } from "@/modules/templates/actions/clone-template-action";
 import { useDeleteTemplateMutation } from "@/modules/templates/api";
 import type { TemplateListItemType } from "@/modules/templates/schema";
-import { Edit, EditIcon, MoreVertical, Trash2, UploadIcon } from "lucide-react";
+import { format } from "date-fns";
+import { EditIcon, MoreVertical, Trash2, UploadIcon } from "lucide-react";
 import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -61,7 +61,9 @@ export const TemplateListItem = ({
         <Card>
             <CardHeader>
                 <CardTitle>{template.name}</CardTitle>
-                <CardDescription>{template.createdAt}</CardDescription>
+                <CardDescription>
+                    {format(new Date(template.createdAt), "PPP p")}
+                </CardDescription>
                 <CardAction>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -74,17 +76,6 @@ export const TemplateListItem = ({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => {}}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                {intl.formatMessage({
-                                    id: "templates.actions.editRois",
-                                    defaultMessage: "Edit ROIs",
-                                })}
-                            </DropdownMenuItem>
-                            <DetectRoisAction
-                                inDropdown
-                                templateId={template.id}
-                            />
                             <CloneTemplateAction templateId={template.id} />
                             <DropdownMenuItem
                                 className="text-destructive"
