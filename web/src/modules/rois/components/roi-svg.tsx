@@ -9,7 +9,6 @@ type Props = {
     onDelete: (id: string) => void;
     onRoiClick?: (e: React.MouseEvent, id: string) => void;
     onRoiDrag?: (e: React.MouseEvent, id: string) => void;
-    onRoiDrop?: (e: React.MouseEvent, id: string) => void;
     onRoiResizeStart?: (e: React.MouseEvent, id: string) => void;
 };
 
@@ -21,7 +20,6 @@ export const RoiSvg = ({
     onDelete,
     onRoiClick,
     onRoiDrag,
-    onRoiDrop,
     onRoiResizeStart,
 }: Props) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -41,9 +39,6 @@ export const RoiSvg = ({
                     onRoiDrag?.(e, roi.id);
                 }
             }}
-            onMouseUp={(e: React.MouseEvent) =>
-                roi.id && onRoiDrop?.(e, roi.id)
-            }
             onClick={(e: React.MouseEvent) => roi.id && onRoiClick?.(e, roi.id)}
             className="cursor-pointer"
         >
