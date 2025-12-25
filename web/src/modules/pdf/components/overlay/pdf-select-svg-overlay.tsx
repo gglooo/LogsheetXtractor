@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs */
 import type { PdfCanvasRenderFn } from "@/modules/pdf/components/overlay/pdf-svg-canvas";
 import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
 import { useDrag } from "@/modules/pdf/hooks/use-drag";
@@ -14,6 +15,7 @@ import {
     scaleCoordinatesToReference,
 } from "@/modules/template-editor/utils/coordinates";
 import type { Coordinates } from "@/schema";
+import { useCallback, useLayoutEffect, useRef } from "react";
 
 export const PdfSelectSvgOverlay = ({
     rois,
@@ -31,20 +33,12 @@ export const PdfSelectSvgOverlay = ({
     const { width: pdfWidth, scale } = usePdfZoom();
     const { isSelectedRoi, setSelectedRoiIds } = useSelectedRois();
 
-    const {
-        handleDragStart,
-        handleDrag,
-        handleDragEnd,
-        dx,
-        dy,
-        dw,
-        dh,
-        isDragging,
-        isResizing,
-        handleResizeStart,
-        handleResize,
-        handleResizeEnd,
-    } = useDrag();
+    const dragControls = useDrag();
+    const dragControlsRef = useRef(dragControls);
+
+    useLayoutEffect(() => {
+        dragControlsRef.current = dragControls;
+    });
 
     const {
         handleStartDrawing,
@@ -56,7 +50,10 @@ export const PdfSelectSvgOverlay = ({
 
     const getMovedRois = () =>
         rois.map((roi) => {
-            if (!isSelectedRoi(roi.id) || (!isDragging && !isResizing)) {
+            if (
+                !isSelectedRoi(roi.id) ||
+                (!dragControls.isDragging && !dragControls.isResizing)
+            ) {
                 return roi;
             }
 
@@ -67,10 +64,12 @@ export const PdfSelectSvgOverlay = ({
             );
 
             const coordinates: Coordinates = {
-                x: roi.coordinates.x + dx * toReferenceScale,
-                y: roi.coordinates.y + dy * toReferenceScale,
-                height: roi.coordinates.height + dh * toReferenceScale,
-                width: roi.coordinates.width + dw * toReferenceScale,
+                x: roi.coordinates.x + dragControls.dx * toReferenceScale,
+                y: roi.coordinates.y + dragControls.dy * toReferenceScale,
+                height:
+                    roi.coordinates.height + dragControls.dh * toReferenceScale,
+                width:
+                    roi.coordinates.width + dragControls.dw * toReferenceScale,
             };
 
             return {
@@ -92,24 +91,30 @@ export const PdfSelectSvgOverlay = ({
 
     const onDragEnd = () => {
         dragEnded?.(getMovedRois());
-        handleDragEnd();
+        dragControls.handleDragEnd();
     };
 
-    const onDragStart = (e: React.MouseEvent<Element>, roiId: string) => {
-        if (!isSelectedRoi(roiId)) {
-            return;
-        }
-        handleDragStart(e);
-    };
+    const onDragStart = useCallback(
+        (e: React.MouseEvent<Element>, roiId: string) => {
+            if (!isSelectedRoi(roiId)) {
+                return;
+            }
+            dragControlsRef.current.handleDragStart(e);
+        },
+        [isSelectedRoi]
+    );
 
-    const onResizeStart = (e: React.MouseEvent<Element>, roiId: string) => {
-        resizeEnded?.(rois.find((roi) => roi.id === roiId)!);
-        handleResizeStart(e);
-    };
+    const onResizeStart = useCallback(
+        (e: React.MouseEvent<Element>, roiId: string) => {
+            resizeEnded?.(rois.find((roi) => roi.id === roiId)!);
+            dragControlsRef.current.handleResizeStart(e);
+        },
+        [rois, resizeEnded]
+    );
 
     const onResizeEnd = () => {
         resizeEnded?.(getMovedRois().find((roi) => isSelectedRoi(roi.id))!);
-        handleResizeEnd();
+        dragControls.handleResizeEnd();
     };
 
     const onFinishDrawing = (startPos: Position, currentPos: Position) => {
@@ -131,15 +136,15 @@ export const PdfSelectSvgOverlay = ({
         setSelectedRoiIds(selectedRois.map((roi) => roi.id!));
     };
 
-    const onMouseMove = isDragging
-        ? handleDrag
-        : isResizing
-        ? handleResize
+    const onMouseMove = dragControls.isDragging
+        ? dragControls.handleDrag
+        : dragControls.isResizing
+        ? dragControls.handleResize
         : handleDraw;
 
-    const onMouseUp = isDragging
+    const onMouseUp = dragControls.isDragging
         ? onDragEnd
-        : isResizing
+        : dragControls.isResizing
         ? onResizeEnd
         : () => handleStopDrawing(onFinishDrawing);
 
@@ -147,7 +152,9 @@ export const PdfSelectSvgOverlay = ({
         <svg
             className="absolute top-0 left-0 w-full h-full pointer-events-auto"
             onMouseDown={
-                !isDragging && !isResizing ? handleStartDrawing : undefined
+                !dragControls.isDragging && !dragControls.isResizing
+                    ? handleStartDrawing
+                    : undefined
             }
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
@@ -155,11 +162,7 @@ export const PdfSelectSvgOverlay = ({
             style={{ zIndex: 20 }}
         >
             {getMovedRois().map((roi) => {
-                return render(
-                    roi,
-                    (e) => onDragStart(e, roi.id!),
-                    (e) => onResizeStart(e, roi.id!)
-                );
+                return render(roi, onDragStart, onResizeStart);
             })}
             {drawStartPos && drawCurrentPos
                 ? (() => {

@@ -7,6 +7,7 @@ import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-ro
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { getScaleFromReferenceScale } from "@/modules/template-editor/utils/coordinates";
 import type { TemplateType } from "@/modules/templates/schema";
+import { useCallback } from "react";
 
 export const DrawablePdfViewer = ({
     fileId,
@@ -26,29 +27,65 @@ export const DrawablePdfViewer = ({
         template.width
     );
 
-    const onRoiClick = (e: React.MouseEvent, roiId: string) => {
-        e.stopPropagation();
-        if (e.ctrlKey || e.metaKey) {
-            if (isSelectedRoi(roiId)) {
-                setSelectedRoiIds((prev) => prev.filter((id) => id !== roiId));
-            } else {
-                setSelectedRoiIds((prev) => [...prev, roiId]);
+    const onRoiClick = useCallback(
+        (e: React.MouseEvent, roiId: string) => {
+            e.stopPropagation();
+            if (e.ctrlKey || e.metaKey) {
+                setSelectedRoiIds((prev) => {
+                    if (prev.includes(roiId)) {
+                        return prev.filter((id) => id !== roiId);
+                    }
+                    return [...prev, roiId];
+                });
+                return;
             }
-            return;
-        }
 
-        setSelectedRoiIds([roiId]);
-    };
+            setSelectedRoiIds([roiId]);
+        },
+        [setSelectedRoiIds]
+    );
 
-    const onDragEnd = (movedRois: RoiType[]) => {
-        setRois(movedRois);
-    };
+    const onDragEnd = useCallback(
+        (movedRois: RoiType[]) => {
+            setRois(movedRois);
+        },
+        [setRois]
+    );
 
-    const onResizeEnd = (resizedRoi: RoiType) => {
-        setRois(
-            rois.map((roi) => (roi.id === resizedRoi.id ? resizedRoi : roi))
-        );
-    };
+    const onResizeEnd = useCallback(
+        (resizedRoi: RoiType) => {
+            setRois((prevRois) =>
+                prevRois.map((roi) =>
+                    roi.id === resizedRoi.id ? resizedRoi : roi
+                )
+            );
+        },
+        [setRois]
+    );
+
+    const renderRoi = useCallback(
+        (
+            roi: RoiType,
+            onDragStart?: (e: React.MouseEvent<Element>, roiId: string) => void,
+            onResizeStart?: (
+                e: React.MouseEvent<Element>,
+                roiId: string
+            ) => void
+        ) => (
+            <RoiSvg
+                key={roi.id}
+                roi={roi}
+                onDelete={removeRoi}
+                scale={referenceScale}
+                onRoiClick={onRoiClick}
+                isSelected={isSelectedRoi(roi.id ?? "")}
+                onRoiDrag={onDragStart}
+                onRoiResizeStart={onResizeStart}
+                isResizeable={mode === "select"}
+            />
+        ),
+        [removeRoi, referenceScale, onRoiClick, isSelectedRoi, mode]
+    );
 
     return (
         <div className="w-full relative">
@@ -58,19 +95,7 @@ export const DrawablePdfViewer = ({
                 resizeEnded={onResizeEnd}
                 width={template.width}
                 rois={rois}
-                render={(roi, onDragStart, onResizeStart) => (
-                    <RoiSvg
-                        key={roi.id}
-                        roi={roi}
-                        onDelete={removeRoi}
-                        scale={referenceScale}
-                        onRoiClick={onRoiClick}
-                        isSelected={isSelectedRoi(roi.id ?? "")}
-                        onRoiDrag={onDragStart}
-                        onRoiResizeStart={onResizeStart}
-                        isResizeable={mode === "select"}
-                    />
-                )}
+                render={renderRoi}
             />
         </div>
     );

@@ -6,7 +6,7 @@ import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-
 
 export type PdfCanvasRenderFn = (
     roi: RoiType,
-    onDragStart?: (e: React.MouseEvent<Element>) => void,
+    onDragStart?: (e: React.MouseEvent<Element>, roiId: string) => void,
     onResizeStart?: (e: React.MouseEvent<Element>, roiId: string) => void
 ) => React.ReactNode;
 
