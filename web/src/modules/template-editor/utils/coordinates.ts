@@ -40,3 +40,15 @@ export const getCoordinatesFromPositions = (
 
     return { x, y, width, height };
 };
+
+export const areCoordinatesOverlapping = (
+    coord1: Coordinates,
+    coord2: Coordinates
+): boolean => {
+    return !(
+        coord1.x + coord1.width < coord2.x ||
+        coord2.x + coord2.width < coord1.x ||
+        coord1.y + coord1.height < coord2.y ||
+        coord2.y + coord2.height < coord1.y
+    );
+};

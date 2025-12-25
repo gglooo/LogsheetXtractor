@@ -1,14 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useSetRoisMutation } from "@/modules/rois/api";
+import { CancelDialog } from "@/modules/template-editor/components/cancel-dialog";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const EditorNavbar = () => {
     const navigate = useNavigate();
 
-    const { rois, template } = useTemplateEditor();
+    const [isCancelDialogOpen, setCancelDialogOpen] = useState(false);
+
+    const { rois, template, canUndo } = useTemplateEditor();
     const setRoisMutation = useSetRoisMutation(template?.id);
 
     const isSavingChanges = setRoisMutation.isPending;
@@ -31,6 +35,10 @@ export const EditorNavbar = () => {
     };
 
     const handleCancel = () => {
+        if (canUndo && !isCancelDialogOpen) {
+            setCancelDialogOpen(true);
+            return;
+        }
         navigate(-1);
     };
 
@@ -47,6 +55,13 @@ export const EditorNavbar = () => {
                     </Button>
                 </div>
             </div>
+            {canUndo && (
+                <CancelDialog
+                    open={isCancelDialogOpen}
+                    onCancel={handleCancel}
+                    onClose={() => setCancelDialogOpen(false)}
+                />
+            )}
         </header>
     );
 };

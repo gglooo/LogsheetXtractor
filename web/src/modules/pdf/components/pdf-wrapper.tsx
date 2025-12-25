@@ -4,31 +4,41 @@ import { HistoryControls } from "@/modules/template-editor/components/history-co
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 
-interface PdfWrapperProps {
+type PdfWrapperProps = {
     children: React.ReactNode;
-}
+};
+
+const DEFAULT_SCALE = 0.8;
 
 export const PdfWrapper = ({ children }: PdfWrapperProps) => {
-    const [scale, setScale] = useState(0.6);
+    const [scale, setScale] = useState(DEFAULT_SCALE);
     const [width, setWidth] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const handleZoomIn = () => setScale((prev) => prev + 0.2);
     const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.1));
-    const handleReset = () => setScale(1);
+    const handleReset = () => setScale(DEFAULT_SCALE);
 
     useLayoutEffect(() => {
         if (!containerRef.current) return;
 
+        let timeoutId: ReturnType<typeof setTimeout>;
+
         const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
-                setWidth(entry.contentRect.width);
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    setWidth(entry.contentRect.width);
+                }, 100);
             }
         });
 
         resizeObserver.observe(containerRef.current);
 
-        return () => resizeObserver.disconnect();
+        return () => {
+            resizeObserver.disconnect();
+            clearTimeout(timeoutId);
+        };
     }, []);
 
     return (
@@ -48,7 +58,7 @@ export const PdfWrapper = ({ children }: PdfWrapperProps) => {
                         variant="outline"
                         size="icon"
                         onClick={handleReset}
-                        disabled={scale === 1}
+                        disabled={scale === DEFAULT_SCALE}
                     >
                         <RotateCcw className="h-4 w-4" />
                     </Button>

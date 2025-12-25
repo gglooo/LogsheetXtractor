@@ -41,9 +41,6 @@ export const DrawablePdfViewer = ({
     };
 
     const onDragEnd = (movedRois: RoiType[]) => {
-        movedRois.forEach((element) => {
-            console.log("moved roi", element.coordinates);
-        });
         setRois(movedRois);
     };
 

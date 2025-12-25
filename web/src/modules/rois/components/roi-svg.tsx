@@ -35,6 +35,7 @@ export const RoiSvg = ({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onMouseDown={(e: React.MouseEvent) => {
+                e.stopPropagation();
                 if (roi.id) {
                     onRoiDrag?.(e, roi.id);
                 }

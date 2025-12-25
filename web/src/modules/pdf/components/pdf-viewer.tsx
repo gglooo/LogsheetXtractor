@@ -2,12 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useFile } from "@/modules/files/api";
 import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
 import { useMemo } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url
-).toString();
+import { Document, Page } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 const A4_ASPECT_RATIO = 1.414;
 
@@ -22,8 +19,23 @@ export const PdfViewer = ({ fileId }: { fileId: string }) => {
     const { scale, width } = usePdfZoom();
 
     return !file.isPending && fileData ? (
-        <Document file={fileData}>
-            <Page pageNumber={1} width={width * scale} />
+        <Document
+            file={fileData}
+            onLoadError={(error) =>
+                console.error("Error loading PDF Document:", error)
+            }
+            onSourceError={(error) =>
+                console.error("Error loading PDF Source:", error)
+            }
+            className="select-none"
+        >
+            <Page
+                pageNumber={1}
+                width={width * scale}
+                onLoadError={(error) =>
+                    console.error("Error loading PDF Page:", error)
+                }
+            />
         </Document>
     ) : (
         <Skeleton
