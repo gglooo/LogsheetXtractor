@@ -47,6 +47,7 @@ export const useKeyboardShortcuts = (
         paste: () => void;
         cut: () => void;
         browse: () => void;
+        focusRoiInput: () => void;
     },
     shortcutWhitelist: ShortcutWhitelist = {}
 ) => {
@@ -61,15 +62,12 @@ export const useKeyboardShortcuts = (
             }
 
             const eventString = getEventString(event);
-            console.log("Keydown eventString:", eventString);
 
             const matchedShortcut = SHORTCUT_REGISTRY.find(
                 (s) =>
                     s.keys.includes(eventString as ShortcutKey) ||
                     s.keys.includes(eventString.toLowerCase() as ShortcutKey)
             );
-
-            console.log("Matched shortcut:", matchedShortcut);
 
             if (matchedShortcut) {
                 const actionFn =

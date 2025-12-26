@@ -58,6 +58,7 @@ export const ToolsSidebarGroup = () => {
         residuals,
         undo,
         redo,
+        roiInputRef,
     } = useTemplateEditor();
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
 
@@ -110,6 +111,10 @@ export const ToolsSidebarGroup = () => {
         selectNextRoi();
     }, [selectNextRoi]);
 
+    const focusRoiInput = useCallback(() => {
+        roiInputRef.current?.focus();
+    }, [roiInputRef]);
+
     useKeyboardShortcuts(
         {
             select: setSelectTool,
@@ -123,6 +128,7 @@ export const ToolsSidebarGroup = () => {
             paste: pasteTool,
             cut: cutTool,
             browse: browseRoiTool,
+            focusRoiInput,
         },
         shortcutWhitelist
     );

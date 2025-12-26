@@ -14,7 +14,7 @@ import {
 export const VARIABLE_NAME_INPUT_ID = "variableNameInput";
 
 const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
-    const { setRois } = useTemplateEditor();
+    const { setRois, roiInputRef } = useTemplateEditor();
 
     if (selectedRois.length > 1) {
         return <MultipleSelectedRois selectedRoisCount={selectedRois.length} />;
@@ -40,8 +40,8 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
                 id={VARIABLE_NAME_INPUT_ID}
                 label="Variable Name"
                 defaultValue={selectedRoi.variableName}
-                autoFocus
                 onFocus={(e) => e.currentTarget.select()}
+                ref={roiInputRef}
             />
             <FormSelect
                 name="type"

@@ -11,7 +11,7 @@ import {
 import { sortRoisByPosition } from "@/modules/template-editor/utils/roi";
 import type { TemplateType } from "@/modules/templates/schema";
 import type { Coordinates } from "@/schema";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 type EditorStateWithHistory = {
     rois: RoiType[];
@@ -43,6 +43,7 @@ export const TemplateEditorProvider = ({
     children: ReactNode;
 }) => {
     const [mode, setMode] = useState<EditorMode>("select");
+    const roiInputRef = useRef<HTMLInputElement>(null);
 
     const { state, set, undo, redo, canUndo, canRedo } =
         useHistory<EditorStateWithHistory>({
@@ -130,6 +131,7 @@ export const TemplateEditorProvider = ({
                 redo,
                 canUndo,
                 canRedo,
+                roiInputRef,
             }}
         >
             {children}

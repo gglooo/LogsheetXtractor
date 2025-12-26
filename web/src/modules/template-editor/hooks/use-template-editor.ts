@@ -27,6 +27,7 @@ export type TemplateEditorContextType = {
     redo: () => void;
     canUndo: boolean;
     canRedo: boolean;
+    roiInputRef: React.RefObject<HTMLInputElement | null>;
 };
 
 export const TemplateEditorContext = createContext<

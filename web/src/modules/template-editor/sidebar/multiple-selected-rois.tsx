@@ -16,7 +16,7 @@ export const MultipleSelectedRois = ({
 }) => {
     const intl = useIntl();
 
-    const { setRois } = useTemplateEditor();
+    const { setRois, roiInputRef } = useTemplateEditor();
     const { isSelectedRoi } = useSelectedRois();
 
     const handleSubmit = async (values: EditRoiFormValues) => {
@@ -68,8 +68,8 @@ export const MultipleSelectedRois = ({
                                 id: "template-editor.sidebar.multiple-select-rois.baseVariableName",
                                 defaultMessage: "Base variable name",
                             })}
-                            autoFocus
                             onFocus={(e) => e.currentTarget.select()}
+                            ref={roiInputRef}
                         />
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <Info size={12} />

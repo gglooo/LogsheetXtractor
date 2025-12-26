@@ -4,6 +4,7 @@ export type ShortcutKey =
     | "d"
     | "s"
     | "r"
+    | "f"
     | "Ctrl+z"
     | "Ctrl+Shift+z"
     | "Ctrl+a"
@@ -26,6 +27,7 @@ export const BROWSE_ROI_FORCE_KEY: ShortcutKey = `${SHIFT_KEY}+${TAB_KEY}`;
 export const DRAW_TOOL_KEY: ShortcutKey = "d";
 export const SELECT_TOOL_KEY: ShortcutKey = "s";
 export const CLEAR_ROIS_KEY: ShortcutKey = "r";
+export const FOCUS_ROI_INPUT_KEY: ShortcutKey = "f";
 
 export const SHORTCUT_REGISTRY: readonly ShortcutConfig[] = [
     {
@@ -93,6 +95,12 @@ export const SHORTCUT_REGISTRY: readonly ShortcutConfig[] = [
         description: "Cut selected ROIs",
         keys: [`${CONTROL_KEY}+x`],
         actionKey: "cut",
+    },
+    {
+        name: "Focus ROI Input",
+        description: "Focus the ROI input field",
+        keys: [FOCUS_ROI_INPUT_KEY],
+        actionKey: "focusRoiInput",
     },
 ] as const;
 
