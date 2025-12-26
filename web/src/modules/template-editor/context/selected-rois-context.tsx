@@ -1,5 +1,5 @@
 import { SelectedRoisContext } from "@/modules/template-editor/hooks/use-selected-rois";
-import { useMemo, useState, type PropsWithChildren } from "react";
+import { useCallback, useMemo, useState, type PropsWithChildren } from "react";
 
 export const SelectedRoisProvider = ({ children }: PropsWithChildren) => {
     const [selectedRoiIds, setSelectedRoiIds] = useState<string[]>([]);
@@ -9,9 +9,12 @@ export const SelectedRoisProvider = ({ children }: PropsWithChildren) => {
         [selectedRoiIds]
     );
 
-    const isSelectedRoi = (roiId: string) => {
-        return selectedRoiIdsSet.has(roiId);
-    };
+    const isSelectedRoi = useCallback(
+        (roiId: string) => {
+            return selectedRoiIdsSet.has(roiId);
+        },
+        [selectedRoiIdsSet]
+    );
 
     return (
         <SelectedRoisContext.Provider

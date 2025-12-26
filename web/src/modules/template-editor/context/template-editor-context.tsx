@@ -8,6 +8,7 @@ import {
     TemplateEditorContext,
     type EditorMode,
 } from "@/modules/template-editor/hooks/use-template-editor";
+import { sortRoisByPosition } from "@/modules/template-editor/utils/roi";
 import type { TemplateType } from "@/modules/templates/schema";
 import type { Coordinates } from "@/schema";
 import { useState, type ReactNode } from "react";
@@ -45,8 +46,8 @@ export const TemplateEditorProvider = ({
 
     const { state, set, undo, redo, canUndo, canRedo } =
         useHistory<EditorStateWithHistory>({
-            rois: template?.rois ?? [],
-            residuals: template?.residuals ?? [],
+            rois: sortRoisByPosition(template?.rois ?? []),
+            residuals: sortRoisByPosition(template?.residuals ?? []),
         });
 
     const rois = state.rois;
@@ -58,7 +59,7 @@ export const TemplateEditorProvider = ({
 
             return {
                 ...prev,
-                rois: rois.map(addRequiredParamsToRoi),
+                rois: sortRoisByPosition(rois.map(addRequiredParamsToRoi)),
             };
         });
     };

@@ -2,31 +2,22 @@ import { FormInput } from "@/components/form/form-input";
 import { FormSelect } from "@/components/form/form-select";
 import { Form, FormAutoSubmit } from "@/components/ui/form";
 import { SidebarGroup } from "@/components/ui/sidebar";
-import {
-    roiTypeSchema,
-    roiTypeSelectOptions,
-    type DetectedRoiType,
-} from "@/modules/rois/schema";
+import { roiTypeSelectOptions, type RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
-import z from "zod";
+import { MultipleSelectedRois } from "@/modules/template-editor/sidebar/multiple-selected-rois";
+import {
+    editRoiSchema,
+    type EditRoiFormValues,
+} from "@/modules/template-editor/sidebar/schema";
 
-const editRoiSchema = z.object({
-    variableName: z.string().min(1),
-    type: roiTypeSchema,
-});
+export const VARIABLE_NAME_INPUT_ID = "variableNameInput";
 
-const SelectedRoiContent = ({
-    selectedRois,
-}: {
-    selectedRois: DetectedRoiType[];
-}) => {
+const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
     const { setRois } = useTemplateEditor();
 
     if (selectedRois.length > 1) {
-        return (
-            <div>{`Multiple ROIs selected (${selectedRois.length}). Please select a single ROI to edit.`}</div>
-        );
+        return <MultipleSelectedRois selectedRoisCount={selectedRois.length} />;
     }
     if (selectedRois.length === 0) {
         return <div>No ROI selected.</div>;
@@ -34,7 +25,7 @@ const SelectedRoiContent = ({
 
     const selectedRoi = selectedRois[0];
 
-    const handleSubmit = async (values: z.infer<typeof editRoiSchema>) => {
+    const handleSubmit = async (values: EditRoiFormValues) => {
         setRois((prevRois) =>
             prevRois.map((roi) =>
                 roi.id === selectedRoi.id ? { ...roi, ...values } : roi
@@ -46,8 +37,11 @@ const SelectedRoiContent = ({
         <div className="flex flex-col gap-4">
             <FormInput
                 name="variableName"
+                id={VARIABLE_NAME_INPUT_ID}
                 label="Variable Name"
                 defaultValue={selectedRoi.variableName}
+                autoFocus
+                onFocus={(e) => e.currentTarget.select()}
             />
             <FormSelect
                 name="type"
@@ -60,12 +54,10 @@ const SelectedRoiContent = ({
 };
 
 export const SelectedRoiSidebarGroup = () => {
-    const { selectedRoiIds } = useSelectedRois();
+    const { isSelectedRoi } = useSelectedRois();
     const { rois } = useTemplateEditor();
 
-    const selectedRois = rois.filter((roi) =>
-        selectedRoiIds.includes(roi.id ?? "")
-    );
+    const selectedRois = rois.filter((roi) => isSelectedRoi(roi.id ?? ""));
 
     const selectedRoi = selectedRois[0];
 

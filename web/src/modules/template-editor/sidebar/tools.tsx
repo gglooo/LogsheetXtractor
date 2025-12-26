@@ -1,16 +1,22 @@
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { SidebarGroup } from "@/components/ui/sidebar";
 import { DetectRoisAction } from "@/modules/rois/actions/detect-rois-action";
 import type { DetectRoiResponseType, RoiType } from "@/modules/rois/schema";
 import { ShortcutLabel } from "@/modules/template-editor/components/shortcut-label";
 import {
+    BROWSE_ROI_FORCE_KEY,
     CLEAR_ROIS_KEY,
     DRAW_TOOL_KEY,
     SELECT_TOOL_KEY,
-    useKeyboardShortcuts,
-} from "@/modules/template-editor/hooks/use-keyboard-shortcuts";
+    type ShortcutWhitelist,
+} from "@/modules/template-editor/hooks/shortcuts/types";
+import { useKeyboardShortcuts } from "@/modules/template-editor/hooks/shortcuts/use-keyboard-shortcuts";
+import { useBrowseSelectedRois } from "@/modules/template-editor/hooks/use-browse-selected-rois";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { ShortcutTooltip } from "@/modules/template-editor/sidebar/components/shortcut-tooltip";
+import { VARIABLE_NAME_INPUT_ID } from "@/modules/template-editor/sidebar/selected-roi";
 import { copy, paste } from "@/modules/template-editor/utils/copy-paste";
 import { MousePointer, Square, X } from "lucide-react";
 import { useCallback } from "react";
@@ -18,6 +24,10 @@ import { useIntl } from "react-intl";
 import { useParams } from "react-router-dom";
 
 const PASTE_OFFSET = 80;
+
+const shortcutWhitelist: ShortcutWhitelist = {
+    [VARIABLE_NAME_INPUT_ID]: [BROWSE_ROI_FORCE_KEY],
+};
 
 const adjustRoiAfterPaste = (rois: RoiType[]) => {
     return rois.map((roi) => {
@@ -29,6 +39,7 @@ const adjustRoiAfterPaste = (rois: RoiType[]) => {
                 y: roi.coordinates.y + PASTE_OFFSET,
             },
             id: crypto.randomUUID(),
+            variableName: `${roi.variableName}_copy`,
         };
     });
 };
@@ -56,6 +67,8 @@ export const ToolsSidebarGroup = () => {
             [...residuals, ...detectedData.residuals]
         );
     };
+
+    const { selectNextRoi } = useBrowseSelectedRois();
 
     const setSelectTool = useCallback(() => setMode("select"), [setMode]);
 
@@ -93,18 +106,26 @@ export const ToolsSidebarGroup = () => {
         deleteTool();
     }, [deleteTool, isSelectedRoi, rois]);
 
-    useKeyboardShortcuts({
-        selectTool: setSelectTool,
-        drawTool: setDrawTool,
-        clearRois,
-        undo,
-        redo,
-        selectAll,
-        deleteTool,
-        copyTool,
-        pasteTool,
-        cutTool,
-    });
+    const browseRoiTool = useCallback(() => {
+        selectNextRoi();
+    }, [selectNextRoi]);
+
+    useKeyboardShortcuts(
+        {
+            select: setSelectTool,
+            draw: setDrawTool,
+            clear: clearRois,
+            undo,
+            redo,
+            selectAll: selectAll,
+            delete: deleteTool,
+            copy: copyTool,
+            paste: pasteTool,
+            cut: cutTool,
+            browse: browseRoiTool,
+        },
+        shortcutWhitelist
+    );
 
     return (
         <SidebarGroup
@@ -164,6 +185,8 @@ export const ToolsSidebarGroup = () => {
                     onResult={handleSetDetectedData}
                     className="flex-1"
                 />
+                <Separator />
+                <ShortcutTooltip />
             </div>
         </SidebarGroup>
     );
