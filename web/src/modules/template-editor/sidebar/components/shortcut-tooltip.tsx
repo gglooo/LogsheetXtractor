@@ -21,7 +21,7 @@ export const ShortcutBadge = ({
 }) => {
     return (
         <div className="flex items-center justify-between gap-4 py-1">
-            <span className="text-xs text-muted-foreground">{description}</span>
+            <span className="text-xs text-background">{description}</span>
             <div className="flex items-center gap-1">
                 <Kbd>{keyCombination}</Kbd>
             </div>
