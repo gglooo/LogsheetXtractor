@@ -36,7 +36,7 @@ const Form = <T extends z.ZodType<FieldValues, FieldValues>>({
 
     return (
         <FormProvider {...methods}>
-            <form>{children}</form>
+            <form onSubmit={(e) => e.preventDefault()}>{children}</form>
         </FormProvider>
     );
 };
