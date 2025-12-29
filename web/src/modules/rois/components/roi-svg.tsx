@@ -1,3 +1,8 @@
+import {
+    DEFAULT_ROI_COLOR,
+    DUPLICATE_ROI_COLOR,
+    SELECTED_ROI_COLOR,
+} from "@/modules/pdf/const";
 import type { DetectedRoiType } from "@/modules/rois/schema";
 import React, { useState } from "react";
 
@@ -6,6 +11,7 @@ type Props = {
     scale: number;
     isSelected?: boolean;
     isResizeable?: boolean;
+    isDuplicate?: boolean;
     onDelete: (id: string) => void;
     onRoiClick?: (e: React.MouseEvent, id: string) => void;
     onRoiDrag?: (e: React.MouseEvent, id: string) => void;
@@ -18,6 +24,7 @@ export const RoiSvg = React.memo(
         scale,
         isSelected,
         isResizeable = true,
+        isDuplicate = false,
         onDelete,
         onRoiClick,
         onRoiDrag,
@@ -30,6 +37,12 @@ export const RoiSvg = React.memo(
         const scaledY = y * scale;
         const scaledWidth = width * scale;
         const scaledHeight = height * scale;
+
+        const stroke = isSelected
+            ? SELECTED_ROI_COLOR
+            : isDuplicate
+            ? DUPLICATE_ROI_COLOR
+            : DEFAULT_ROI_COLOR;
 
         return (
             <g
@@ -56,33 +69,40 @@ export const RoiSvg = React.memo(
                             ? "rgba(59, 130, 246, 0.2)"
                             : "rgba(59, 130, 246, 0.1)"
                     }
-                    stroke={isSelected ? "rgb(255, 0, 0)" : "rgb(59, 130, 246)"}
+                    stroke={stroke}
                     strokeWidth="2"
                     className="transition-colors pointer-events-auto"
                 />
 
-                <defs>
-                    <filter x="0" y="0" width="1" height="1" id="solid">
-                        <feFlood floodColor="yellow" />
-                        <feComposite in="SourceGraphic" operator="xor" />
-                    </filter>
-                </defs>
-                <text
-                    filter="url(#solid)"
-                    x={scaledX}
-                    y={scaledY - 5}
-                    className="text-[12px] font-bold select-none pointer-events-none"
-                >
-                    {" "}
-                    {roi.variableName}
-                </text>
-                <text
-                    x={scaledX}
-                    y={scaledY - 5}
-                    className="text-[12px] font-bold select-none pointer-events-none"
-                >
-                    {roi.variableName}
-                </text>
+                {isHovered || isSelected ? (
+                    <>
+                        <defs>
+                            <filter x="0" y="0" width="1" height="1" id="solid">
+                                <feFlood floodColor="yellow" />
+                                <feComposite
+                                    in="SourceGraphic"
+                                    operator="xor"
+                                />
+                            </filter>
+                        </defs>
+                        <text
+                            filter="url(#solid)"
+                            x={scaledX}
+                            y={scaledY - 5}
+                            className="text-[12px] font-bold select-none pointer-events-none"
+                        >
+                            {" "}
+                            {roi.variableName}
+                        </text>
+                        <text
+                            x={scaledX}
+                            y={scaledY - 5}
+                            className="text-[12px] font-bold select-none pointer-events-none"
+                        >
+                            {roi.variableName}
+                        </text>
+                    </>
+                ) : null}
 
                 {isHovered && (
                     <g

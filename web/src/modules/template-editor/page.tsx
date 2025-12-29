@@ -54,7 +54,7 @@ export const TemplateEditorContent = () => {
 
                     <main className="flex-1 overflow-auto p-4">
                         <h1 className="text-2xl font-bold mb-4">
-                            Template Editor - {template.id}
+                            {template.name}
                         </h1>
 
                         {template ? (

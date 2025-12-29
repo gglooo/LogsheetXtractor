@@ -1,3 +1,4 @@
+import { getDuplicates } from "@/modules/pdf/utils";
 import type {
     DetectedResidualType,
     ResidualType,
@@ -11,7 +12,7 @@ import {
 import { sortRoisByPosition } from "@/modules/template-editor/utils/roi";
 import type { TemplateType } from "@/modules/templates/schema";
 import type { Coordinates } from "@/schema";
-import { useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 
 type EditorStateWithHistory = {
     rois: RoiType[];
@@ -91,15 +92,18 @@ export const TemplateEditorProvider = ({
         }));
     };
 
-    const addRoi = (coordinates: Coordinates) => {
+    const addRoi = (coordinates: Coordinates, name?: string) => {
         if (!template) {
             return;
         }
 
+        const baseName = name ?? "unnamed_roi";
+        const uniqueId = crypto.randomUUID();
+
         const newRoi: RoiType = {
-            id: crypto.randomUUID(),
+            id: uniqueId,
             templateId: template.id,
-            variableName: "unnamed_roi",
+            variableName: `${baseName}-${uniqueId.slice(0, 4)}`,
             type: "Handwritten",
             coordinates,
             createdAt: new Date().toISOString(),
@@ -113,6 +117,11 @@ export const TemplateEditorProvider = ({
     const removeRoi = (id: string) => {
         setRois((prev) => prev.filter((roi) => roi.id !== id));
     };
+
+    const duplicateRoiNames = useMemo(
+        () => getDuplicates(rois.map((r) => r.variableName)),
+        [rois]
+    );
 
     return (
         <TemplateEditorContext.Provider
@@ -132,6 +141,7 @@ export const TemplateEditorProvider = ({
                 canUndo,
                 canRedo,
                 roiInputRef,
+                duplicateRoiNames,
             }}
         >
             {children}

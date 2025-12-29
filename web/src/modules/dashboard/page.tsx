@@ -27,6 +27,14 @@ export const DashboardPage = () => {
                 {templates.data?.map((template) => (
                     <TemplateListItem key={template.id} template={template} />
                 ))}
+                {templates.data && templates.data.length === 0 ? (
+                    <div>
+                        {intl.formatMessage({
+                            id: "dashboard.noTemplates",
+                            defaultMessage: "No templates available.",
+                        })}
+                    </div>
+                ) : null}
             </div>
         </main>
     );

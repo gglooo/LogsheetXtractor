@@ -4,15 +4,18 @@ import { useSetRoisMutation } from "@/modules/rois/api";
 import { CancelDialog } from "@/modules/template-editor/components/cancel-dialog";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { useState } from "react";
+import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const EditorNavbar = () => {
     const navigate = useNavigate();
 
+    const intl = useIntl();
+
     const [isCancelDialogOpen, setCancelDialogOpen] = useState(false);
 
-    const { rois, template, canUndo } = useTemplateEditor();
+    const { rois, template, canUndo, duplicateRoiNames } = useTemplateEditor();
     const setRoisMutation = useSetRoisMutation(template?.id);
 
     const isSavingChanges = setRoisMutation.isPending;
@@ -20,6 +23,17 @@ export const EditorNavbar = () => {
     const handleSaveChanges = async () => {
         if (!template) {
             toast.error("No template loaded.");
+            return;
+        }
+
+        if (duplicateRoiNames.size > 0) {
+            toast.error(
+                intl.formatMessage({
+                    id: "template-editor.navbar.save-rois.duplicate-roi-message",
+                    defaultMessage:
+                        "There are duplicate ROI variable names, please name then uniquely.",
+                })
+            );
             return;
         }
 

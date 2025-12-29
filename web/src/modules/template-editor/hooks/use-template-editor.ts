@@ -20,7 +20,7 @@ export type TemplateEditorContextType = {
         rois: DetectedRoiType[],
         residuals: DetectedResidualType[]
     ) => void;
-    addRoi: (coordinates: Coordinates) => string | undefined;
+    addRoi: (coordinates: Coordinates, name?: string) => string | undefined;
     removeRoi: (variableName: string) => void;
     template?: TemplateType;
     undo: () => void;
@@ -28,6 +28,7 @@ export type TemplateEditorContextType = {
     canUndo: boolean;
     canRedo: boolean;
     roiInputRef: React.RefObject<HTMLInputElement | null>;
+    duplicateRoiNames: Set<string>;
 };
 
 export const TemplateEditorContext = createContext<

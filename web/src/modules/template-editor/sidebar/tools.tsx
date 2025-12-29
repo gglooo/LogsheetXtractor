@@ -38,7 +38,6 @@ const adjustRoiAfterPaste = (rois: RoiType[]) => {
                 x: roi.coordinates.x + PASTE_OFFSET,
                 y: roi.coordinates.y + PASTE_OFFSET,
             },
-            id: crypto.randomUUID(),
             variableName: `${roi.variableName}_copy`,
         };
     });
@@ -50,6 +49,7 @@ export const ToolsSidebarGroup = () => {
     const { id } = useParams<{ id: string }>();
 
     const {
+        addRoi,
         setRois,
         setRoisAndResiduals,
         setMode,
@@ -96,10 +96,14 @@ export const ToolsSidebarGroup = () => {
             return;
         }
 
-        setRois([...rois, ...adjustedRois]);
-        setSelectedRoiIds(adjustedRois.map((roi) => roi.id!));
+        const addedRoisIds = [];
+        for (const roi of adjustedRois) {
+            addedRoisIds.push(addRoi(roi.coordinates, roi.variableName)!);
+        }
+
+        setSelectedRoiIds(addedRoisIds);
         setMode("select");
-    }, [rois, setMode, setRois, setSelectedRoiIds]);
+    }, [addRoi, setMode, setSelectedRoiIds]);
 
     const cutTool = useCallback(() => {
         const roisToCut = rois.filter((roi) => isSelectedRoi(roi.id ?? ""));
