@@ -1,14 +1,15 @@
 import { PdfSvgCanvas } from "@/modules/pdf/components/overlay/pdf-svg-canvas";
 import { PdfViewer } from "@/modules/pdf/components/pdf-viewer";
 import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
-import { getDuplicates } from "@/modules/pdf/utils";
+import { useSplitTool } from "@/modules/pdf/hooks/use-split-tool";
+import { getDuplicates, type Point } from "@/modules/pdf/utils";
 import { RoiSvg } from "@/modules/rois/components/roi-svg";
 import type { RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { getScaleFromReferenceScale } from "@/modules/template-editor/utils/coordinates";
 import type { TemplateType } from "@/modules/templates/schema";
-import { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 
 export const DrawablePdfViewer = ({
     fileId,
@@ -33,9 +34,35 @@ export const DrawablePdfViewer = ({
         template.width
     );
 
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const getMouseCoordinatesRelativeToContainer = useCallback(
+        (e: React.MouseEvent): Point | undefined => {
+            if (containerRef.current === null) {
+                return;
+            }
+
+            const rect = containerRef.current.getBoundingClientRect();
+
+            return {
+                x: (e.clientX - rect.left) / referenceScale,
+                y: (e.clientY - rect.top) / referenceScale,
+            };
+        },
+        [referenceScale]
+    );
+
+    const { handleSplit, setSplitRoiGuideLines, roiGuideLines } = useSplitTool(
+        getMouseCoordinatesRelativeToContainer
+    );
+
     const onRoiClick = useCallback(
         (e: React.MouseEvent, roiId: string) => {
             e.stopPropagation();
+            if (mode === "split") {
+                return handleSplit(e, roiId);
+            }
+
             if (e.ctrlKey || e.metaKey) {
                 setSelectedRoiIds((prev) => {
                     if (prev.includes(roiId)) {
@@ -48,7 +75,7 @@ export const DrawablePdfViewer = ({
 
             setSelectedRoiIds([roiId]);
         },
-        [setSelectedRoiIds]
+        [handleSplit, mode, setSelectedRoiIds]
     );
 
     const onDragEnd = useCallback(
@@ -89,6 +116,8 @@ export const DrawablePdfViewer = ({
                 onRoiDrag={onDragStart}
                 onRoiResizeStart={onResizeStart}
                 isResizeable={mode === "select"}
+                onMouseMove={setSplitRoiGuideLines}
+                guideLineCoordinates={roiGuideLines}
             />
         ),
         [
@@ -98,11 +127,13 @@ export const DrawablePdfViewer = ({
             isSelectedRoi,
             duplicateRoiNames,
             mode,
+            setSplitRoiGuideLines,
+            roiGuideLines,
         ]
     );
 
     return (
-        <div className="w-full relative">
+        <div className="w-full relative" ref={containerRef}>
             <PdfViewer fileId={fileId} />
             <PdfSvgCanvas
                 dragEnded={onDragEnd}

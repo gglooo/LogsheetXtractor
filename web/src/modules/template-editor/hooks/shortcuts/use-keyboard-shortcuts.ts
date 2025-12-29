@@ -38,6 +38,7 @@ export const useKeyboardShortcuts = (
     actions: {
         select: () => void;
         draw: () => void;
+        split: () => void;
         clear: () => void;
         undo: () => void;
         redo: () => void;

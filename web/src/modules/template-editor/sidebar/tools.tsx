@@ -9,6 +9,7 @@ import {
     CLEAR_ROIS_KEY,
     DRAW_TOOL_KEY,
     SELECT_TOOL_KEY,
+    SPLIT_TOOL_KEY,
     type ShortcutWhitelist,
 } from "@/modules/template-editor/hooks/shortcuts/types";
 import { useKeyboardShortcuts } from "@/modules/template-editor/hooks/shortcuts/use-keyboard-shortcuts";
@@ -18,7 +19,7 @@ import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-
 import { ShortcutTooltip } from "@/modules/template-editor/sidebar/components/shortcut-tooltip";
 import { VARIABLE_NAME_INPUT_ID } from "@/modules/template-editor/sidebar/selected-roi";
 import { copy, paste } from "@/modules/template-editor/utils/copy-paste";
-import { MousePointer, Square, X } from "lucide-react";
+import { Divide, MousePointer, Square, X } from "lucide-react";
 import { useCallback } from "react";
 import { useIntl } from "react-intl";
 import { useParams } from "react-router-dom";
@@ -75,6 +76,8 @@ export const ToolsSidebarGroup = () => {
 
     const setDrawTool = useCallback(() => setMode("draw"), [setMode]);
 
+    const setSplitTool = useCallback(() => setMode("split"), [setMode]);
+
     const clearRois = useCallback(() => setRois([]), [setRois]);
 
     const selectAll = useCallback(() => {
@@ -123,6 +126,7 @@ export const ToolsSidebarGroup = () => {
         {
             select: setSelectTool,
             draw: setDrawTool,
+            split: setSplitTool,
             clear: clearRois,
             undo,
             redo,
@@ -175,6 +179,21 @@ export const ToolsSidebarGroup = () => {
                         />
                     </Button>
                 </div>
+                <Button
+                    variant={mode === "split" ? "default" : "outline"}
+                    disabled={rois.length === 0}
+                    className="w-full"
+                    onClick={setSplitTool}
+                >
+                    <Divide />
+                    <ShortcutLabel
+                        shortcut={SPLIT_TOOL_KEY}
+                        label={intl.formatMessage({
+                            id: "templateEditor.sidebar.split",
+                            defaultMessage: "Split ROI",
+                        })}
+                    />
+                </Button>
                 <Button
                     variant="outline"
                     disabled={rois.length === 0}

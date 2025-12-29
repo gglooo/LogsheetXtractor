@@ -92,9 +92,9 @@ export const TemplateEditorProvider = ({
         }));
     };
 
-    const addRoi = (coordinates: Coordinates, name?: string) => {
+    const getNewRoi = (coordinates: Coordinates, name?: string): RoiType => {
         if (!template) {
-            return;
+            throw new Error("Template is not defined");
         }
 
         const baseName = name ?? "unnamed_roi";
@@ -108,6 +108,12 @@ export const TemplateEditorProvider = ({
             coordinates,
             createdAt: new Date().toISOString(),
         };
+
+        return newRoi;
+    };
+
+    const addRoi = (coordinates: Coordinates, name?: string) => {
+        const newRoi = getNewRoi(coordinates, name);
 
         setRois((prev) => [...prev, newRoi]);
 
@@ -135,6 +141,7 @@ export const TemplateEditorProvider = ({
                 setRoisAndResiduals,
                 template,
                 addRoi,
+                getNewRoi,
                 removeRoi,
                 undo,
                 redo,

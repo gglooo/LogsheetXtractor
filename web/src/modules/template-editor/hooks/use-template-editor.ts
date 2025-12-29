@@ -7,7 +7,7 @@ import type { TemplateType } from "@/modules/templates/schema";
 import type { Coordinates } from "@/schema";
 import { createContext, useContext, type SetStateAction } from "react";
 
-export type EditorMode = "draw" | "select";
+export type EditorMode = "draw" | "select" | "split";
 
 export type TemplateEditorContextType = {
     mode: EditorMode;
@@ -21,6 +21,7 @@ export type TemplateEditorContextType = {
         residuals: DetectedResidualType[]
     ) => void;
     addRoi: (coordinates: Coordinates, name?: string) => string | undefined;
+    getNewRoi: (coordinates: Coordinates, name?: string) => RoiType;
     removeRoi: (variableName: string) => void;
     template?: TemplateType;
     undo: () => void;

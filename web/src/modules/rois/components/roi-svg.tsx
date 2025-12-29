@@ -3,7 +3,8 @@ import {
     DUPLICATE_ROI_COLOR,
     SELECTED_ROI_COLOR,
 } from "@/modules/pdf/const";
-import type { DetectedRoiType } from "@/modules/rois/schema";
+import type { DetectedRoiType, RoiType } from "@/modules/rois/schema";
+import type { Coordinates } from "@/schema";
 import React, { useState } from "react";
 
 type Props = {
@@ -12,10 +13,12 @@ type Props = {
     isSelected?: boolean;
     isResizeable?: boolean;
     isDuplicate?: boolean;
+    guideLineCoordinates?: Coordinates;
     onDelete: (id: string) => void;
     onRoiClick?: (e: React.MouseEvent, id: string) => void;
     onRoiDrag?: (e: React.MouseEvent, id: string) => void;
     onRoiResizeStart?: (e: React.MouseEvent, id: string) => void;
+    onMouseMove?: (e: React.MouseEvent, roi: RoiType) => void;
 };
 
 export const RoiSvg = React.memo(
@@ -23,12 +26,14 @@ export const RoiSvg = React.memo(
         roi,
         scale,
         isSelected,
+        guideLineCoordinates,
         isResizeable = true,
         isDuplicate = false,
         onDelete,
         onRoiClick,
         onRoiDrag,
         onRoiResizeStart,
+        onMouseMove,
     }: Props) => {
         const [isHovered, setIsHovered] = useState(false);
         const { x, y, width, height } = roi.coordinates;
@@ -54,6 +59,9 @@ export const RoiSvg = React.memo(
                         onRoiDrag?.(e, roi.id);
                     }
                 }}
+                onMouseMove={(e) => {
+                    onMouseMove?.(e, roi as RoiType);
+                }}
                 onClick={(e: React.MouseEvent) =>
                     roi.id && onRoiClick?.(e, roi.id)
                 }
@@ -73,6 +81,17 @@ export const RoiSvg = React.memo(
                     strokeWidth="2"
                     className="transition-colors pointer-events-auto"
                 />
+
+                {guideLineCoordinates && isHovered ? (
+                    <rect
+                        x={guideLineCoordinates.x * scale}
+                        y={guideLineCoordinates.y * scale}
+                        width={guideLineCoordinates.width * scale}
+                        height={guideLineCoordinates.height * scale}
+                        fill="rgb(120,120,120)"
+                        strokeDasharray="4"
+                    />
+                ) : null}
 
                 {isHovered || isSelected ? (
                     <>

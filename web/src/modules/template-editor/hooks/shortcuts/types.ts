@@ -3,6 +3,7 @@ export type ShortcutKey =
     | "Shift+Tab"
     | "d"
     | "s"
+    | "t"
     | "r"
     | "f"
     | "Ctrl+z"
@@ -11,7 +12,8 @@ export type ShortcutKey =
     | "Delete"
     | "Ctrl+c"
     | "Ctrl+v"
-    | "Ctrl+x";
+    | "Ctrl+x"
+    | "Ctrl+t";
 
 export type ShortcutConfig = {
     name: string;
@@ -26,6 +28,7 @@ export const TAB_KEY = "Tab";
 export const BROWSE_ROI_FORCE_KEY: ShortcutKey = `${SHIFT_KEY}+${TAB_KEY}`;
 export const DRAW_TOOL_KEY: ShortcutKey = "d";
 export const SELECT_TOOL_KEY: ShortcutKey = "s";
+export const SPLIT_TOOL_KEY: ShortcutKey = "t";
 export const CLEAR_ROIS_KEY: ShortcutKey = "r";
 export const FOCUS_ROI_INPUT_KEY: ShortcutKey = "f";
 
@@ -47,6 +50,13 @@ export const SHORTCUT_REGISTRY: readonly ShortcutConfig[] = [
         description: "Activate the select tool",
         keys: [SELECT_TOOL_KEY],
         actionKey: "select",
+    },
+    {
+        name: "Split tool",
+        description:
+            "Click on ROI to split it horizontally or ctrl + click to split vertically",
+        keys: [SPLIT_TOOL_KEY],
+        actionKey: "split",
     },
     {
         name: "Undo",
