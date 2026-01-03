@@ -21,7 +21,7 @@ export const useDrawRectangle = (canDraw: boolean) => {
     const [startPos, setStartPos] = useState<Position | null>(null);
     const [currentPos, setCurrentPos] = useState<Position | null>(null);
 
-    const handleStartDrawing = (e: React.MouseEvent<SVGSVGElement>) => {
+    const handleStartDrawing = (e: React.MouseEvent) => {
         if (!canDraw) {
             return;
         }
@@ -34,7 +34,7 @@ export const useDrawRectangle = (canDraw: boolean) => {
         setCurrentPos({ x, y });
     };
 
-    const handleDraw = (e: React.MouseEvent<SVGSVGElement>) => {
+    const handleDraw = (e: React.MouseEvent) => {
         if (!startPos || !canDraw) {
             return;
         }

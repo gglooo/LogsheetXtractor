@@ -60,7 +60,11 @@ export const TemplateEditorContent = () => {
                         {template ? (
                             <div
                                 className={
-                                    mode === "draw" ? "cursor-crosshair" : ""
+                                    mode === "draw"
+                                        ? "cursor-crosshair"
+                                        : mode === "split"
+                                        ? "cursor-col-resize"
+                                        : "cursor-default"
                                 }
                             >
                                 {template.file?.id ? (

@@ -11,6 +11,7 @@ type Props = {
     roi: DetectedRoiType;
     scale: number;
     isSelected?: boolean;
+    isDragging?: boolean;
     isResizeable?: boolean;
     isDuplicate?: boolean;
     guideLineCoordinates?: Coordinates;
@@ -26,6 +27,7 @@ export const RoiSvg = React.memo(
         roi,
         scale,
         isSelected,
+        isDragging,
         guideLineCoordinates,
         isResizeable = true,
         isDuplicate = false,
@@ -62,9 +64,9 @@ export const RoiSvg = React.memo(
                 onMouseMove={(e) => {
                     onMouseMove?.(e, roi as RoiType);
                 }}
-                onClick={(e: React.MouseEvent) =>
-                    roi.id && onRoiClick?.(e, roi.id)
-                }
+                onClick={(e: React.MouseEvent) => {
+                    return !isDragging && roi.id && onRoiClick?.(e, roi.id);
+                }}
                 className="cursor-pointer"
             >
                 <rect
@@ -153,7 +155,6 @@ export const RoiSvg = React.memo(
                         className="cursor-nwse-resize"
                         onMouseDown={(e) => {
                             e.stopPropagation();
-                            onRoiClick?.(e, roi.id!);
                             onRoiResizeStart?.(e, roi.id!);
                         }}
                     >

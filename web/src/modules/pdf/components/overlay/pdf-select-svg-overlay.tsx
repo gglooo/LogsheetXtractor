@@ -17,6 +17,8 @@ import {
 import type { Coordinates } from "@/schema";
 import { useCallback, useLayoutEffect, useRef } from "react";
 
+type InteractionMode = "drawing" | "dragging" | "resizing" | null;
+
 export const PdfSelectSvgOverlay = ({
     rois,
     render,
@@ -28,11 +30,12 @@ export const PdfSelectSvgOverlay = ({
     render: PdfCanvasRenderFn;
     width: number;
     dragEnded?: (rois: RoiType[]) => void;
-    resizeEnded?: (roi: RoiType) => void;
+    resizeEnded?: (rois: RoiType[]) => void;
 }) => {
     const { width: pdfWidth, scale } = usePdfZoom();
     const { isSelectedRoi, setSelectedRoiIds } = useSelectedRois();
 
+    const interactionMode = useRef<InteractionMode>(null);
     const dragControls = useDrag();
     const dragControlsRef = useRef(dragControls);
 
@@ -89,32 +92,53 @@ export const PdfSelectSvgOverlay = ({
             };
         });
 
-    const onDragEnd = () => {
-        dragEnded?.(getMovedRois());
-        dragControls.handleDragEnd();
-    };
-
     const onDragStart = useCallback(
         (e: React.MouseEvent<Element>, roiId: string) => {
             if (!isSelectedRoi(roiId)) {
                 return;
             }
+            interactionMode.current = "dragging";
             dragControlsRef.current.handleDragStart(e);
         },
         [isSelectedRoi]
     );
 
-    const onResizeStart = useCallback(
-        (e: React.MouseEvent<Element>, roiId: string) => {
-            resizeEnded?.(rois.find((roi) => roi.id === roiId)!);
-            dragControlsRef.current.handleResizeStart(e);
-        },
-        [rois, resizeEnded]
-    );
+    const onResizeStart = useCallback((e: React.MouseEvent<Element>) => {
+        interactionMode.current = "resizing";
+        dragControlsRef.current.handleResizeStart(e);
+    }, []);
 
-    const onResizeEnd = () => {
-        resizeEnded?.(getMovedRois().find((roi) => isSelectedRoi(roi.id))!);
-        dragControls.handleResizeEnd();
+    const onBgMouseDown = (e: React.MouseEvent) => {
+        interactionMode.current = "drawing";
+        handleStartDrawing(e);
+    };
+
+    const onUnifiedMouseMove = (e: React.MouseEvent) => {
+        if (interactionMode.current === "dragging") {
+            dragControls.handleDrag(e);
+        } else if (interactionMode.current === "resizing") {
+            dragControls.handleResize(e);
+        } else if (interactionMode.current === "drawing") {
+            handleDraw(e);
+        }
+    };
+
+    const onUnifiedMouseUp = (e: React.MouseEvent) => {
+        if (interactionMode.current === "dragging") {
+            e.stopPropagation();
+            if (dragControls.isDragging) {
+                dragEnded?.(getMovedRois());
+            }
+            dragControls.handleDragEnd();
+        } else if (interactionMode.current === "resizing") {
+            e.stopPropagation();
+            resizeEnded?.(getMovedRois());
+            dragControls.handleResizeEnd();
+        } else if (interactionMode.current === "drawing") {
+            handleStopDrawing(onFinishDrawing);
+        }
+
+        interactionMode.current = null;
     };
 
     const onFinishDrawing = (startPos: Position, currentPos: Position) => {
@@ -136,33 +160,28 @@ export const PdfSelectSvgOverlay = ({
         setSelectedRoiIds(selectedRois.map((roi) => roi.id!));
     };
 
-    const onMouseMove = dragControls.isDragging
-        ? dragControls.handleDrag
-        : dragControls.isResizing
-        ? dragControls.handleResize
-        : handleDraw;
-
-    const onMouseUp = dragControls.isDragging
-        ? onDragEnd
-        : dragControls.isResizing
-        ? onResizeEnd
-        : () => handleStopDrawing(onFinishDrawing);
-
     return (
         <svg
             className="absolute top-0 left-0 w-full h-full pointer-events-auto"
-            onMouseDown={
-                !dragControls.isDragging && !dragControls.isResizing
-                    ? handleStartDrawing
-                    : undefined
-            }
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onClick={() => setSelectedRoiIds([])}
-            style={{ zIndex: 20 }}
+            onMouseDown={onBgMouseDown}
+            onMouseMove={onUnifiedMouseMove}
+            onMouseUp={onUnifiedMouseUp}
+            onMouseLeave={onUnifiedMouseUp}
+            onClick={() => {
+                if (dragControls.isDragging || dragControls.isResizing) {
+                    return;
+                }
+                setSelectedRoiIds([]);
+            }}
+            style={{ zIndex: 10 }}
         >
             {getMovedRois().map((roi) => {
-                return render(roi, onDragStart, onResizeStart);
+                return render(
+                    roi,
+                    onDragStart,
+                    onResizeStart,
+                    dragControls.isDragging || dragControls.isResizing
+                );
             })}
             {drawStartPos && drawCurrentPos
                 ? (() => {

@@ -7,7 +7,8 @@ import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-
 export type PdfCanvasRenderFn = (
     roi: RoiType,
     onDragStart?: (e: React.MouseEvent<Element>, roiId: string) => void,
-    onResizeStart?: (e: React.MouseEvent<Element>, roiId: string) => void
+    onResizeStart?: (e: React.MouseEvent<Element>, roiId: string) => void,
+    isDragging?: boolean
 ) => React.ReactNode;
 
 export const PdfSvgCanvas = ({
@@ -21,7 +22,7 @@ export const PdfSvgCanvas = ({
     render: PdfCanvasRenderFn;
     width: number;
     dragEnded?: (rois: RoiType[]) => void;
-    resizeEnded?: (roi: RoiType) => void;
+    resizeEnded?: (rois: RoiType[]) => void;
 }) => {
     const { mode } = useTemplateEditor();
 

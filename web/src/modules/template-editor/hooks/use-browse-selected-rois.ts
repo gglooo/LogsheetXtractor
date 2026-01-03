@@ -27,17 +27,10 @@ export const useBrowseSelectedRois = () => {
             const foundIndex = rois.findIndex(
                 (roi) => roi.id === selectedRoiId
             );
-            console.log("Found selected ROI at index:", foundIndex);
             nextIndex = getNextIndex(foundIndex, rois.length);
         } else {
             nextIndex = getNextIndex(-1, rois.length);
         }
-
-        console.log("Selecting ROI at index:", nextIndex);
-        console.log(
-            "isCurrentIndexAlreadySelected:",
-            isCurrentIndexAlreadySelected
-        );
 
         setCurrentIndex(nextIndex);
         setSelectedRoiIds([rois[nextIndex].id]);

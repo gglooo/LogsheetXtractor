@@ -86,12 +86,8 @@ export const DrawablePdfViewer = ({
     );
 
     const onResizeEnd = useCallback(
-        (resizedRoi: RoiType) => {
-            setRois((prevRois) =>
-                prevRois.map((roi) =>
-                    roi.id === resizedRoi.id ? resizedRoi : roi
-                )
-            );
+        (resizedRois: RoiType[]) => {
+            setRois(resizedRois);
         },
         [setRois]
     );
@@ -103,7 +99,8 @@ export const DrawablePdfViewer = ({
             onResizeStart?: (
                 e: React.MouseEvent<Element>,
                 roiId: string
-            ) => void
+            ) => void,
+            isDragging?: boolean
         ) => (
             <RoiSvg
                 key={roi.id}
@@ -115,9 +112,10 @@ export const DrawablePdfViewer = ({
                 isDuplicate={duplicateRoiNames.has(roi.variableName)}
                 onRoiDrag={onDragStart}
                 onRoiResizeStart={onResizeStart}
-                isResizeable={mode === "select"}
+                isResizeable={mode === "select" && isSelectedRoi(roi.id ?? "")}
                 onMouseMove={setSplitRoiGuideLines}
                 guideLineCoordinates={roiGuideLines}
+                isDragging={isDragging}
             />
         ),
         [

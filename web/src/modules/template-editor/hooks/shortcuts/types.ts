@@ -54,7 +54,7 @@ export const SHORTCUT_REGISTRY: readonly ShortcutConfig[] = [
     {
         name: "Split tool",
         description:
-            "Click on ROI to split it horizontally or ctrl + click to split vertically",
+            "Click on ROI to split it ctrl + click to split in opposite direction",
         keys: [SPLIT_TOOL_KEY],
         actionKey: "split",
     },
