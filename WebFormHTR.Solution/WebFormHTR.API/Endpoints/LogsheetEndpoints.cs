@@ -38,6 +38,20 @@ public static class LogsheetEndpoints
         return result.ToHttpResult();
     }
 
+    [WolverinePost("/api/logsheets/batch")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    public static async Task<IResult> CreateBatchLogsheets(
+        BatchCreateLogsheetCommand request,
+        CancellationToken ct,
+        IMessageBus bus
+    )
+    {
+        var result = await bus.InvokeAsync<Result<IEnumerable<LogsheetDetailDto>>>(request, ct);
+
+        return result.ToHttpResult();
+    }
+
     [WolverinePatch("/api/logsheets/{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]

@@ -52,8 +52,8 @@ public class ListRoisForTemplateQueryHandlerTests : IDisposable
         var query = new ListRoisForTemplateQuery(templateId);
         var expectedDtos = new List<RoiDto>
         {
-            new(roi1.Id, "ROI 1", templateId, ERoiType.Handwritten, new Coordinates()),
-            new(roi2.Id, "ROI 2", templateId, ERoiType.Handwritten, new Coordinates())
+            new(roi1.Id, "ROI 1", templateId, ERoiType.Handwritten, new Coordinates(), roi1.CreatedAt, roi1.UpdatedAt),
+            new(roi2.Id, "ROI 2", templateId, ERoiType.Handwritten, new Coordinates(), roi2.CreatedAt, roi2.UpdatedAt)
         };
 
         _mapperMock.Setup(x => x.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))

@@ -28,7 +28,7 @@ public class UpsertRoiCommandHandlerTests : IDisposable
         var upsertRoiDto = new UpsertRoiDto(null, "New ROI", ERoiType.Handwritten, new Coordinates { X = 10, Y = 10, Width = 100, Height = 50 });
         var command = new UpsertRoiCommand(template.Id, upsertRoiDto);
 
-        var expectedDto = new RoiDto(Guid.NewGuid(), "New ROI", template.Id, ERoiType.Handwritten, upsertRoiDto.Coordinates);
+        var expectedDto = new RoiDto(Guid.NewGuid(), "New ROI", template.Id, ERoiType.Handwritten, upsertRoiDto.Coordinates, DateTime.UtcNow, null);
         
         _roiServiceMock.Setup(x => x.UpsertRoiForTemplateAsync(command.TemplateId, command.Roi, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);

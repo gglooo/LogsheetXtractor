@@ -8,10 +8,12 @@ namespace WebFormHTR.Application.Features.Logsheets.DTOs;
 public record LogsheetDetailDto(
     Guid Id,
     TemplateListDto Template,
-    TemplateListDto BacksideTemplate,
+    TemplateListDto? BacksideTemplate,
     FileDto File,
     ELogSheetStatus Status,
     DateTime? ProcessedAt,
     AlignmentDataDto? AlignmentData,
-    IEnumerable<ExtractedValueDto> ExtractedValues
+    IEnumerable<ExtractedValueDto> ExtractedValues,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt
 );

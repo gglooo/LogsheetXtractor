@@ -68,7 +68,7 @@ public class ListResidualsForTemplateQueryHandlerTests : IDisposable
 
         _mapperMock.Setup(m => m.Map<IEnumerable<ResidualDto>>(It.IsAny<IEnumerable<Residual>>()))
             .Returns((IEnumerable<Residual> residuals) =>
-                residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates)));
+                residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates, r.CreatedAt, r.UpdatedAt)));
 
         var result =
             await ListResidualsForTemplateHandler.Handle(query, Context, _mapperMock.Object, CancellationToken.None);

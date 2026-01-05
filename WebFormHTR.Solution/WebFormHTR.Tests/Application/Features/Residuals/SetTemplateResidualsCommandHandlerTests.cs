@@ -41,7 +41,7 @@ public class SetTemplateResidualsCommandHandlerTests : IDisposable
 
         var expectedResult = new List<ResidualDto>
         {
-            new(Guid.NewGuid(), templateId, "Content 1", new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 })
+            new(Guid.NewGuid(), templateId, "Content 1", new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }, DateTime.UtcNow, null)
         };
 
         _residualServiceMock

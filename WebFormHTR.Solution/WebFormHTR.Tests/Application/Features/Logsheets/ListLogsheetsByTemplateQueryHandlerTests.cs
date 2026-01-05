@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
+using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Infrastructure.Persistence;
@@ -30,9 +31,32 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
         var templateId = Guid.NewGuid();
         var otherTemplateId = Guid.NewGuid();
 
-        var logsheet1 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, FileId = Guid.NewGuid(), File = null! };
-        var logsheet2 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, FileId = Guid.NewGuid(), File = null! };
-        var logsheet3 = new Logsheet { Id = Guid.NewGuid(), TemplateId = otherTemplateId, Template = null!, FileId = Guid.NewGuid(), File = null! };
+        var getMockFile = () => new Domain.Entities.File
+        {
+            Id = Guid.NewGuid(),
+            OriginalFileName = "test.pdf",
+            StoredFileName = "test.pdf",
+            StoragePath = "path/to/test.pdf",
+            ContentType = "application/pdf",
+            SizeBytes = 123,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var logsheet1 = new Logsheet
+        {
+            Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, FileId = Guid.NewGuid(),
+            File = getMockFile()
+        };
+        var logsheet2 = new Logsheet
+        {
+            Id = Guid.NewGuid(), TemplateId = templateId, Template = null!, FileId = Guid.NewGuid(),
+            File = getMockFile()
+        };
+        var logsheet3 = new Logsheet
+        {
+            Id = Guid.NewGuid(), TemplateId = otherTemplateId, Template = null!, FileId = Guid.NewGuid(),
+            File = getMockFile()
+        };
 
         _dbContext.Logsheets.AddRange(logsheet1, logsheet2, logsheet3);
         await _dbContext.SaveChangesAsync();
@@ -40,8 +64,12 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
         var query = new ListLogsheetsByTemplateQuery(templateId);
         var expectedDtos = new List<LogsheetListDto>
         {
-            new LogsheetListDto(logsheet1.Id, templateId, null, logsheet1.FileId, ELogSheetStatus.Pending, DateTime.UtcNow),
-            new LogsheetListDto(logsheet2.Id, templateId, null, logsheet2.FileId, ELogSheetStatus.Pending, DateTime.UtcNow)
+            new(logsheet1.Id, templateId, null,
+                new FileDto(logsheet1.FileId, "test.pdf", "application/pdf", 123, DateTime.UtcNow),
+                ELogSheetStatus.Pending, null, DateTime.UtcNow, null),
+            new(logsheet2.Id, templateId, null,
+                new FileDto(logsheet2.FileId, "test.pdf", "application/pdf", 123, DateTime.UtcNow),
+                ELogSheetStatus.Pending, null, DateTime.UtcNow, null)
         };
 
         _mapperMock.Setup(x => x.Map<IEnumerable<LogsheetListDto>>(It.IsAny<IEnumerable<Logsheet>>()))
@@ -52,6 +80,7 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
                 {
                     return expectedDtos;
                 }
+
                 return new List<LogsheetListDto>();
             });
 

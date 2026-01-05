@@ -51,7 +51,7 @@ public class ResidualServiceTests : IDisposable
             });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<ResidualDto>>(It.IsAny<IEnumerable<Residual>>()))
-            .Returns((IEnumerable<Residual> residuals) => residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates)));
+            .Returns((IEnumerable<Residual> residuals) => residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates, r.CreatedAt, r.UpdatedAt)));
 
         // Act
         var result = await _sut.SetResidualsForTemplateAsync(templateId, updateResiduals, CancellationToken.None);
@@ -92,7 +92,7 @@ public class ResidualServiceTests : IDisposable
             });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<ResidualDto>>(It.IsAny<IEnumerable<Residual>>()))
-            .Returns((IEnumerable<Residual> residuals) => residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates)));
+            .Returns((IEnumerable<Residual> residuals) => residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates, r.CreatedAt, r.UpdatedAt)));
 
         // Act
         var result = await _sut.SetResidualsForTemplateAsync(templateId, updateResiduals, CancellationToken.None);
@@ -136,7 +136,7 @@ public class ResidualServiceTests : IDisposable
             .Callback((SetResidualDto dto, Residual residual) => { });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<ResidualDto>>(It.IsAny<IEnumerable<Residual>>()))
-            .Returns((IEnumerable<Residual> residuals) => residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates)));
+            .Returns((IEnumerable<Residual> residuals) => residuals.Select(r => new ResidualDto(r.Id, r.TemplateId, r.Content, r.Coordinates, r.CreatedAt, r.UpdatedAt)));
 
         // Act
         await _sut.SetResidualsForTemplateAsync(templateId, updateResiduals, CancellationToken.None);

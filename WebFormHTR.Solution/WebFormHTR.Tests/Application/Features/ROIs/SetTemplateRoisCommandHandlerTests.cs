@@ -32,7 +32,7 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
         var expectedResult = new List<RoiDto>
         {
             new(Guid.NewGuid(), "New ROI", templateId, ERoiType.Handwritten,
-                new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 })
+                new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }, DateTime.UtcNow, null)
         };
 
         _roiServiceMock.Setup(x => x.SetRoisForTemplateAsync(templateId, updateRois, It.IsAny<CancellationToken>()))
@@ -60,7 +60,7 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
         var existingRoiId = Guid.NewGuid();
         var updateRois = new List<SetRoiDto>
         {
-            new(existingRoiId, "Updated ROI", ERoiType.Handwritten,
+            new(existingRoiId.ToString(), "Updated ROI", ERoiType.Handwritten,
                 new Coordinates { X = 5, Y = 5, Width = 15, Height = 15 }),
             new(null, "New ROI", ERoiType.Checkbox, new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
         };
@@ -68,9 +68,9 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
         var expectedResult = new List<RoiDto>
         {
             new(existingRoiId, "Updated ROI", templateId, ERoiType.Handwritten,
-                new Coordinates { X = 5, Y = 5, Width = 15, Height = 15 }),
+                new Coordinates { X = 5, Y = 5, Width = 15, Height = 15 }, DateTime.UtcNow, null),
             new(Guid.NewGuid(), "New ROI", templateId, ERoiType.Checkbox,
-                new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
+                new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 }, DateTime.UtcNow, null)
         };
 
         _roiServiceMock.Setup(x => x.SetRoisForTemplateAsync(templateId, updateRois, It.IsAny<CancellationToken>()))

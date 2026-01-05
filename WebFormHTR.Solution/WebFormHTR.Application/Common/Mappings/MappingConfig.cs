@@ -10,6 +10,7 @@ using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
+using WebFormHTR.Domain.Enums;
 using WebFormHTR.Domain.ValueObjects;
 using File = WebFormHTR.Domain.Entities.File;
 
@@ -70,11 +71,14 @@ public class MappingConfig : IRegister
         config.NewConfig<CreateLogsheetCommand, Logsheet>()
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.FileId, src => src.FileId)
+            .Ignore(dest => dest.ExtractedValues)
+            .Ignore(dest => dest.AlignmentDataModelConfig)
+            .Ignore(dest => dest.Status)
             .IgnoreNullValues(true);
 
         config.NewConfig<Logsheet, LogsheetListDto>()
             .Map(dest => dest.Id, src => src.Id)
-            .Map(dest => dest.FileId, src => src.FileId)
+            .Map(dest => dest.File, src => src.File)
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)

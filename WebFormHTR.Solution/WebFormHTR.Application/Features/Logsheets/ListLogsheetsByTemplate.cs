@@ -16,6 +16,7 @@ public static class ListLogsheetsByTemplateHandler
         IMapper mapper)
     {
         var logsheets = await dbContext.Logsheets
+            .Include(l => l.File)
             .Where(ls => ls.TemplateId == request.TemplateId)
             .ToListAsync();
 

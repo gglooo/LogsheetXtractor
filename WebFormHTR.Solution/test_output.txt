@@ -1,0 +1,31 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  WebFormHTR.Domain -> /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Domain/bin/Debug/net10.0/WebFormHTR.Domain.dll
+  WebFormHTR.Application -> /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Application/bin/Debug/net10.0/WebFormHTR.Application.dll
+  WebFormHTR.Infrastructure -> /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Infrastructure/bin/Debug/net10.0/WebFormHTR.Infrastructure.dll
+  WebFormHTR.Tests -> /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Tests/bin/Debug/net10.0/WebFormHTR.Tests.dll
+Test run for /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Tests/bin/Debug/net10.0/WebFormHTR.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.59]     WebFormHTR.Tests.Application.Features.Logsheets.CreateBatchLogsheetsTests.Handle_ShouldCreateLogsheets_WhenRequestIsValid [FAIL]
+[xUnit.net 00:00:00.61]     WebFormHTR.Tests.Application.Features.Logsheets.CreateBatchLogsheetsTests.Handle_ShouldCreateLogsheets_WhenRequestIsValid_WithBackside [FAIL]
+  Failed WebFormHTR.Tests.Application.Features.Logsheets.CreateBatchLogsheetsTests.Handle_ShouldCreateLogsheets_WhenRequestIsValid [49 ms]
+  Error Message:
+   System.NullReferenceException : Object reference not set to an instance of an object.
+  Stack Trace:
+     at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.AddRangeAsync(IEnumerable`1 entities, CancellationToken cancellationToken)
+   at WebFormHTR.Application.Features.Logsheets.CreateBatchLogsheetsHandler.Handle(BatchCreateLogsheetCommand request, CancellationToken ct, IAppDbContext dbContext, IMapper mapper) in /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Application/Features/Logsheets/CreateBatchLogsheets.cs:line 67
+   at WebFormHTR.Tests.Application.Features.Logsheets.CreateBatchLogsheetsTests.Handle_ShouldCreateLogsheets_WhenRequestIsValid() in /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Tests/Application/Features/Logsheets/CreateBatchLogsheetsTests.cs:line 143
+--- End of stack trace from previous location ---
+  Failed WebFormHTR.Tests.Application.Features.Logsheets.CreateBatchLogsheetsTests.Handle_ShouldCreateLogsheets_WhenRequestIsValid_WithBackside [7 ms]
+  Error Message:
+   System.NullReferenceException : Object reference not set to an instance of an object.
+  Stack Trace:
+     at Microsoft.EntityFrameworkCore.Internal.InternalDbSet`1.AddRangeAsync(IEnumerable`1 entities, CancellationToken cancellationToken)
+   at WebFormHTR.Application.Features.Logsheets.CreateBatchLogsheetsHandler.Handle(BatchCreateLogsheetCommand request, CancellationToken ct, IAppDbContext dbContext, IMapper mapper) in /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Application/Features/Logsheets/CreateBatchLogsheets.cs:line 67
+   at WebFormHTR.Tests.Application.Features.Logsheets.CreateBatchLogsheetsTests.Handle_ShouldCreateLogsheets_WhenRequestIsValid_WithBackside() in /Users/jenik/Documents/muni/dipr/webFormHTR/WebFormHTR.Solution/WebFormHTR.Tests/Application/Features/Logsheets/CreateBatchLogsheetsTests.cs:line 186
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:     5, Skipped:     0, Total:     7, Duration: 522 ms - WebFormHTR.Tests.dll (net10.0)

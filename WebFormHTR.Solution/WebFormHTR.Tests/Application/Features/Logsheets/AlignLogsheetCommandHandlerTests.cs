@@ -40,13 +40,15 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         var command = new AlignLogsheetCommand(logsheet.Id);
         
         var expectedDto = new LogsheetDetailDto(logsheet.Id, 
-            new TemplateListDto(template.Id.ToString(), template.Name, null, null), 
+            new TemplateListDto(template.Id.ToString(), template.Name, null, null, 0, DateTime.UtcNow), 
             null, 
             new WebFormHTR.Application.Features.File.DTOs.FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt), 
             logsheet.Status, 
             null, 
             null,
-            new List<ExtractedValueDto>());
+            new List<ExtractedValueDto>(),
+            DateTime.UtcNow,
+            null);
 
         _scriptEngineMock.Setup(x => x.AutomaticAlignAsync(It.IsAny<AutomaticAlignmentInputDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);

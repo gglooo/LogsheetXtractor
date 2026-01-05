@@ -42,13 +42,15 @@ public class PatchLogsheetCommandHandlerTests : IDisposable
         var command = new PatchLogsheetCommand(logsheet.Id, patchDto);
 
         var expectedDto = new LogsheetDetailDto(logsheet.Id,
-            new TemplateListDto(template.Id.ToString(), template.Name, null, null),
+            new TemplateListDto(template.Id.ToString(), template.Name, null, null, 0, DateTime.UtcNow),
             null,
             new FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt),
             logsheet.Status,
             null,
             null,
-            new List<ExtractedValueDto>());
+            new List<ExtractedValueDto>(),
+            DateTime.UtcNow,
+            null);
 
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.IsAny<Logsheet>()))
             .Returns(expectedDto);
