@@ -6,11 +6,17 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 type PdfWrapperProps = {
     children: React.ReactNode;
+    includeHistoryControls?: boolean;
+    includeZoomControls?: boolean;
 };
 
 const DEFAULT_SCALE = 0.6;
 
-export const PdfWrapper = ({ children }: PdfWrapperProps) => {
+export const PdfWrapper = ({
+    children,
+    includeHistoryControls = true,
+    includeZoomControls = true,
+}: PdfWrapperProps) => {
     const [scale, setScale] = useState(DEFAULT_SCALE);
     const [width, setWidth] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -44,32 +50,34 @@ export const PdfWrapper = ({ children }: PdfWrapperProps) => {
     return (
         <div className="flex flex-col w-full">
             <div className="flex flex-row justify-between px-8">
-                <HistoryControls />
-                <div className="flex gap-2 mb-4 shrink-0 ">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleZoomOut}
-                        disabled={scale <= 0.1}
-                    >
-                        <ZoomOut className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleReset}
-                        disabled={scale === DEFAULT_SCALE}
-                    >
-                        <RotateCcw className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleZoomIn}
-                    >
-                        <ZoomIn className="h-4 w-4" />
-                    </Button>
-                </div>
+                {includeHistoryControls ? <HistoryControls /> : null}
+                {includeZoomControls ? (
+                    <div className="flex gap-2 mb-4 shrink-0 ">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleZoomOut}
+                            disabled={scale <= 0.1}
+                        >
+                            <ZoomOut className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleReset}
+                            disabled={scale === DEFAULT_SCALE}
+                        >
+                            <RotateCcw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleZoomIn}
+                        >
+                            <ZoomIn className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ) : null}
             </div>
 
             <div

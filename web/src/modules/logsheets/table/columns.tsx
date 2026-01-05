@@ -1,0 +1,75 @@
+import { LogsheetTableActions } from "@/modules/logsheets/actions/table-actions";
+import { ProcessedBadge } from "@/modules/logsheets/components/processed-badge";
+import { LogsheetStatusBadge } from "@/modules/logsheets/components/status-badge";
+import type { LogsheetListType } from "@/modules/logsheets/schema";
+import { type RowData, createColumnHelper } from "@tanstack/react-table";
+import { FileText } from "lucide-react";
+import { useIntl } from "react-intl";
+
+const columnHelper = createColumnHelper<LogsheetListType>();
+
+export type LogsheetTableMeta = {
+    onPreview: (id: string) => void;
+};
+
+declare module "@tanstack/react-table" {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    interface TableMeta<TData extends RowData> {
+        onPreview: (id: string) => void;
+    }
+}
+
+export const useLogsheetsColumns = () => {
+    const intl = useIntl();
+
+    return [
+        columnHelper.accessor("file.fileName", {
+            header: intl.formatMessage({
+                id: "logsheets.table.columns.fileName",
+                defaultMessage: "File Name",
+            }),
+            cell: (info) => (
+                <div className="flex items-center">
+                    <div className="inline mr-2 bg-muted p-2 rounded-md">
+                        <FileText className="inline w-4 h-4" />
+                    </div>
+                    <p className="font-semibold">{info.getValue()}</p>
+                </div>
+            ),
+        }),
+        columnHelper.accessor("id", {
+            header: intl.formatMessage({
+                id: "logsheets.table.columns.id",
+                defaultMessage: "ID",
+            }),
+            cell: (info) => info.getValue(),
+        }),
+        columnHelper.accessor("status", {
+            header: intl.formatMessage({
+                id: "logsheets.table.columns.status",
+                defaultMessage: "Status",
+            }),
+            cell: (info) => <LogsheetStatusBadge status={info.getValue()} />,
+        }),
+        columnHelper.accessor("processedAt", {
+            header: intl.formatMessage({
+                id: "logsheets.table.columns.processed",
+                defaultMessage: "Processed",
+            }),
+            cell: (info) => <ProcessedBadge processedAt={info.getValue()} />,
+        }),
+        columnHelper.display({
+            id: "actions",
+            header: intl.formatMessage({
+                id: "logsheets.table.columns.actions",
+                defaultMessage: "Actions",
+            }),
+            cell: ({ row, table }) => (
+                <LogsheetTableActions
+                    logsheet={row.original}
+                    onPreview={table.options.meta?.onPreview ?? (() => {})}
+                />
+            ),
+        }),
+    ];
+};

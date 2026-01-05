@@ -51,6 +51,7 @@ export const ToolsSidebarGroup = () => {
 
     const {
         addRoi,
+        addRois,
         setRois,
         setRoisAndResiduals,
         setMode,
@@ -99,14 +100,11 @@ export const ToolsSidebarGroup = () => {
             return;
         }
 
-        const addedRoisIds = [];
-        for (const roi of adjustedRois) {
-            addedRoisIds.push(addRoi(roi.coordinates, roi.variableName)!);
-        }
+        const addedRoisIds = addRois(adjustedRois);
 
         setSelectedRoiIds(addedRoisIds);
         setMode("select");
-    }, [addRoi, setMode, setSelectedRoiIds]);
+    }, [addRois, setMode, setSelectedRoiIds]);
 
     const cutTool = useCallback(() => {
         const roisToCut = rois.filter((roi) => isSelectedRoi(roi.id ?? ""));

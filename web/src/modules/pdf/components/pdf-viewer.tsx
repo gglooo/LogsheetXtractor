@@ -1,12 +1,22 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFile } from "@/modules/files/api";
 import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 const A4_ASPECT_RATIO = 1.414;
+const USABLE_WIDTH_THRESHOLD = 100;
+
+const PdfSkeleton = ({ width, height }: { width: number; height: number }) => (
+    <Skeleton
+        style={{
+            width,
+            height,
+        }}
+    />
+);
 
 export const PdfViewer = ({ fileId }: { fileId: string }) => {
     const file = useFile(fileId);
@@ -18,9 +28,22 @@ export const PdfViewer = ({ fileId }: { fileId: string }) => {
 
     const { scale, width } = usePdfZoom();
 
-    return !file.isPending && fileData ? (
+    const [numPages, setNumPages] = useState<number | null>(null);
+
+    const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+        setNumPages(numPages);
+    };
+
+    return !file.isPending && fileData && width > USABLE_WIDTH_THRESHOLD ? (
         <Document
             file={fileData}
+            loading={
+                <PdfSkeleton
+                    width={width * scale}
+                    height={width * scale * A4_ASPECT_RATIO}
+                />
+            }
+            onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={(error) =>
                 console.error("Error loading PDF Document:", error)
             }
@@ -29,20 +52,21 @@ export const PdfViewer = ({ fileId }: { fileId: string }) => {
             }
             className="select-none"
         >
-            <Page
-                pageNumber={1}
-                width={width * scale}
-                onLoadError={(error) =>
-                    console.error("Error loading PDF Page:", error)
-                }
-            />
+            {Object.entries(Array(numPages).fill(null)).map(([index]) => (
+                <Page
+                    key={`page_${index}`}
+                    pageNumber={Number(index) + 1}
+                    width={width * scale}
+                    onLoadError={(error) =>
+                        console.error("Error loading PDF Page:", error)
+                    }
+                />
+            ))}
         </Document>
     ) : (
-        <Skeleton
-            style={{
-                width: width * scale,
-                height: width * scale * A4_ASPECT_RATIO,
-            }}
+        <PdfSkeleton
+            width={width * scale}
+            height={width * scale * A4_ASPECT_RATIO}
         />
     );
 };

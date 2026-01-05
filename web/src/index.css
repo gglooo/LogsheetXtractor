@@ -45,11 +45,11 @@
 }
 
 :root {
-    --radius: 0;
+    --radius: 0.5rem;
     --font-mono: "JetBrains Mono", "Fira Code", "Courier New", Courier,
         monospace;
     font-family: var(--font-mono);
-    --background: oklch(1 0 0);
+    --background: oklch(0.98 0 0);
     --foreground: oklch(0.129 0.042 264.695);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.129 0.042 264.695);
@@ -130,10 +130,10 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
 }

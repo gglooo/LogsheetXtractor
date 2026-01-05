@@ -10,6 +10,7 @@ import {
 type Props = {
     name: string;
     label: string;
+    multiple?: boolean;
 };
 
 export const FormFileUpload = ({ name, label, ...props }: Props) => {

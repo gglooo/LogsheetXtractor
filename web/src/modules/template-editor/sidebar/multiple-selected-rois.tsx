@@ -70,6 +70,7 @@ export const MultipleSelectedRois = ({
                             })}
                             onFocus={(e) => e.currentTarget.select()}
                             ref={roiInputRef}
+                            labelClassname="font-bold"
                         />
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <Info size={12} />
@@ -90,6 +91,7 @@ export const MultipleSelectedRois = ({
                             defaultMessage: "Type",
                         })}
                         options={roiTypeSelectOptions}
+                        labelClassName="font-bold"
                     />
                 </div>
             </section>

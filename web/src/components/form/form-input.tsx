@@ -11,16 +11,19 @@ import { forwardRef } from "react";
 type Props = {
     name: string;
     label: string;
+    labelClassname?: string;
 } & React.ComponentProps<"input">;
 
 export const FormInput = forwardRef<HTMLInputElement, Props>(
-    ({ name, label, ...props }, ref) => {
+    ({ name, label, labelClassname, ...props }, ref) => {
         return (
             <FormField
                 name={name}
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>{label}</FormLabel>
+                        <FormLabel className={labelClassname}>
+                            {label}
+                        </FormLabel>
                         <FormControl>
                             <Input {...props} {...field} ref={ref} />
                         </FormControl>

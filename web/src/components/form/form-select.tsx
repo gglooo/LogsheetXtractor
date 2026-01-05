@@ -12,12 +12,14 @@ export type SelectOption = { label: string; value: string | number };
 type Props = {
     name: string;
     label: string;
+    labelClassName?: string;
     options: SelectOption[];
 } & React.ComponentProps<"select">;
 
 export const FormSelect = ({
     name,
     label,
+    labelClassName,
     options,
     className,
     ...props
@@ -27,7 +29,7 @@ export const FormSelect = ({
             name={name}
             render={({ field }) => (
                 <FormItem>
-                    <FormLabel>{label}</FormLabel>
+                    <FormLabel className={labelClassName}>{label}</FormLabel>
                     <FormControl>
                         <select
                             className={cn(

@@ -42,11 +42,13 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
                 defaultValue={selectedRoi.variableName}
                 onFocus={(e) => e.currentTarget.select()}
                 ref={roiInputRef}
+                labelClassname="font-bold"
             />
             <FormSelect
                 name="type"
                 label="Type"
                 options={roiTypeSelectOptions}
+                labelClassName="font-bold"
             />
             <FormAutoSubmit onSubmit={handleSubmit} />
         </div>

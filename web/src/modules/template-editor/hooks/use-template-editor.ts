@@ -21,6 +21,7 @@ export type TemplateEditorContextType = {
         residuals: DetectedResidualType[]
     ) => void;
     addRoi: (coordinates: Coordinates, name?: string) => string | undefined;
+    addRois: (rois: { coordinates: Coordinates; name?: string }[]) => string[];
     getNewRoi: (coordinates: Coordinates, name?: string) => RoiType;
     removeRoi: (variableName: string) => void;
     template?: TemplateType;

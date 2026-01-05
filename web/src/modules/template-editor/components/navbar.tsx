@@ -1,8 +1,10 @@
+import { NavbarContainer } from "@/components/navbar-container";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useSetRoisMutation } from "@/modules/rois/api";
 import { CancelDialog } from "@/modules/template-editor/components/cancel-dialog";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -57,25 +59,35 @@ export const EditorNavbar = () => {
     };
 
     return (
-        <header className="sticky z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="flex justify-between">
-                <div className="p-4 text-lg font-bold">Template Editor</div>
-                <div className="flex items-center gap-2 p-4">
-                    <Button size="sm" variant="outline" onClick={handleCancel}>
-                        Cancel
-                    </Button>
-                    <Button size="sm" onClick={handleSaveChanges}>
-                        {isSavingChanges ? <Spinner /> : null}Save Changes
-                    </Button>
-                </div>
+        <NavbarContainer
+            AsideContent={
+                canUndo ? (
+                    <CancelDialog
+                        open={isCancelDialogOpen}
+                        onCancel={handleCancel}
+                        onClose={() => setCancelDialogOpen(false)}
+                    />
+                ) : null
+            }
+        >
+            <div className="flex gap-4 items-center">
+                <Button
+                    variant="ghost"
+                    onClick={handleCancel}
+                    disabled={isSavingChanges}
+                >
+                    <ArrowLeft />
+                </Button>
+                <div className="text-lg font-bold">Template Editor</div>
             </div>
-            {canUndo && (
-                <CancelDialog
-                    open={isCancelDialogOpen}
-                    onCancel={handleCancel}
-                    onClose={() => setCancelDialogOpen(false)}
-                />
-            )}
-        </header>
+            <div className="flex items-center gap-2 p-4">
+                <Button size="sm" variant="outline" onClick={handleCancel}>
+                    Cancel
+                </Button>
+                <Button size="sm" onClick={handleSaveChanges}>
+                    {isSavingChanges ? <Spinner /> : null}Save Changes
+                </Button>
+            </div>
+        </NavbarContainer>
     );
 };

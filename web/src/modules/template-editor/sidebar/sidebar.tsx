@@ -18,10 +18,10 @@ export const EditorSidebar = ({ className }: EditorSidebarProps) => {
 
     return (
         <Sidebar className={className}>
-            <SidebarHeader>
+            <SidebarHeader className="text-lg font-medium mt-2">
                 {intl.formatMessage({
                     id: "templateEditor.sidebar.header",
-                    defaultMessage: "Template editor",
+                    defaultMessage: "Editor tools",
                 })}
             </SidebarHeader>
             <SidebarContent className="px-2 flex flex-col gap-2">

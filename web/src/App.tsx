@@ -1,4 +1,5 @@
 import { baseDashboardPath, DashboardRoutes } from "@/modules/dashboard/routes";
+import { baseLogsheetsPath, LogsheetsRoutes } from "@/modules/logsheets/routes";
 import {
     baseTemplateEditorPath,
     TemplateEditorRoutes,
@@ -11,7 +12,7 @@ function App() {
     const intl = useIntl();
 
     return (
-        <div className="min-h-screen bg-background text-foreground font-mono">
+        <div className="min-h-screen bg-background text-foreground">
             <Routes>
                 <Route
                     path="/"
@@ -25,6 +26,10 @@ function App() {
                 <Route
                     path={`${baseTemplateEditorPath}/*`}
                     element={<TemplateEditorRoutes />}
+                />
+                <Route
+                    path={`/templates/:templateId${baseLogsheetsPath}/*`}
+                    element={<LogsheetsRoutes />}
                 />
                 <Route
                     path="*"

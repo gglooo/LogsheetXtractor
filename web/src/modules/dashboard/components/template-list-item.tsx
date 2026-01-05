@@ -13,12 +13,19 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { baseLogsheetsPath } from "@/modules/logsheets/routes";
 import { baseTemplateEditorPath } from "@/modules/template-editor/routes";
 import { CloneTemplateAction } from "@/modules/templates/actions/clone-template-action";
 import { useDeleteTemplateMutation } from "@/modules/templates/api";
 import type { TemplateListItemType } from "@/modules/templates/schema";
 import { format } from "date-fns";
-import { EditIcon, MoreVertical, Trash2, UploadIcon } from "lucide-react";
+import {
+    EditIcon,
+    FilesIcon,
+    MoreVertical,
+    Trash2,
+    UploadIcon,
+} from "lucide-react";
 import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -57,6 +64,14 @@ export const TemplateListItem = ({
         navigate(`${baseTemplateEditorPath}/${template.id}`);
     };
 
+    const handleLogsheetsClick = () => {
+        navigate(`/templates/${template.id}/logsheets`);
+    };
+
+    const hadleUploadLogsheets = () => {
+        navigate(`/templates/${template.id}${baseLogsheetsPath}/upload`);
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -93,11 +108,29 @@ export const TemplateListItem = ({
             </CardHeader>
             <CardContent>
                 <div className="flex flex-row lg:flex-row gap-2 w-full">
-                    <Button size="sm" className="flex-1 gap-2">
+                    <Button
+                        size="sm"
+                        className="flex-1 gap-2"
+                        onClick={hadleUploadLogsheets}
+                    >
                         <UploadIcon />
                         {intl.formatMessage({
                             id: "templates.actions.process",
-                            defaultMessage: "Process",
+                            defaultMessage: "Add logsheets",
+                        })}
+                    </Button>
+                </div>
+                <div className="flex flex-row lg:flex-row gap-2 w-full mt-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 gap-2"
+                        onClick={handleLogsheetsClick}
+                    >
+                        <FilesIcon />
+                        {intl.formatMessage({
+                            id: "templates.actions.logsheets",
+                            defaultMessage: "Logsheets",
                         })}
                     </Button>
                     <Button

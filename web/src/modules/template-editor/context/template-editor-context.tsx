@@ -120,6 +120,23 @@ export const TemplateEditorProvider = ({
         return newRoi.id!;
     };
 
+    const addRois = (
+        roisToAdd: { coordinates: Coordinates; name?: string }[]
+    ) => {
+        const addedRoiIds: string[] = [];
+        const newRois: RoiType[] = [];
+
+        for (const roiData of roisToAdd) {
+            const newRoi = getNewRoi(roiData.coordinates, roiData.name);
+            newRois.push(newRoi);
+            addedRoiIds.push(newRoi.id!);
+        }
+
+        setRois((prev) => [...prev, ...newRois]);
+
+        return addedRoiIds;
+    };
+
     const removeRoi = (id: string) => {
         setRois((prev) => prev.filter((roi) => roi.id !== id));
     };
@@ -141,6 +158,7 @@ export const TemplateEditorProvider = ({
                 setRoisAndResiduals,
                 template,
                 addRoi,
+                addRois,
                 getNewRoi,
                 removeRoi,
                 undo,
