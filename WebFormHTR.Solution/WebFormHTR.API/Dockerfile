@@ -24,7 +24,10 @@ WORKDIR /app/formHTR
 
 RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r requirements.txt
+ENV Python__InterpreterPath="/app/venv/bin/python"
+ENV Python__ScriptsFolder="/app/formHTR"
+
+RUN pip install --default-timeout=1000 --no-cache-dir -r requirements.txt
 
 WORKDIR /app
 
