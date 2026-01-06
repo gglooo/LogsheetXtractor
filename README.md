@@ -14,7 +14,7 @@ This repository contains the backend for the WebFormHTR application, built with 
 Clone the repository with submodules to ensure all dependencies are downloaded.
 
 ```bash
-git clone --recursive https://github.com/gglooo/dipr
+git clone --recursive git@github.com:gglooo/dipr.git
 cd dipr/webFormHTR
 ```
 
