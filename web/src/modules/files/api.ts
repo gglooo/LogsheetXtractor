@@ -47,10 +47,9 @@ export const useFile = (fileId: string) =>
         queryFn: () => fileQueryFn(fileId),
     });
 
-export const useFileDownloadMutation = (fileId: string) =>
+export const useFileDownloadMutation = () =>
     useMutation({
-        mutationKey: ["downloadFile", fileId],
-        mutationFn: async () => {
+        mutationFn: async ({ fileId }: { fileId: string }) => {
             const { bytes, fileName, contentType } = await fileQueryFn(fileId);
 
             const blob = new Blob([bytes], { type: contentType || undefined });

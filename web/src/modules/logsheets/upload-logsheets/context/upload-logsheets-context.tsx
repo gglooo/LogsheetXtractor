@@ -1,124 +1,69 @@
-import type { LogsheetAlignmentData } from "@/modules/logsheets/schema";
-import {
-    UploadLogsheetsContext,
-    type ContextLogsheet,
-} from "@/modules/logsheets/upload-logsheets/hooks/use-upload-logsheets-context";
-import { useMemo, useRef, useState, type ReactNode } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-
-const UPLOAD_FLOW_STEPS = ["upload", "align", "review"];
+import { useUploadFileMutation } from "@/modules/files/api";
+import { useUploadLogsheetsMutation } from "@/modules/logsheets/api";
+import { UploadLogsheetsContext } from "@/modules/logsheets/upload-logsheets/hooks/use-upload-logsheets-context";
+import { type ReactNode, useState } from "react";
+import { useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const UploadLogsheetsProvider = ({
     children,
+    templateId,
 }: {
     children: ReactNode;
+    templateId: string;
 }) => {
-    const [logsheets, setLogsheets] = useState<ContextLogsheet[]>([]);
+    const intl = useIntl();
     const navigate = useNavigate();
-    const location = useLocation();
+    const [files, setFiles] = useState<File[]>([]);
 
-    const currentStepIndex = useMemo(() => {
-        const foundIndex = UPLOAD_FLOW_STEPS.findIndex((step) =>
-            location.pathname.endsWith(`/${step}`)
-        );
+    const uploadFileMutation = useUploadFileMutation();
+    const uploadLogsheetsMutation = useUploadLogsheetsMutation();
 
-        return foundIndex !== -1 ? foundIndex : 0;
-    }, [location.pathname]);
+    const isUploading =
+        uploadFileMutation.isPending || uploadLogsheetsMutation.isPending;
 
-    const canContinue = logsheets.length > 0;
+    const handleUpload = async () => {
+        if (files.length === 0) return;
 
-    const addLogsheets = (files: File[]) => {
-        const newLogsheets = files.map((file) => ({
-            rawFile: file,
-        }));
-
-        setLogsheets((prev) => [...prev, ...newLogsheets]);
-    };
-
-    const removeLogsheet = (index: number) => {
-        setLogsheets((prev) => prev.filter((_, i) => i !== index));
-    };
-
-    const setAlignment = (id: string, alignment: LogsheetAlignmentData) => {
-        setLogsheets((prev) =>
-            prev.map((l) =>
-                l.file?.id === id ? { ...l, alignmentData: alignment } : l
-            )
-        );
-    };
-
-    const clearLogsheets = () => {
-        setLogsheets([]);
-    };
-
-    const nextHandlerRef = useRef<() => Promise<boolean | void>>(undefined);
-
-    const registerNextHandler = (handler: () => Promise<boolean | void>) => {
-        nextHandlerRef.current = handler;
-
-        return () => {
-            if (nextHandlerRef.current === handler) {
-                nextHandlerRef.current = undefined;
-            }
-        };
-    };
-
-    const handleContinue = async () => {
-        if (!canContinue) return;
-
-        if (nextHandlerRef.current) {
-            const shouldContinue = await nextHandlerRef.current();
-            if (shouldContinue === false) return;
-        }
-
-        const isLastStep = currentStepIndex === UPLOAD_FLOW_STEPS.length - 1;
-
-        if (!isLastStep) {
-            const nextStep = UPLOAD_FLOW_STEPS[currentStepIndex + 1];
-
-            const currentPath = location.pathname;
-            const currentStepSuffix = UPLOAD_FLOW_STEPS[currentStepIndex];
-
-            const flowRoot =
-                currentStepIndex === 0
-                    ? currentPath
-                    : currentPath.replace(
-                          new RegExp(`/${currentStepSuffix}$`),
-                          ""
-                      );
-
-            const cleanRoot = flowRoot.replace(/\/$/, "");
-            navigate(`${cleanRoot}/${nextStep}`);
-        } else {
-            if (!nextHandlerRef.current) {
-                await submitData();
-            }
-        }
-    };
-
-    const submitData = async () => {
         try {
-            console.log("Submitting payload:", logsheets);
+            const fileIds: string[] = [];
 
-            clearLogsheets();
+            for (const file of files) {
+                const uploadedFile = await uploadFileMutation.mutateAsync(file);
+                fileIds.push(uploadedFile.id);
+            }
+
+            await uploadLogsheetsMutation.mutateAsync({
+                templateId,
+                fileIds,
+            });
+
+            toast.success(
+                intl.formatMessage({
+                    id: "logsheets.upload.success",
+                    defaultMessage: "Logsheets uploaded successfully",
+                })
+            );
+            navigate(`/templates/${templateId}/logsheets`);
         } catch (error) {
-            console.error("Submission failed", error);
+            console.error("Upload failed", error);
+            toast.error(
+                intl.formatMessage({
+                    id: "logsheets.upload.error",
+                    defaultMessage: "Failed to upload logsheets",
+                })
+            );
         }
     };
 
     return (
         <UploadLogsheetsContext.Provider
             value={{
-                logsheets,
-                addLogsheets,
-                setLogsheets,
-                removeLogsheet,
-                setAlignment,
-                clearLogsheets,
-                handleContinue,
-                canContinue,
-                registerNextHandler,
-                submitLogsheets: submitData,
+                files,
+                setFiles,
+                handleUpload,
+                isUploading,
             }}
         >
             {children}

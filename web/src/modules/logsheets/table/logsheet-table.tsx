@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { useLogsheets } from "@/modules/logsheets/api";
 import { PreviewModal } from "@/modules/logsheets/components/preview-modal";
+import { LogsheetTableBulkActions } from "@/modules/logsheets/table/bulk-actions";
 import { useLogsheetsColumns } from "@/modules/logsheets/table/columns";
 import {
     flexRender,
@@ -24,6 +25,7 @@ import {
     getSortedRowModel,
     useReactTable,
     type PaginationState,
+    type RowSelectionState,
 } from "@tanstack/react-table";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
@@ -79,6 +81,7 @@ export const LogsheetTable = ({
         pageIndex: 0,
         pageSize: 10,
     });
+    const [selectedRowIds, setSelectedRowIds] = useState<RowSelectionState>({});
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
@@ -89,8 +92,11 @@ export const LogsheetTable = ({
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onPaginationChange: setPagination,
+        onRowSelectionChange: setSelectedRowIds,
+        getRowId: (originalRow) => originalRow.id,
         state: {
             pagination,
+            rowSelection: selectedRowIds,
         },
         meta: {
             onPreview: (id: string) => setPreviewFileId(id),
@@ -114,6 +120,10 @@ export const LogsheetTable = ({
 
     return (
         <div className="flex flex-col gap-4">
+            <LogsheetTableBulkActions
+                selectedLogsheetIds={Object.keys(selectedRowIds)}
+                onClearSelection={() => setSelectedRowIds({})}
+            />
             <Table {...props}>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (

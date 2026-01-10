@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebFormHTR.Application;
 using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.Scripting;
@@ -44,5 +45,6 @@ public static class InfrastructureInstaller
         services.AddScoped<ICredentialService, CredentialService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IResidualService, ResidualService>();
+        services.AddScoped<ILogsheetService, LogsheetService>();
     }
 }

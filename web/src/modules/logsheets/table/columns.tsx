@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import { LogsheetTableActions } from "@/modules/logsheets/actions/table-actions";
 import { ProcessedBadge } from "@/modules/logsheets/components/processed-badge";
 import { LogsheetStatusBadge } from "@/modules/logsheets/components/status-badge";
@@ -23,6 +24,26 @@ export const useLogsheetsColumns = () => {
     const intl = useIntl();
 
     return [
+        columnHelper.display({
+            id: "select",
+            header: ({ table }) => (
+                <Checkbox
+                    checked={table.getIsAllPageRowsSelected()}
+                    onClick={table.getToggleAllRowsSelectedHandler()}
+                >
+                    {intl.formatMessage({
+                        id: "logsheets.table.columns.select",
+                        defaultMessage: "Select all",
+                    })}
+                </Checkbox>
+            ),
+            cell: ({ row }) => (
+                <Checkbox
+                    onClick={row.getToggleSelectedHandler()}
+                    checked={row.getIsSelected()}
+                />
+            ),
+        }),
         columnHelper.accessor("file.fileName", {
             header: intl.formatMessage({
                 id: "logsheets.table.columns.fileName",

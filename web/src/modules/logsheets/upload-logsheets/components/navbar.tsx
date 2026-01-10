@@ -1,5 +1,6 @@
 import { NavbarContainer } from "@/components/navbar-container";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useUploadLogsheetsContext } from "@/modules/logsheets/upload-logsheets/hooks/use-upload-logsheets-context";
 import { ArrowLeft } from "lucide-react";
 import { useIntl } from "react-intl";
@@ -8,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 export const LogsheetsUploadNavbar = () => {
     const navigate = useNavigate();
 
-    const { canContinue, handleContinue } = useUploadLogsheetsContext();
+    const { handleUpload, files, isUploading } = useUploadLogsheetsContext();
 
     const intl = useIntl();
 
@@ -28,10 +29,11 @@ export const LogsheetsUploadNavbar = () => {
                     </div>
                 </div>
             </div>
-            <Button disabled={!canContinue} onClick={handleContinue}>
+            <Button disabled={files.length === 0} onClick={handleUpload}>
+                {isUploading ? <Spinner /> : null}
                 {intl.formatMessage({
                     id: "logsheets.upload.actions.upload",
-                    defaultMessage: "Continue",
+                    defaultMessage: "Upload",
                 })}
             </Button>
         </NavbarContainer>

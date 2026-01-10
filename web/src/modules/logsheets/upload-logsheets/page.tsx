@@ -1,7 +1,7 @@
 import { PdfFileUpload } from "@/components/pdf-file-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TemplateInfoItem } from "@/modules/logsheets/upload-logsheets/components/template-info-item";
-import { useLogsheetUploadNextHandler } from "@/modules/logsheets/upload-logsheets/hooks/use-logsheet-upload-next-handler";
+import { useUploadLogsheetsContext } from "@/modules/logsheets/upload-logsheets/hooks/use-upload-logsheets-context";
 import { useTemplate } from "@/modules/templates/api";
 import { formatDate } from "date-fns";
 import { useIntl } from "react-intl";
@@ -13,7 +13,7 @@ export const UploadLogsheetPage = () => {
     const { templateId } = useParams<{ templateId: string }>();
     const templateQuery = useTemplate(templateId ?? "");
 
-    const { files, setFiles } = useLogsheetUploadNextHandler(templateId ?? "");
+    const { files, setFiles } = useUploadLogsheetsContext();
 
     const handleFileChange = (file: File | File[] | null) => {
         if (!file) {
@@ -59,6 +59,7 @@ export const UploadLogsheetPage = () => {
                     multiple
                     className="w-full bg-white dark:bg-muted"
                 />
+
                 <Card className="w-full">
                     <CardHeader>
                         <CardTitle>

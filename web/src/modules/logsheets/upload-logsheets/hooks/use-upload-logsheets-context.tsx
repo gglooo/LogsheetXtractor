@@ -1,24 +1,10 @@
-import type { FileType } from "@/modules/files/schema";
-import type { LogsheetAlignmentData } from "@/modules/logsheets/schema";
 import { createContext, useContext } from "react";
 
-export type ContextLogsheet = {
-    file?: FileType;
-    rawFile: File;
-    alignmentData?: LogsheetAlignmentData;
-};
-
 export type UploadLogsheetsContextType = {
-    logsheets: ContextLogsheet[];
-    addLogsheets: (files: File[]) => void;
-    setLogsheets: (logsheets: ContextLogsheet[]) => void;
-    removeLogsheet: (index: number) => void;
-    setAlignment: (id: string, alignment: LogsheetAlignmentData) => void;
-    clearLogsheets: () => void;
-    handleContinue: () => Promise<void>;
-    canContinue: boolean;
-    registerNextHandler: (handler: () => Promise<boolean | void>) => () => void;
-    submitLogsheets: () => Promise<void>;
+    files: File[];
+    setFiles: (files: File[]) => void;
+    handleUpload: () => Promise<void>;
+    isUploading: boolean;
 };
 
 export const UploadLogsheetsContext = createContext<

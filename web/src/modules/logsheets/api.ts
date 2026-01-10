@@ -55,6 +55,56 @@ export const useProcessLogsheetMutation = () => {
     });
 };
 
+export const useProcessLogsheetsMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["processLogsheets"],
+        mutationFn: async (logsheetIds: string[]) => {
+            const response = await fetch(`/api/logsheets/batch/process`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ logsheetIds }),
+            });
+
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+
+            return await response.json();
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
+        },
+    });
+};
+
+export const useDeleteLogsheetsMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["deleteLogsheets"],
+        mutationFn: async (logsheetIds: string[]) => {
+            const response = await fetch(`/api/logsheets/batch`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ logsheetIds }),
+            });
+
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
+        },
+    });
+};
+
 export const useUploadLogsheetsMutation = () =>
     useMutation({
         mutationKey: ["uploadLogsheets"],

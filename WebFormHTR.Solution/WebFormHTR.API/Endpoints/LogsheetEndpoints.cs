@@ -82,6 +82,19 @@ public static class LogsheetEndpoints
         return result.ToHttpResult();
     }
 
+    [WolverineDelete("/api/logsheets/batch")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> DeleteBatchLogsheets(
+        BatchDeleteLogsheetCommand request,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var result = await bus.InvokeAsync<Result>(request, ct);
+
+        return result.ToHttpResult();
+    }
+
     [WolverineGet("/api/templates/{id}/logsheets")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<LogsheetListDto>))]
     [ProducesResponseType(404)]
@@ -107,6 +120,20 @@ public static class LogsheetEndpoints
     {
         var command = new ProcessLogsheetDataCommand(id);
         var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/logsheets/batch/process")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> ProcessBatchLogsheetData(
+        BatchProcessLogsheetDataCommand request,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var result = await bus.InvokeAsync<Result<IEnumerable<LogsheetDetailDto>>>(request, ct);
 
         return result.ToHttpResult();
     }

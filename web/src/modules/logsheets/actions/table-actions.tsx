@@ -22,7 +22,7 @@ export const LogsheetTableActions = ({
 }: LogsheetTableActionsProps) => {
     const intl = useIntl();
 
-    const fileDownloadMutation = useFileDownloadMutation(logsheet.file.id);
+    const fileDownloadMutation = useFileDownloadMutation();
     const deleteLogsheetMutation = useDeleteLogsheetMutation();
     const processLogsheetMutation = useProcessLogsheetMutation();
 
@@ -59,7 +59,11 @@ export const LogsheetTableActions = ({
                     variant="ghost"
                     title="Download"
                     disabled={fileDownloadMutation.isPending}
-                    onClick={async () => fileDownloadMutation.mutateAsync()}
+                    onClick={async () =>
+                        fileDownloadMutation.mutateAsync({
+                            fileId: logsheet.file.id,
+                        })
+                    }
                 >
                     <DownloadIcon className="h-4 w-4" />
                 </Button>
