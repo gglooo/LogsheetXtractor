@@ -9,5 +9,7 @@ public record ExtractedValueDto(
     string VariableName,
     string Value,
     string? CorrectedValue,
-    EVerificationStatus Status
+    EVerificationStatus Status,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt
 );
