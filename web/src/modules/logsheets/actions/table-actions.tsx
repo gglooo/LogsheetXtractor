@@ -7,8 +7,15 @@ import {
     useProcessLogsheetMutation,
 } from "@/modules/logsheets/api";
 import type { LogsheetListType } from "@/modules/logsheets/schema";
-import { DownloadIcon, EyeIcon, FileCog, TrashIcon } from "lucide-react";
+import {
+    DownloadIcon,
+    EyeIcon,
+    FileCog,
+    FileSignature,
+    TrashIcon,
+} from "lucide-react";
 import { useIntl } from "react-intl";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export type LogsheetTableActionsProps = {
@@ -21,6 +28,8 @@ export const LogsheetTableActions = ({
     onPreview,
 }: LogsheetTableActionsProps) => {
     const intl = useIntl();
+    const navigate = useNavigate();
+    const { templateId } = useParams<{ templateId: string }>();
 
     const fileDownloadMutation = useFileDownloadMutation();
     const deleteLogsheetMutation = useDeleteLogsheetMutation();
@@ -54,6 +63,17 @@ export const LogsheetTableActions = ({
                     onClick={() => onPreview(logsheet.file.id)}
                 >
                     <EyeIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    title="Proofread"
+                    onClick={() =>
+                        navigate(
+                            `/templates/${templateId}/logsheets/${logsheet.id}/proofread`
+                        )
+                    }
+                >
+                    <FileSignature className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="ghost"

@@ -15,7 +15,7 @@ type Props = {
     isResizeable?: boolean;
     isDuplicate?: boolean;
     guideLineCoordinates?: Coordinates;
-    onDelete: (id: string) => void;
+    onDelete?: (id: string) => void;
     onRoiClick?: (e: React.MouseEvent, id: string) => void;
     onRoiDrag?: (e: React.MouseEvent, id: string) => void;
     onRoiResizeStart?: (e: React.MouseEvent, id: string) => void;
@@ -125,7 +125,7 @@ export const RoiSvg = React.memo(
                     </>
                 ) : null}
 
-                {isHovered && (
+                {isHovered && onDelete && (
                     <g
                         className="cursor-pointer"
                         onClick={(e) => {

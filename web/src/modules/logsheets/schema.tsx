@@ -17,6 +17,21 @@ export const logsheetStatusSchema = z.enum([
 
 export type LogsheetStatus = z.infer<typeof logsheetStatusSchema>;
 
+export const verificationStatusSchema = z.enum(["Unverified", "Verified"]);
+
+export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
+
+export const extractedValueSchema = baseSchema.extend({
+    logsheetId: z.guid(),
+    roiId: z.guid(),
+    variableName: z.string(),
+    value: z.string(),
+    correctedValue: z.string().nullable(),
+    status: verificationStatusSchema,
+});
+
+export type ExtractedValueType = z.infer<typeof extractedValueSchema>;
+
 export const logsheetAlignmentDataSchema = z.object({
     dimensions: dimensionsSchema,
     templatePoints: z.array(pointCoordinateSchema),
@@ -37,6 +52,7 @@ export const logsheetSchema = baseSchema.extend({
     status: logsheetStatusSchema,
     processedAt: dateSchema.nullable(),
     alignmentData: logsheetAlignmentDataContainerSchema.nullable(),
+    extractedValues: z.array(extractedValueSchema),
 });
 
 export type LogsheetType = z.infer<typeof logsheetSchema>;

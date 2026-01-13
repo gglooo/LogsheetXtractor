@@ -14,6 +14,15 @@ export const useLogsheets = (templateId: string) =>
         },
     });
 
+export const useLogsheet = (logsheetId: string) =>
+    useQuery({
+        queryKey: ["logsheet", logsheetId],
+        queryFn: async () => {
+            const response = await fetch(`/api/logsheets/${logsheetId}`);
+            return await logsheetSchema.parseAsync(await response.json());
+        },
+    });
+
 export const useDeleteLogsheetMutation = () => {
     const queryClient = useQueryClient();
 

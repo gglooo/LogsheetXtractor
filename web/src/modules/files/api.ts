@@ -16,8 +16,8 @@ export const useUploadFileMutation = () =>
         },
     });
 
-const fileQueryFn = async (fileId: string) => {
-    const response = await fetch(`/api/files/${fileId}`);
+export const fileQueryFn = async (url: string) => {
+    const response = await fetch(url);
 
     const blob = await response.blob();
 
@@ -44,7 +44,7 @@ export const useFile = (fileId: string) =>
     useQuery({
         queryKey: ["file", fileId],
         refetchOnWindowFocus: false,
-        queryFn: () => fileQueryFn(fileId),
+        queryFn: () => fileQueryFn(`/api/files/${fileId}`),
     });
 
 export const useFileDownloadMutation = () =>
