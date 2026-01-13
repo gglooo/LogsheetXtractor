@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import {
@@ -10,6 +11,7 @@ import {
 import type { ExtractedValueType } from "@/modules/logsheets/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { Check } from "lucide-react";
+import { useState } from "react";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
 
@@ -37,12 +39,13 @@ const ExtractedValueImage = ({ id }: { id: string }) => {
     );
 };
 
-export const EXTRACTED_VALUE_CARD_ID_PREFIX = "ev-card-";
-
 export const ExtractedValueCard = ({
     extractedValue,
 }: ExtractedValueCardProps) => {
     const intl = useIntl();
+    const [correctedValue, setCorrectedValue] = useState(
+        extractedValue.correctedValue ?? extractedValue.value
+    );
 
     const verifyExtractedValueMutation = useVerifyExtractedValueMutation(
         extractedValue.logsheetId
@@ -56,6 +59,7 @@ export const ExtractedValueCard = ({
         try {
             await verifyExtractedValueMutation.mutateAsync({
                 extractedValueId: extractedValue.id,
+                correctedValue,
             });
             toast.success(
                 intl.formatMessage({
@@ -81,9 +85,10 @@ export const ExtractedValueCard = ({
         setSelectedRoiIds([associatedRoiId]);
     };
 
+    const isVerified = extractedValue.status === "Verified";
+
     return (
         <Card
-            id={`${EXTRACTED_VALUE_CARD_ID_PREFIX}${extractedValue.roiId}`}
             onClick={handleCardClick}
             className={cn(
                 "cursor-pointer transition-all duration-200 border-2",
@@ -102,12 +107,12 @@ export const ExtractedValueCard = ({
                     </div>
                     <div className="flex flex-row gap-4 items-end flex-1">
                         <div className="space-y-1 flex-1">
-                            <label className="text-xs font-medium">
+                            <Label className="text-xs font-medium">
                                 {intl.formatMessage({
                                     id: "proofreading.originalValue",
                                     defaultMessage: "Original",
                                 })}
-                            </label>
+                            </Label>
                             <Input
                                 readOnly
                                 value={extractedValue.value}
@@ -115,30 +120,30 @@ export const ExtractedValueCard = ({
                             />
                         </div>
                         <div className="space-y-1 flex-1">
-                            <label className="text-xs font-medium">
+                            <Label className="text-xs font-medium">
                                 {intl.formatMessage({
                                     id: "proofreading.correctedValue",
                                     defaultMessage: "Corrected",
                                 })}
-                            </label>
+                            </Label>
                             <Input
                                 placeholder={extractedValue.value}
-                                defaultValue={
-                                    extractedValue.correctedValue ??
-                                    extractedValue.value
+                                value={correctedValue}
+                                onChange={(e) =>
+                                    setCorrectedValue(e.target.value)
                                 }
                             />
                         </div>
                         <Button
                             size="icon"
-                            variant={
-                                extractedValue.status === "Verified"
-                                    ? "default"
-                                    : "outline"
-                            }
+                            variant={isVerified ? "default" : "outline"}
                             onClick={handleVerifyClick}
                             disabled={verifyExtractedValueMutation.isPending}
-                            className="hover:bg-green-500/10 hover:border-green-500 focus:ring-green-500"
+                            className={
+                                !isVerified
+                                    ? "hover:bg-green-500/10 hover:border-green-500 focus:ring-green-500"
+                                    : ""
+                            }
                         >
                             {verifyExtractedValueMutation.isPending ? (
                                 <Spinner />

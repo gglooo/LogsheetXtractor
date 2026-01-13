@@ -67,6 +67,7 @@ export const LogsheetTableActions = ({
                 <Button
                     variant="ghost"
                     title="Proofread"
+                    disabled={logsheet.status !== "NeedsReview"}
                     onClick={() =>
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/proofread`

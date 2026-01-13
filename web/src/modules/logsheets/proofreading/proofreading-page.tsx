@@ -1,60 +1,52 @@
+import { Badge } from "@/components/ui/badge";
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Spinner } from "@/components/ui/spinner";
-import { useLogsheet } from "@/modules/logsheets/api";
-import { EXTRACTED_VALUE_CARD_ID_PREFIX } from "@/modules/logsheets/proofreading/components/extracted-value-card";
-import { ExtractedValuesList } from "@/modules/logsheets/proofreading/components/extracted-values-list";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    ExtractedValuesList,
+    type ExtractedValuesListHandle,
+} from "@/modules/logsheets/proofreading/components/extracted-values-list";
 import { ProofreadingNavbar } from "@/modules/logsheets/proofreading/components/proofreading-navbar";
-import type { ExtractedValueType } from "@/modules/logsheets/schema";
+import { useExtractedValues } from "@/modules/logsheets/proofreading/hooks/use-extracted-values";
 import { PdfWrapper } from "@/modules/pdf/components/pdf-wrapper";
 import { ReadonlyRoiPdfViewer } from "@/modules/pdf/components/readonly-roi-pdf-viewer";
 import type { RoiType } from "@/modules/rois/schema";
 import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
 import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
 import { useTemplate } from "@/modules/templates/api";
-import { useCallback, useMemo } from "react";
+import { useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 
 export const ProofreadingPage = () => {
     const { id, templateId } = useParams<{ id: string; templateId: string }>();
 
-    const { data: logsheet, isLoading: isLogsheetLoading } = useLogsheet(id!);
+    const {
+        logsheet,
+        unverifiedExtractedValues,
+        verifiedExtractedValues,
+        unverifiedExtractedValuesMap,
+        isLogsheetLoading,
+    } = useExtractedValues(id!);
+
+    const unverifiedListRef = useRef<ExtractedValuesListHandle>(null);
 
     const { data: template, isLoading: isTemplateLoading } = useTemplate(
         templateId!
     );
 
-    const unverifiedExtractedValues = useMemo(
-        () =>
-            logsheet?.extractedValues.reduce((acc, ev) => {
-                if (ev.status === "Unverified") {
-                    acc[ev.roiId] = ev;
-                }
-
-                return acc;
-            }, {} as Record<string, ExtractedValueType>) ?? {},
-        [logsheet]
-    );
-
     const handleRoiClick = (roiId: string) => {
-        const element = document.getElementById(
-            `${EXTRACTED_VALUE_CARD_ID_PREFIX}${roiId}`
-        );
-        if (!element) {
-            return;
-        }
-
-        element.scrollIntoView({ behavior: "instant", block: "center" });
+        unverifiedListRef.current?.scrollToRoi(roiId);
     };
 
     const shouldRenderRoiFn = useCallback(
         (roi: RoiType) => {
-            return Boolean(unverifiedExtractedValues[roi.id]);
+            return Boolean(unverifiedExtractedValuesMap[roi.id]);
         },
-        [unverifiedExtractedValues]
+        [unverifiedExtractedValuesMap]
     );
 
     if (isLogsheetLoading || isTemplateLoading || !logsheet || !template) {
@@ -67,7 +59,10 @@ export const ProofreadingPage = () => {
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-background">
-            <ProofreadingNavbar />
+            <ProofreadingNavbar
+                logsheetId={id!}
+                toReviewCount={unverifiedExtractedValues.length}
+            />
             <TemplateEditorProvider template={template}>
                 <SelectedRoisProvider>
                     <div className="flex-1 overflow-hidden flex flex-row">
@@ -88,12 +83,69 @@ export const ProofreadingPage = () => {
                             </ResizablePanel>
                             <ResizableHandle withHandle />
                             <ResizablePanel defaultSize={50} minSize={350}>
-                                <div className="h-full overflow-hidden bg-background">
-                                    <ExtractedValuesList
-                                        extractedValues={Object.values(
-                                            unverifiedExtractedValues
-                                        )}
-                                    />
+                                <div className="h-full flex flex-col overflow-hidden bg-background">
+                                    <Tabs
+                                        defaultValue="unverified"
+                                        className="flex-1 flex flex-col min-h-0"
+                                    >
+                                        <div className="p-4 py-2 bg-muted/20 border-b flex items-center justify-between shadow-sm z-10 shrink-0">
+                                            <TabsList className="grid w-full grid-cols-2">
+                                                <TabsTrigger
+                                                    value="unverified"
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    To Review
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="h-5 px-1.5 text-[10px]"
+                                                    >
+                                                        {
+                                                            unverifiedExtractedValues.length
+                                                        }
+                                                    </Badge>
+                                                </TabsTrigger>
+                                                <TabsTrigger
+                                                    value="verified"
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    Verified
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="h-5 px-1.5 text-[10px]"
+                                                    >
+                                                        {
+                                                            verifiedExtractedValues.length
+                                                        }
+                                                    </Badge>
+                                                </TabsTrigger>
+                                            </TabsList>
+                                        </div>
+                                        <div className="flex-1 overflow-hidden min-h-0 bg-background relative">
+                                            <TabsContent
+                                                value="unverified"
+                                                className="absolute inset-0 m-0 data-[state=inactive]:hidden"
+                                            >
+                                                <ExtractedValuesList
+                                                    ref={unverifiedListRef}
+                                                    className="h-full"
+                                                    extractedValues={
+                                                        unverifiedExtractedValues
+                                                    }
+                                                />
+                                            </TabsContent>
+                                            <TabsContent
+                                                value="verified"
+                                                className="absolute inset-0 m-0 data-[state=inactive]:hidden"
+                                            >
+                                                <ExtractedValuesList
+                                                    className="h-full"
+                                                    extractedValues={
+                                                        verifiedExtractedValues
+                                                    }
+                                                />
+                                            </TabsContent>
+                                        </div>
+                                    </Tabs>
                                 </div>
                             </ResizablePanel>
                         </ResizablePanelGroup>

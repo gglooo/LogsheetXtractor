@@ -56,7 +56,7 @@ export const ReadonlyRoiPdfViewer = ({
 
     const renderRoi = useCallback(
         (roi: RoiType) =>
-            shouldRenderRoiFn(roi) ? (
+            shouldRenderRoiFn(roi) || isSelectedRoi(roi.id) ? (
                 <RoiSvg
                     key={roi.id}
                     roi={roi}

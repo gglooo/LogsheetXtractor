@@ -1,4 +1,5 @@
 import { fileQueryFn } from "@/modules/files/api";
+import { logsheetSchema } from "@/modules/logsheets/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useExtractedValueImage = (extractedValueId: string) =>
@@ -36,6 +37,32 @@ export const useVerifyExtractedValueMutation = (logsheetId: string) => {
             }
 
             return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["logsheet", logsheetId],
+            });
+        },
+    });
+};
+
+export const useCompleteProofreadingMutation = (logsheetId: string) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async () => {
+            const response = await fetch(
+                `/api/logsheets/${logsheetId}/proofreading/complete`,
+                {
+                    method: "POST",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to complete proofreading");
+            }
+
+            return await logsheetSchema.parseAsync(await response.json());
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
