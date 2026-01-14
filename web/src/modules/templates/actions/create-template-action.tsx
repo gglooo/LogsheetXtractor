@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useUploadFileMutation } from "@/modules/files/api";
 import { useCreateTemplateMutation } from "@/modules/templates/api";
 import { pdfFileSchema } from "@/schema";
+import { BracesIcon } from "lucide-react";
 import { useState } from "react";
 import { useFormState } from "react-hook-form";
 import { useIntl } from "react-intl";
@@ -98,6 +99,8 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
                 })}
                 accept=".json"
                 validator={(file) => file.type === "application/json"}
+                size="small"
+                icon={<BracesIcon className="text-muted-foreground" />}
             />
 
             <DialogFooter>

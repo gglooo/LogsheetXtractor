@@ -1,3 +1,4 @@
+import { downloadFile, fileQueryFn } from "@/modules/files/api";
 import { templateListSchema, templateSchema } from "@/modules/templates/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -96,6 +97,25 @@ export const useCreateTemplateMutation = () => {
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["templates"] });
+        },
+    });
+};
+
+export const useExportConfigMutation = () => {
+    return useMutation({
+        mutationFn: async ({ templateId }: { templateId: string }) => {
+            const { bytes, fileName, contentType } = await fileQueryFn(
+                `api/templates/${templateId}/export-config`,
+                "POST"
+            );
+
+            const blob = new Blob([bytes], { type: contentType || undefined });
+
+            if (blob.size === 0) {
+                throw new Error("Exported config is empty");
+            }
+
+            await downloadFile(blob, fileName);
         },
     });
 };

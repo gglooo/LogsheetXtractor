@@ -1,4 +1,4 @@
-import { FileUpload } from "@/components/file-upload";
+import { FileUpload, type FileUploadProps } from "@/components/file-upload";
 import {
     FormControl,
     FormField,
@@ -10,12 +10,7 @@ import {
 type Props = {
     name: string;
     label: string;
-    multiple?: boolean;
-    accept?: string;
-    validator?: (file: File) => boolean;
-    placeholder?: string;
-    dragDropText?: string;
-};
+} & Omit<FileUploadProps, "file" | "onFileChange">;
 
 export const FormFileUpload = ({ name, label, ...props }: Props) => {
     return (

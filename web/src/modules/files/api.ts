@@ -16,8 +16,8 @@ export const useUploadFileMutation = () =>
         },
     });
 
-export const fileQueryFn = async (url: string) => {
-    const response = await fetch(url);
+export const fileQueryFn = async (url: string, method: string = "GET") => {
+    const response = await fetch(url, { method });
 
     const blob = await response.blob();
 
@@ -47,19 +47,26 @@ export const useFile = (fileId: string) =>
         queryFn: () => fileQueryFn(`/api/files/${fileId}`),
     });
 
-export const useFileDownloadMutation = () =>
-    useMutation({
+export const downloadFile = async (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+};
+
+export const useFileDownloadMutation = () => {
+    return useMutation({
         mutationFn: async ({ fileId }: { fileId: string }) => {
-            const { bytes, fileName, contentType } = await fileQueryFn(fileId);
+            const { bytes, fileName, contentType } = await fileQueryFn(
+                `/api/files/${fileId}`
+            );
 
             const blob = new Blob([bytes], { type: contentType || undefined });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", fileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            await downloadFile(blob, fileName);
         },
     });
+};

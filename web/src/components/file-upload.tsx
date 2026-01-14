@@ -5,6 +5,21 @@ import { FileIcon, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 
+export type FileUploadComponentSize = "small" | "default";
+
+export type FileUploadProps = {
+    file: File | File[] | null;
+    onFileChange: (file: File | File[] | null) => void;
+    className?: string;
+    multiple?: boolean;
+    accept?: string;
+    validator?: (file: File) => boolean;
+    placeholder?: string;
+    dragDropText?: string;
+    size?: FileUploadComponentSize;
+    icon?: React.ReactNode;
+};
+
 export const FileUpload = ({
     file,
     onFileChange,
@@ -14,16 +29,9 @@ export const FileUpload = ({
     validator,
     placeholder,
     dragDropText,
-}: {
-    file: File | File[] | null;
-    onFileChange: (file: File | File[] | null) => void;
-    className?: string;
-    multiple?: boolean;
-    accept?: string;
-    validator?: (file: File) => boolean;
-    placeholder?: string;
-    dragDropText?: string;
-}) => {
+    size: componentSize = "default",
+    icon,
+}: FileUploadProps) => {
     const intl = useIntl();
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -90,8 +98,24 @@ export const FileUpload = ({
     const displayFile = () => {
         if (!file) {
             return (
-                <div className="flex flex-col items-center pointer-events-none">
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <div
+                    className={cn(
+                        "flex items-center pointer-events-none",
+                        componentSize === "small"
+                            ? "flex-row gap-4"
+                            : "flex-col"
+                    )}
+                >
+                    {icon ?? (
+                        <Upload
+                            className={cn(
+                                "mx-auto text-muted-foreground",
+                                componentSize === "small"
+                                    ? "h-4 w-4"
+                                    : "h-8 w-8 mb-2"
+                            )}
+                        />
+                    )}
                     <p className="text-sm font-medium">
                         {placeholder ??
                             intl.formatMessage({
@@ -99,13 +123,16 @@ export const FileUpload = ({
                                 defaultMessage: "Click to upload file",
                             })}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        {dragDropText ??
-                            intl.formatMessage({
-                                id: "fileUpload.dragDrop",
-                                defaultMessage: "Or drag and drop file here",
-                            })}
-                    </p>
+                    {componentSize !== "small" ? (
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {dragDropText ??
+                                intl.formatMessage({
+                                    id: "fileUpload.dragDrop",
+                                    defaultMessage:
+                                        "Or drag and drop file here",
+                                })}
+                        </p>
+                    ) : null}
                 </div>
             );
         }
@@ -197,11 +224,12 @@ export const FileUpload = ({
             onDragLeave={handleDragOut}
             onDrop={handleDrop}
             className={cn(
-                `border-2 relative border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+                `border-2 relative border-dashed rounded-lg text-center transition-colors cursor-pointer ${
                     isDragging
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-primary/50"
                 }`,
+                componentSize === "small" ? "p-4 " : "p-8",
                 className
             )}
         >

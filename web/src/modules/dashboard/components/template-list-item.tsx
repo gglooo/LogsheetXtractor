@@ -16,10 +16,14 @@ import {
 import { baseLogsheetsPath } from "@/modules/logsheets/routes";
 import { baseTemplateEditorPath } from "@/modules/template-editor/routes";
 import { CloneTemplateAction } from "@/modules/templates/actions/clone-template-action";
-import { useDeleteTemplateMutation } from "@/modules/templates/api";
+import {
+    useDeleteTemplateMutation,
+    useExportConfigMutation,
+} from "@/modules/templates/api";
 import type { TemplateListItemType } from "@/modules/templates/schema";
 import { format } from "date-fns";
 import {
+    ArrowRightFromLineIcon,
     EditIcon,
     FilesIcon,
     MoreVertical,
@@ -39,6 +43,7 @@ export const TemplateListItem = ({
     const navigate = useNavigate();
 
     const deleteTemplateMutation = useDeleteTemplateMutation();
+    const exportConfigMutation = useExportConfigMutation();
 
     const handleDeleteTemplate = async () => {
         try {
@@ -55,6 +60,26 @@ export const TemplateListItem = ({
                 intl.formatMessage({
                     id: "templates.actions.delete.error",
                     defaultMessage: "Failed to delete template",
+                })
+            );
+        }
+    };
+
+    const handleExportConfig = async () => {
+        try {
+            await exportConfigMutation.mutateAsync({ templateId: template.id });
+            toast.success(
+                intl.formatMessage({
+                    id: "templates.actions.export.success",
+                    defaultMessage: "Template config exported.",
+                })
+            );
+        } catch (error) {
+            console.error("Error exporting template config:", error);
+            toast.error(
+                intl.formatMessage({
+                    id: "templates.actions.export.error",
+                    defaultMessage: "Failed to export template config",
                 })
             );
         }
@@ -92,6 +117,13 @@ export const TemplateListItem = ({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <CloneTemplateAction templateId={template.id} />
+                            <DropdownMenuItem onClick={handleExportConfig}>
+                                <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
+                                {intl.formatMessage({
+                                    id: "templates.actions.export",
+                                    defaultMessage: "Export config",
+                                })}
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="text-destructive"
                                 onClick={handleDeleteTemplate}
