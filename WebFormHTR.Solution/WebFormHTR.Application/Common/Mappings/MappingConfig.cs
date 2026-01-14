@@ -147,6 +147,7 @@ public class MappingConfig : IRegister
             }).ToList());
 
         config.NewConfig<ExtractedValue, ExtractedValueDto>()
-            .Map(dest => dest.VariableName, src => src.Roi.VariableName);
+            .Map(dest => dest.VariableName, src => src.Roi.VariableName)
+            .Map(dest => dest.RoiType, src => src.Roi.Type);
     }
 }

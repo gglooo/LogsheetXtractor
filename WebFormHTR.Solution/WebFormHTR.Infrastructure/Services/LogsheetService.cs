@@ -24,7 +24,7 @@ public class LogsheetService(
             return new NotFoundError("Logsheet not found");
         }
 
-        if (logsheet.Status != ELogSheetStatus.Pending || logsheet.ProcessedAt is not null)
+        if (logsheet.Status == ELogSheetStatus.Completed || logsheet.ProcessedAt is not null)
         {
             return new InvalidStateError("Logsheet is not in a valid state for processing");
         }
@@ -47,6 +47,7 @@ public class LogsheetService(
         }
         catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             AdjustAfterFailedProcessing(logsheet, ex.Message);
         }
     }

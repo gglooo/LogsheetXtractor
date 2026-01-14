@@ -15,8 +15,12 @@ public static class ExtractedValueEndpoints
     [WolverineGet("/api/extracted-values/{id}/image")]
     [ProducesResponseType(200, Type = typeof(GetFileDto))]
     [ProducesResponseType(404)]
-    public static async Task<IResult> GetExtractedValueImage(Guid id, IMessageBus bus, CancellationToken ct)
+    public static async Task<IResult> GetExtractedValueImage(Guid id, IMessageBus bus, HttpContext httpContext,
+        CancellationToken ct)
     {
+        // The images are immutable, so we can set long-term caching headers
+        httpContext.Response.Headers.Append("Cache-Control", "public, max-age=31536000, immutable");
+
         var query = new GetExtractedValueImageQuery(id);
         var result = await bus.InvokeAsync<Result<GetFileDto>>(query, ct);
 

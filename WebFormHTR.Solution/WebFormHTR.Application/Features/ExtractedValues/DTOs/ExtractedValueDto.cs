@@ -6,6 +6,7 @@ public record ExtractedValueDto(
     Guid Id,
     Guid LogsheetId,
     Guid RoiId,
+    ERoiType RoiType,
     string VariableName,
     string Value,
     string? CorrectedValue,

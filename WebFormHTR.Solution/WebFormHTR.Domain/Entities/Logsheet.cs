@@ -17,6 +17,7 @@ public class Logsheet : BaseEntity
     public virtual File File { get; set; }
 
     public ELogSheetStatus Status { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public string? AlignmentData { get; set; }
 
     [NotMapped]

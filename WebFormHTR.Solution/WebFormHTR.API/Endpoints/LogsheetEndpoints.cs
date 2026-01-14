@@ -152,4 +152,19 @@ public static class LogsheetEndpoints
 
         return result.ToHttpResult();
     }
+
+    [WolverinePost("/api/logsheets/{id}/proofreading/complete")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> CompleteLogsheetProofreading(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new CompleteLogsheetProofreadingCommand(id);
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
 }
