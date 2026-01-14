@@ -1,4 +1,5 @@
 import { logsheetListSchema, logsheetSchema } from "@/modules/logsheets/schema";
+import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useLogsheets = (templateId: string) =>
@@ -147,3 +148,38 @@ export const useUploadLogsheetsMutation = () =>
                 .parseAsync(await response.json());
         },
     });
+
+export const useAlignLogsheetMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["alignLogsheet"],
+        mutationFn: async ({
+            logsheetId,
+            frontside,
+            backside,
+        }: {
+            logsheetId: string;
+            frontside: Position[];
+            backside?: Position[];
+        }) => {
+            const response = await fetch(
+                `/api/logsheets/${logsheetId}/alignment/set`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ frontside, backside }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
+        },
+    });
+};

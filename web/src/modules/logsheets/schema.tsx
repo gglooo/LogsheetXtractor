@@ -69,7 +69,6 @@ export const logsheetListSchema = baseSchema.extend({
 
 export type LogsheetListType = z.infer<typeof logsheetListSchema>;
 
-// Form schema for updating extracted values based on ROI type
 export const createExtractedValueFormSchema = (
     roiType: z.infer<typeof roiTypeSchema>
 ) => {

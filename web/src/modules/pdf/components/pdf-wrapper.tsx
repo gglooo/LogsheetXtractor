@@ -53,7 +53,7 @@ export const PdfWrapper = ({
 
     return (
         <div className="flex flex-col w-full h-full relative">
-            <div className="flex flex-row justify-between px-8 z-10 bg-background/80 backdrop-blur-sm p-2 border-b">
+            <div className="flex flex-row justify-between px-8 z-10 bg-background/80 backdrop-blur-sm m-2 border-b">
                 {includeHistoryControls ? <HistoryControls /> : null}
                 {includeZoomControls ? (
                     <div className="flex gap-2 shrink-0 ">

@@ -12,6 +12,7 @@ import {
     EyeIcon,
     FileCog,
     FileSignature,
+    ScanLine,
     TrashIcon,
 } from "lucide-react";
 import { useIntl } from "react-intl";
@@ -75,6 +76,17 @@ export const LogsheetTableActions = ({
                     }
                 >
                     <FileSignature className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    title="Align"
+                    onClick={() =>
+                        navigate(
+                            `/templates/${templateId}/logsheets/${logsheet.id}/align`
+                        )
+                    }
+                >
+                    <ScanLine className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="ghost"

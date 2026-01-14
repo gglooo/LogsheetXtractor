@@ -18,7 +18,13 @@ const PdfSkeleton = ({ width, height }: { width: number; height: number }) => (
     />
 );
 
-export const PdfViewer = ({ fileId }: { fileId: string }) => {
+export const PdfViewer = ({
+    fileId,
+    pageNumber,
+}: {
+    fileId: string;
+    pageNumber?: number;
+}) => {
     const file = useFile(fileId);
     const fileData = useMemo(() => {
         return file.data?.bytes
@@ -52,16 +58,26 @@ export const PdfViewer = ({ fileId }: { fileId: string }) => {
             }
             className="select-none"
         >
-            {Object.entries(Array(numPages).fill(null)).map(([index]) => (
+            {pageNumber ? (
                 <Page
-                    key={`page_${index}`}
-                    pageNumber={Number(index) + 1}
+                    pageNumber={pageNumber}
                     width={width * scale}
                     onLoadError={(error) =>
                         console.error("Error loading PDF Page:", error)
                     }
                 />
-            ))}
+            ) : (
+                Object.entries(Array(numPages).fill(null)).map(([index]) => (
+                    <Page
+                        key={`page_${index}`}
+                        pageNumber={Number(index) + 1}
+                        width={width * scale}
+                        onLoadError={(error) =>
+                            console.error("Error loading PDF Page:", error)
+                        }
+                    />
+                ))
+            )}
         </Document>
     ) : (
         <PdfSkeleton
