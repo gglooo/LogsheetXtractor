@@ -1,4 +1,4 @@
-import { PdfFileUpload } from "@/components/pdf-file-upload";
+import { FileUpload } from "@/components/file-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TemplateInfoItem } from "@/modules/logsheets/upload-logsheets/components/template-info-item";
 import { useUploadLogsheetsContext } from "@/modules/logsheets/upload-logsheets/hooks/use-upload-logsheets-context";
@@ -53,11 +53,13 @@ export const UploadLogsheetPage = () => {
     return (
         <div className="flex flex-col items-center overflow-hidden w-full pt-10 pb-6 bg-background">
             <div className="flex flex-col items-center gap-6 w-10/12 py-20 md:w-9/12 lg:w-8/12">
-                <PdfFileUpload
+                <FileUpload
                     file={files}
                     onFileChange={handleFileChange}
                     multiple
                     className="w-full bg-white dark:bg-muted"
+                    accept=".pdf"
+                    validator={(file) => file.type === "application/pdf"}
                 />
 
                 <Card className="w-full">

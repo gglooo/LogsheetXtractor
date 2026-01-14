@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Features.File.Interfaces;
@@ -10,6 +11,7 @@ using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Features.Template.Interfaces;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
+using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 
 namespace WebFormHTR.Infrastructure.Services;
 
@@ -24,15 +26,9 @@ public class TemplateService(
     public async Task<TemplateDetailDto> CreateTemplateAsync(CreateTemplateCommand command,
         CancellationToken cancellationToken)
     {
-        var dimensions = CalculateTemplateFileDimensions(command.FileId);
-        var template = new Template
-        {
-            Name = command.Name,
-            ParentId = command.ParentId,
-            FileId = command.FileId,
-            Width = dimensions.Width,
-            Height = dimensions.Height
-        };
+        var template = command.ImportedConfig is not null
+            ? GetTemplateFromImportedConfig(command.ImportedConfig, command.FileId, command.Name, command.ParentId)
+            : GetTemplate(command.Name, command.FileId, command.ParentId);
 
         await dbContext.Templates.AddAsync(template, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -90,5 +86,45 @@ public class TemplateService(
         }
 
         return dimensions;
+    }
+
+    private Template GetTemplate(string templateName, Guid fileId, Guid? parentId)
+    {
+        var dimensions = CalculateTemplateFileDimensions(fileId);
+
+        return new Template
+        {
+            Name = templateName,
+            ParentId = parentId,
+            FileId = fileId,
+            Width = dimensions.Width,
+            Height = dimensions.Height
+        };
+    }
+
+    private Template GetTemplateFromImportedConfig(string importedConfig, Guid fileId, string templateName,
+        Guid? parentId)
+    {
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var deserialized = JsonSerializer.Deserialize<PythonTemplateConfig>(importedConfig, options);
+
+            if (deserialized is null)
+            {
+                throw new Exception("Imported configuration is null");
+            }
+
+            var template = mapper.Map<Template>(deserialized);
+            template.FileId = fileId;
+            template.Name = templateName;
+            template.ParentId = parentId;
+
+            return template;
+        }
+        catch (JsonException ex)
+        {
+            throw new Exception("Invalid imported configuration format", ex);
+        }
     }
 }

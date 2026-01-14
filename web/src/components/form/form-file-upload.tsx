@@ -1,4 +1,4 @@
-import { PdfFileUpload } from "@/components/pdf-file-upload";
+import { FileUpload } from "@/components/file-upload";
 import {
     FormControl,
     FormField,
@@ -11,6 +11,10 @@ type Props = {
     name: string;
     label: string;
     multiple?: boolean;
+    accept?: string;
+    validator?: (file: File) => boolean;
+    placeholder?: string;
+    dragDropText?: string;
 };
 
 export const FormFileUpload = ({ name, label, ...props }: Props) => {
@@ -21,7 +25,7 @@ export const FormFileUpload = ({ name, label, ...props }: Props) => {
                 <FormItem>
                     <FormLabel>{label}</FormLabel>
                     <FormControl>
-                        <PdfFileUpload
+                        <FileUpload
                             file={field.value}
                             onFileChange={field.onChange}
                             {...props}

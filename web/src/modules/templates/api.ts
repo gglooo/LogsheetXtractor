@@ -78,13 +78,15 @@ export const useCreateTemplateMutation = () => {
         mutationFn: async ({
             name,
             fileId,
+            importedConfig,
         }: {
             name: string;
             fileId: string;
+            importedConfig?: string;
         }) => {
             const response = await fetch(`/api/templates`, {
                 method: "POST",
-                body: JSON.stringify({ name, fileId }),
+                body: JSON.stringify({ name, fileId, importedConfig }),
                 headers: {
                     "Content-Type": "application/json",
                 },

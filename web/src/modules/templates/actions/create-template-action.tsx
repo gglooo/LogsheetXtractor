@@ -23,6 +23,7 @@ import z from "zod";
 const createTemplateSchema = z.object({
     name: z.string().min(1).trim(),
     file: pdfFileSchema,
+    importedConfig: z.instanceof(File).optional(),
 });
 
 type CreateTemplateFormValues = z.infer<typeof createTemplateSchema>;
@@ -36,6 +37,11 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
 
     const onSubmit = async (values: CreateTemplateFormValues) => {
         try {
+            let importedConfig: string | undefined;
+            if (values.importedConfig) {
+                importedConfig = await values.importedConfig.text();
+            }
+
             const uploadedFile = await uploadFileMutation.mutateAsync(
                 values.file
             );
@@ -43,6 +49,7 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
             await createTemplateMutation.mutateAsync({
                 name: values.name,
                 fileId: uploadedFile.id,
+                importedConfig,
             });
             onClose();
             toast.success(
@@ -79,6 +86,18 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
                     id: "templates.actions.createTemplate.form.file.label",
                     defaultMessage: "Upload PDF File",
                 })}
+                accept=".pdf"
+                validator={(file) => file.type === "application/pdf"}
+            />
+
+            <FormFileUpload
+                name="importedConfig"
+                label={intl.formatMessage({
+                    id: "templates.actions.createTemplate.form.configFile.label",
+                    defaultMessage: "Upload JSON config (optional)",
+                })}
+                accept=".json"
+                validator={(file) => file.type === "application/json"}
             />
 
             <DialogFooter>
@@ -144,6 +163,7 @@ export const CreateTemplateAction = () => {
                         defaultValues={{
                             name: "",
                             file: undefined,
+                            importedConfig: undefined,
                         }}
                     >
                         <CreateTemplateFormContent

@@ -13,6 +13,7 @@ public sealed record CreateTemplateCommand
     public string Name { get; set; } = string.Empty;
     public Guid? ParentId { get; set; }
     public Guid FileId { get; set; }
+    public string? ImportedConfig { get; set; }
 }
 
 public static class CreateTemplateHandler

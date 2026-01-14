@@ -5,16 +5,24 @@ import { FileIcon, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 
-export const PdfFileUpload = ({
+export const FileUpload = ({
     file,
     onFileChange,
     className,
     multiple = false,
+    accept,
+    validator,
+    placeholder,
+    dragDropText,
 }: {
     file: File | File[] | null;
     onFileChange: (file: File | File[] | null) => void;
     className?: string;
     multiple?: boolean;
+    accept?: string;
+    validator?: (file: File) => boolean;
+    placeholder?: string;
+    dragDropText?: string;
 }) => {
     const intl = useIntl();
     const [isDragging, setIsDragging] = useState(false);
@@ -52,14 +60,14 @@ export const PdfFileUpload = ({
             return;
         }
 
-        const pdfFiles = Array.from(droppedFiles).filter(
-            (file) => file.type === "application/pdf"
+        const validFiles = Array.from(droppedFiles).filter(
+            (file) => !validator || validator(file)
         );
 
         if (multiple) {
-            onFileChange(pdfFiles);
-        } else if (pdfFiles.length > 0) {
-            onFileChange(pdfFiles[0]);
+            onFileChange(validFiles);
+        } else if (validFiles.length > 0) {
+            onFileChange(validFiles[0]);
         }
     };
 
@@ -85,16 +93,18 @@ export const PdfFileUpload = ({
                 <div className="flex flex-col items-center pointer-events-none">
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-sm font-medium">
-                        {intl.formatMessage({
-                            id: "pdfFileUpload.placeholder",
-                            defaultMessage: "Click to upload PDF",
-                        })}
+                        {placeholder ??
+                            intl.formatMessage({
+                                id: "fileUpload.placeholder",
+                                defaultMessage: "Click to upload file",
+                            })}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                        {intl.formatMessage({
-                            id: "pdfFileUpload.dragDrop",
-                            defaultMessage: "Or drag and drop PDF here",
-                        })}
+                        {dragDropText ??
+                            intl.formatMessage({
+                                id: "fileUpload.dragDrop",
+                                defaultMessage: "Or drag and drop file here",
+                            })}
                     </p>
                 </div>
             );
@@ -108,7 +118,7 @@ export const PdfFileUpload = ({
                         <span>
                             {intl.formatMessage(
                                 {
-                                    id: "pdfFileUpload.multipleFiles",
+                                    id: "fileUpload.multipleFiles",
                                     defaultMessage: "{count} files selected",
                                 },
                                 { count: file.length }
@@ -117,7 +127,7 @@ export const PdfFileUpload = ({
                     </div>
                     <p className="text-sm text-muted-foreground text-center">
                         {intl.formatMessage({
-                            id: "pdfFileUpload.multipleFilesDescription",
+                            id: "fileUpload.multipleFilesDescription",
                             defaultMessage:
                                 "Drag and drop your files here, or click to browse",
                         })}
@@ -169,7 +179,7 @@ export const PdfFileUpload = ({
                     size="icon-sm"
                     className="mt-2 hover:bg-destructive/10 hover:text-destructive rounded-full transition-colors cursor-pointer"
                     title={intl.formatMessage({
-                        id: "pdfFileUpload.removeFile",
+                        id: "fileUpload.removeFile",
                         defaultMessage: "Remove file",
                     })}
                 >
@@ -198,9 +208,9 @@ export const PdfFileUpload = ({
             <Input
                 ref={inputRef}
                 type="file"
-                accept=".pdf"
+                accept={accept}
                 className="hidden"
-                id="pdf-upload"
+                id="file-upload"
                 multiple={multiple}
                 onChange={(e) => {
                     const files = e.target.files;

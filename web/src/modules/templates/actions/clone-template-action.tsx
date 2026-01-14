@@ -94,6 +94,8 @@ const CloneTemplateFormContent = ({
                     id: "templates.form.fileLabel",
                     defaultMessage: "Upload PDF",
                 })}
+                accept=".pdf"
+                validator={(file) => file.type === "application/pdf"}
             />
 
             <DialogFooter>
