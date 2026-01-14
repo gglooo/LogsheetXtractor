@@ -4,7 +4,7 @@ namespace WebFormHTR.Application.Features.Scripting.DTOs;
 
 public class PdfDimensionsDto
 {
-    [JsonPropertyName("width")] public float Width { get; set; }
+    [JsonPropertyName("width")] public int Width { get; set; }
 
-    [JsonPropertyName("height")] public float Height { get; set; }
+    [JsonPropertyName("height")] public int Height { get; set; }
 }

@@ -77,7 +77,7 @@ public class PythonHtrAdapterTests
             {
                 new()
                 {
-                    Coords = new List<float> { 10, 20, 110, 70 }, // x, y, x2, y2 -> w=100, h=50
+                    Coords = new List<int> { 10, 20, 110, 70 }, // x, y, x2, y2 -> w=100, h=50
                     VarName = "TestROI",
                     Type = "Text"
                 }
@@ -86,7 +86,7 @@ public class PythonHtrAdapterTests
             {
                 new()
                 {
-                    Coords = new List<float> { 200, 200, 250, 250 }, // x, y, x2, y2 -> w=50, h=50
+                    Coords = new List<int> { 200, 200, 250, 250 }, // x, y, x2, y2 -> w=50, h=50
                     Content = "Ignored Content"
                 }
             }

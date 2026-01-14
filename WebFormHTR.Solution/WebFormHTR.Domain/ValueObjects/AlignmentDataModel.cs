@@ -75,6 +75,6 @@ public class ImageDimensions
 
 public class PointCoordinate
 {
-    [JsonPropertyName("x")] public float X { get; set; }
-    [JsonPropertyName("y")] public float Y { get; set; }
+    [JsonPropertyName("x")] public int X { get; set; }
+    [JsonPropertyName("y")] public int Y { get; set; }
 }

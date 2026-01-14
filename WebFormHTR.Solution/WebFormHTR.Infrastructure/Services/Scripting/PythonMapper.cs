@@ -9,7 +9,7 @@ namespace WebFormHTR.Infrastructure.Services.Scripting;
 
 public static class PythonMapper
 {
-    private static Domain.ValueObjects.Coordinates MapCoordinates(IList<float> coords)
+    private static Domain.ValueObjects.Coordinates MapCoordinates(IList<int> coords)
     {
         return new Domain.ValueObjects.Coordinates
         {

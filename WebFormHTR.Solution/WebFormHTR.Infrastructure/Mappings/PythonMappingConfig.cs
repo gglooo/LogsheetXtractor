@@ -11,7 +11,7 @@ public class PythonMappingConfig : IRegister
     {
         config.NewConfig<Residual, PythonResidualDto>()
             .Map(dest => dest.Content, src => src.Content)
-            .Map(dest => dest.Coords, src => new List<float>
+            .Map(dest => dest.Coords, src => new List<int>
             {
                 src.Coordinates.X,
                 src.Coordinates.Y,
@@ -22,7 +22,7 @@ public class PythonMappingConfig : IRegister
             // We map ID to VarName to then map it back to the ROI more easily
             .Map(dest => dest.VarName, src => src.Id)
             .Map(dest => dest.Type, src => src.Type.ToString())
-            .Map(dest => dest.Coords, src => new List<float>
+            .Map(dest => dest.Coords, src => new List<int>
             {
                 src.Coordinates.X,
                 src.Coordinates.Y,

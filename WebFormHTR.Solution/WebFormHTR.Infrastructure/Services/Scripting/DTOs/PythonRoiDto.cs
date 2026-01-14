@@ -4,7 +4,7 @@ namespace WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 
 public class PythonRoiDto
 {
-    [JsonPropertyName("coords")] public List<float> Coords { get; set; } = [];
+    [JsonPropertyName("coords")] public List<int> Coords { get; set; } = [];
 
     [JsonPropertyName("type")] public string? Type { get; set; }
 
