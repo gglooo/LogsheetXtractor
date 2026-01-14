@@ -1,4 +1,5 @@
 import { fileSchema } from "@/modules/files/schema";
+import { roiTypeSchema } from "@/modules/rois/schema";
 import { templateListSchema } from "@/modules/templates/schema";
 import {
     baseSchema,
@@ -24,6 +25,7 @@ export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
 export const extractedValueSchema = baseSchema.extend({
     logsheetId: z.guid(),
     roiId: z.guid(),
+    roiType: roiTypeSchema,
     variableName: z.string(),
     value: z.string(),
     correctedValue: z.string().nullable(),
@@ -66,3 +68,29 @@ export const logsheetListSchema = baseSchema.extend({
 });
 
 export type LogsheetListType = z.infer<typeof logsheetListSchema>;
+
+// Form schema for updating extracted values based on ROI type
+export const createExtractedValueFormSchema = (
+    roiType: z.infer<typeof roiTypeSchema>
+) => {
+    switch (roiType) {
+        case "Number":
+            return z.object({
+                correctedValue: z.coerce.number().nullable(),
+            });
+        case "Checkbox":
+            return z.object({
+                correctedValue: z.enum(["True", "False"]).nullable(),
+            });
+        case "Handwritten":
+        case "Barcode":
+        default:
+            return z.object({
+                correctedValue: z.string().nullable(),
+            });
+    }
+};
+
+export type ExtractedValueFormValues = z.infer<
+    ReturnType<typeof createExtractedValueFormSchema>
+>;

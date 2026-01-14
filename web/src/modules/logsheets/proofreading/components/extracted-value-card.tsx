@@ -1,26 +1,21 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import {
-    useExtractedValueImage,
-    useVerifyExtractedValueMutation,
-} from "@/modules/logsheets/proofreading/api";
+import { useExtractedValueImage } from "@/modules/logsheets/proofreading/api";
+import { ExtractedValueForm } from "@/modules/logsheets/proofreading/components/extracted-value-form";
 import type { ExtractedValueType } from "@/modules/logsheets/schema";
-import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
-import { Check } from "lucide-react";
-import { useState } from "react";
-import { useIntl } from "react-intl";
-import { toast } from "sonner";
+import { memo, useState } from "react";
 
 type ExtractedValueCardProps = {
     extractedValue: ExtractedValueType;
+    isSelected: boolean;
+    onSelect: (roiId: string) => void;
 };
 
 const ExtractedValueImage = ({ id }: { id: string }) => {
     const { data, isLoading, isError } = useExtractedValueImage(id);
+    const [open, setOpen] = useState(false);
 
     if (isLoading) {
         return <Spinner />;
@@ -30,131 +25,54 @@ const ExtractedValueImage = ({ id }: { id: string }) => {
         return <div>Error loading image</div>;
     }
 
-    return (
+    const Img = (
         <img
             src={URL.createObjectURL(new Blob([data.bytes]))}
             alt="Extracted Value"
             className="max-w-full max-h-full object-contain"
         />
     );
-};
-
-export const ExtractedValueCard = ({
-    extractedValue,
-}: ExtractedValueCardProps) => {
-    const intl = useIntl();
-    const [correctedValue, setCorrectedValue] = useState(
-        extractedValue.correctedValue ?? extractedValue.value
-    );
-
-    const verifyExtractedValueMutation = useVerifyExtractedValueMutation(
-        extractedValue.logsheetId
-    );
-
-    const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
-    const associatedRoiId = extractedValue.roiId;
-    const isSelected = isSelectedRoi(associatedRoiId);
-
-    const handleVerifyClick = async () => {
-        try {
-            await verifyExtractedValueMutation.mutateAsync({
-                extractedValueId: extractedValue.id,
-                correctedValue,
-            });
-            toast.success(
-                intl.formatMessage({
-                    id: "proofreading.verifySuccess",
-                    defaultMessage: "Extracted value verified.",
-                })
-            );
-        } catch (error) {
-            console.error("Error verifying extracted value:", error);
-            toast.error(
-                intl.formatMessage({
-                    id: "proofreading.verifyError",
-                    defaultMessage: "Failed to verify extracted value.",
-                })
-            );
-        }
-    };
-
-    const handleCardClick = () => {
-        if (!associatedRoiId) {
-            return;
-        }
-        setSelectedRoiIds([associatedRoiId]);
-    };
-
-    const isVerified = extractedValue.status === "Verified";
 
     return (
-        <Card
-            onClick={handleCardClick}
-            className={cn(
-                "cursor-pointer transition-all duration-200 border-2",
-                isSelected
-                    ? "border-primary ring-1 ring-primary"
-                    : "border-border"
-            )}
-        >
-            <CardContent className="p-4 flex gap-4">
-                <div className="w-25 h-25 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">
-                    <ExtractedValueImage id={extractedValue.id} />
-                </div>
-                <div className="flex-1 space-y-2">
-                    <div className="font-medium text-sm text-muted-foreground">
-                        {extractedValue.variableName}
-                    </div>
-                    <div className="flex flex-row gap-4 items-end flex-1">
-                        <div className="space-y-1 flex-1">
-                            <Label className="text-xs font-medium">
-                                {intl.formatMessage({
-                                    id: "proofreading.originalValue",
-                                    defaultMessage: "Original",
-                                })}
-                            </Label>
-                            <Input
-                                readOnly
-                                value={extractedValue.value}
-                                className="bg-muted/50"
-                            />
-                        </div>
-                        <div className="space-y-1 flex-1">
-                            <Label className="text-xs font-medium">
-                                {intl.formatMessage({
-                                    id: "proofreading.correctedValue",
-                                    defaultMessage: "Corrected",
-                                })}
-                            </Label>
-                            <Input
-                                placeholder={extractedValue.value}
-                                value={correctedValue}
-                                onChange={(e) =>
-                                    setCorrectedValue(e.target.value)
-                                }
-                            />
-                        </div>
-                        <Button
-                            size="icon"
-                            variant={isVerified ? "default" : "outline"}
-                            onClick={handleVerifyClick}
-                            disabled={verifyExtractedValueMutation.isPending}
-                            className={
-                                !isVerified
-                                    ? "hover:bg-green-500/10 hover:border-green-500 focus:ring-green-500"
-                                    : ""
-                            }
-                        >
-                            {verifyExtractedValueMutation.isPending ? (
-                                <Spinner />
-                            ) : (
-                                <Check className="h-4 w-4" />
-                            )}
-                        </Button>
-                    </div>
-                </div>
-                <div className="flex flex-col justify-end"></div>
-            </CardContent>
-        </Card>
+        <>
+            <div
+                className="w-25 h-25 cursor-pointer bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs"
+                onClick={() => setOpen(true)}
+            >
+                {Img}
+            </div>
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="flex items-center justify-center">
+                    {Img}
+                </DialogContent>
+            </Dialog>
+        </>
     );
 };
+
+export const ExtractedValueCard = memo(
+    ({ extractedValue, isSelected, onSelect }: ExtractedValueCardProps) => {
+        return (
+            <Card
+                onClick={() => onSelect(extractedValue.roiId)}
+                className={cn(
+                    "cursor-pointer transition-all duration-200 border-2",
+                    isSelected
+                        ? "border-primary ring-1 ring-primary"
+                        : "border-border"
+                )}
+            >
+                <CardContent className="p-4 flex gap-4">
+                    <ExtractedValueImage id={extractedValue.id} />
+                    <div className="flex-1 gap-4 flex flex-col">
+                        <div className="font-medium text-sm text-muted-foreground">
+                            {extractedValue.variableName}
+                        </div>
+                        <ExtractedValueForm extractedValue={extractedValue} />
+                    </div>
+                    <div className="flex flex-col justify-end"></div>
+                </CardContent>
+            </Card>
+        );
+    }
+);

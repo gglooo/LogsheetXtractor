@@ -1,6 +1,10 @@
+import { NavbarContainer } from "@/components/navbar-container";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useCompleteProofreadingMutation } from "@/modules/logsheets/proofreading/api";
+import { ArrowLeft } from "lucide-react";
 import { useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const ProofreadingNavbar = ({
@@ -12,12 +16,16 @@ export const ProofreadingNavbar = ({
 }) => {
     const intl = useIntl();
 
+    const navigate = useNavigate();
+
     const completeProofReadingMutation =
         useCompleteProofreadingMutation(logsheetId);
 
     const handleCompleteProofreading = async () => {
         try {
             await completeProofReadingMutation.mutateAsync();
+            navigate(-1);
+
             toast.success(
                 intl.formatMessage({
                     id: "proofreading.complete.success",
@@ -37,24 +45,40 @@ export const ProofreadingNavbar = ({
     };
 
     return (
-        <div className="border-b h-14 flex items-center justify-between px-4 bg-background shrink-0">
-            <h1 className="font-semibold text-lg">
-                {intl.formatMessage({
-                    id: "proofreading.title",
-                    defaultMessage: "Proofreading",
-                })}
-            </h1>
+        <NavbarContainer>
+            <div className="flex flex-row items-center gap-4">
+                <ArrowLeft
+                    className="cursor-pointer"
+                    onClick={() => navigate(-1)}
+                />
+                <div className="flex justify-between w-full">
+                    <div className="p-4 text-lg font-bold">
+                        {intl.formatMessage({
+                            id: "logsheets.title",
+                            defaultMessage: "Logsheets",
+                        })}
+                    </div>
+                    <div className="flex items-center gap-2 p-4"></div>
+                </div>
+            </div>
             <div className="flex items-center gap-2">
                 <Button
                     onClick={handleCompleteProofreading}
-                    disabled={toReviewCount !== 0}
+                    disabled={
+                        toReviewCount !== 0 ||
+                        completeProofReadingMutation.isPending
+                    }
                 >
-                    {intl.formatMessage({
-                        id: "proofreading.verify",
-                        defaultMessage: "Complete proofreading",
-                    })}
+                    {completeProofReadingMutation.isPending ? (
+                        <Spinner />
+                    ) : (
+                        intl.formatMessage({
+                            id: "proofreading.verify",
+                            defaultMessage: "Complete proofreading",
+                        })
+                    )}
                 </Button>
             </div>
-        </div>
+        </NavbarContainer>
     );
 };
