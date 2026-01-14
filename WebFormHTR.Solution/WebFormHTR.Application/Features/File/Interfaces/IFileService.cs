@@ -5,7 +5,10 @@ namespace WebFormHTR.Application.Features.File.Interfaces;
 
 public interface IFileService
 {
-    public Task<FileDto> UploadFileAsync(byte[] fileContent, string fileName, string contentType);
-    public Task<GetFileDto?> GetFileAsync(Guid id);
-    public Task<FileDto> CloneFileAsync(Guid fileId);
+    Task<FileDto> UploadFileAsync(byte[] fileContent, string fileName, string contentType);
+    Task<GetFileDto?> GetFileAsync(Guid id);
+    Task<FileDto> CloneFileAsync(Guid fileId);
+
+    Task<GetFileDto?> GetFileFromContentAsync(byte[] content, string fileName, string contentType,
+        CancellationToken cancellationToken);
 }

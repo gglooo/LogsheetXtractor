@@ -1,7 +1,6 @@
 using System.Text.Json;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.Scripting;
@@ -69,6 +68,23 @@ public class TemplateService(
         await roiService.CloneRoisForTemplateAsync(parentTemplate.Id, newId, cancellationToken);
 
         return mapper.Map<TemplateDetailDto>(clonedTemplate);
+    }
+
+    public async Task<string> ExportTemplateConfigAsync(Guid templateId, CancellationToken cancellationToken)
+    {
+        var template = await dbContext.Templates
+            .AsNoTracking()
+            .Include(t => t.File)
+            .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
+
+        if (template is null)
+        {
+            throw new Exception("Template not found");
+        }
+
+        var templateConfig = mapper.Map<PythonTemplateConfig>(template);
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        return JsonSerializer.Serialize(templateConfig, options);
     }
 
     private PdfDimensionsDto CalculateTemplateFileDimensions(Guid fileId)

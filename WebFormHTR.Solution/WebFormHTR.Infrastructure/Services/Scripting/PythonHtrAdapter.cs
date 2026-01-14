@@ -20,21 +20,10 @@ public class PythonHtrAdapter(
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
 
-    private string? UsedCredentials
-    {
-        get
-        {
-            // TODO: get credentials other than Google as well
-            var availableCredentials = credentialService.GetAvailableCredentialsPath();
-            var googleCredentials = availableCredentials
-                .FirstOrDefault(c => c.Item1 == ECredentialType.Google);
-            return googleCredentials != default ? googleCredentials.Item2 : null;
-        }
-    }
-
     public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
-        if (UsedCredentials is null)
+        var credentials = credentialService.GetAvailableCredentialsPath().ToList();
+        if (credentials.Count == 0)
         {
             throw new InvalidOperationException("No credentials available for ROI selection.");
         }
@@ -44,8 +33,9 @@ public class PythonHtrAdapter(
         var inputFilePath = fileStorageService.GetResolvedPath(input.Template.File.StoragePath);
         var outputFilePath = fileStorageService.GetTemporaryFilePath(uniqueStoragePath);
 
+        var usedCredentials = credentials[0].Item2;
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois,
-            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {UsedCredentials} --headless",
+            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials} --headless",
             ct);
 
         var rois = ParseRoisFromFile(outputFilePath, input.Template.Id);
@@ -82,9 +72,10 @@ public class PythonHtrAdapter(
     public async Task<ProcessLogsheetOutputDto> ProcessLogsheetAsync(ProcessLogsheetInputDto input,
         CancellationToken ct)
     {
-        if (UsedCredentials is null)
+        var credentials = credentialService.GetAvailableCredentialsPath().ToList();
+        if (credentials.Count == 0)
         {
-            throw new InvalidOperationException("No §credentials available for ROI selection.");
+            throw new InvalidOperationException("No credentials available for logsheet processing.");
         }
 
         var logsheet = input.Logsheet;
@@ -98,11 +89,12 @@ public class PythonHtrAdapter(
         var configBytes = Encoding.UTF8.GetBytes(configJson);
         var configPath = await fileStorageService.SaveTemporaryFileAsync(configBytes, Guid.NewGuid() + ".json", ct);
 
-        // TODO: support other credentials
+        var credentialsString =
+            string.Join(" ", credentials.Select(c => $"--{c.Item1.ToString().ToLower()} {c.Item2}"));
+
         // TODO: support backside template
-        // TODO: align the image before processing
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet,
-            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} --google {UsedCredentials} --aligned --store_csv",
+            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} {credentialsString} --aligned --store_csv",
             ct);
 
         var parsedData = ParseProcessedLogsheetFromCsv(outputFilePath);

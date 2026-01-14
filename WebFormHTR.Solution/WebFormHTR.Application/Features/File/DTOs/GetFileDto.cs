@@ -1,6 +1,8 @@
+using WebFormHTR.Application.Features.File.Interfaces;
+
 namespace WebFormHTR.Application.DTOs;
 
-public class GetFileDto
+public class GetFileDto : IFileResponse
 {
     public Stream? Stream { get; set; }
     public string ContentType { get; set; } = string.Empty;

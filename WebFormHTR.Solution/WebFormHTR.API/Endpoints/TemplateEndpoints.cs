@@ -1,6 +1,7 @@
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using WebFormHTR.API.Extensions;
+using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Template;
 using WebFormHTR.Application.Features.Template.DTOs;
@@ -100,6 +101,20 @@ public static class TemplateEndpoints
     {
         var command = new DetectRoisCommand(id);
         var result = await bus.InvokeAsync<Result<DetectRoisResponseDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/templates/{id}/export-config")]
+    [ProducesResponseType(200, Type = typeof(GetFileDto))]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> ExportTemplateConfig(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var query = new ExportTemplateConfigQuery(id);
+        var result = await bus.InvokeAsync<Result<GetFileDto>>(query, ct);
 
         return result.ToHttpResult();
     }

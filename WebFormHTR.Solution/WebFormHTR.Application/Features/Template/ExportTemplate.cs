@@ -1,0 +1,38 @@
+using FluentResults;
+using WebFormHTR.Application.DTOs;
+using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Features.Template.Interfaces;
+
+namespace WebFormHTR.Application.Features.Template;
+
+public sealed record ExportTemplateConfigQuery(Guid Id);
+
+public static class ExportTemplateHandler
+{
+    public static async Task<Result<GetFileDto>> Handle(ExportTemplateConfigQuery request,
+        ITemplateService templateService, IFileService fileService,
+        CancellationToken ct)
+    {
+        try
+        {
+            var config = await templateService.ExportTemplateConfigAsync(request.Id, ct);
+
+            var fileDto = await fileService.GetFileFromContentAsync(
+                System.Text.Encoding.UTF8.GetBytes(config),
+                $"template_{request.Id}_config.json",
+                "application/json",
+                ct);
+
+            if (fileDto is null)
+            {
+                return Result.Fail<GetFileDto>("Failed to create file from template config");
+            }
+
+            return fileDto;
+        }
+        catch (Exception e)
+        {
+            return Result.Fail<GetFileDto>(e.Message);
+        }
+    }
+}

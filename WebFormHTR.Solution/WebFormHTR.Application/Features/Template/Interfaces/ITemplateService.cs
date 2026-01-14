@@ -8,4 +8,5 @@ public interface ITemplateService
         CancellationToken cancellationToken);
 
     Task<TemplateDetailDto> CreateTemplateAsync(CreateTemplateCommand command, CancellationToken cancellationToken);
+    Task<string> ExportTemplateConfigAsync(Guid templateId, CancellationToken cancellationToken);
 }

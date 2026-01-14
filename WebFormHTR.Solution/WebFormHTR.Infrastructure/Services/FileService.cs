@@ -59,4 +59,13 @@ public class FileService(IAppDbContext dbContext, IMapper mapper, IFileStorageSe
         var fileBytes = await fileStorageService.ReadFileAsync(file.StoragePath);
         return await UploadFileAsync(fileBytes, file.OriginalFileName, file.ContentType);
     }
+
+    public async Task<GetFileDto?> GetFileFromContentAsync(byte[] content, string fileName, string contentType,
+        CancellationToken cancellationToken)
+    {
+        var tempFilePath = await fileStorageService.SaveTemporaryFileAsync(content, fileName, cancellationToken);
+        var stream = fileStorageService.GetFile(tempFilePath);
+
+        return new GetFileDto { Stream = stream, ContentType = contentType, FileName = fileName };
+    }
 }

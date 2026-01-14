@@ -1,5 +1,6 @@
 using FluentResults;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.File.Interfaces;
 
 namespace WebFormHTR.API.Extensions;
 
@@ -7,22 +8,31 @@ public static class ResultExtensions
 {
     public static IResult ToHttpResult<T>(this Result<T> result)
     {
-        if (result is { IsSuccess: true, Value: null })
+        if (result.IsFailed)
+        {
+            if (result.Errors.Any(e => e is NotFoundError))
+            {
+                return Results.NotFound(result.Errors.Select(e => e.Message));
+            }
+
+            return Results.BadRequest(result.Errors.Select(e => e.Message));
+        }
+
+        if (result.Value is null)
         {
             return Results.NotFound();
         }
 
-        if (result.IsSuccess)
+        if (result.Value is IFileResponse fileResponse)
         {
-            return Results.Ok(result.Value);
+            return Results.File(
+                fileResponse.Stream,
+                fileResponse.ContentType,
+                fileResponse.FileName
+            );
         }
 
-        if (result.Errors.Any(e => e is NotFoundError))
-        {
-            return Results.NotFound(result.Errors.Select(e => e.Message));
-        }
-
-        return Results.BadRequest(result.Errors.Select(e => e.Message));
+        return Results.Ok(result.Value);
     }
 
     public static IResult ToHttpResult(this Result result)

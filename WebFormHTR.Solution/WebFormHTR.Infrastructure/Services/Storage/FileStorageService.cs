@@ -4,7 +4,7 @@ namespace WebFormHTR.Infrastructure.Services.Storage;
 
 public class FileStorageService(IConfiguration config) : IFileStorageService
 {
-    private readonly string _storageDirectory = config["Storage:LocalStoragePath"] ?? "app_data";
+    private readonly string _storageDirectory = config["Storage:LocalStoragePath"] ?? "app_data/storage";
 
     private void CheckAndCreateStorageDirectory()
     {
