@@ -1,4 +1,4 @@
-import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
+import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
 import {
     useDrawRectangle,
     type Position,
@@ -20,7 +20,7 @@ export const PdfDrawingSvgOverlay = ({
     render: (roi: RoiType) => React.ReactNode;
 }) => {
     const { addRoi, template, mode } = useTemplateEditor();
-    const { width: pdfWidth, scale } = usePdfZoom();
+    const { width: pdfWidth, scale } = useSvgZoom();
     const { setSelectedRoiIds } = useSelectedRois();
 
     const canDraw = mode === "draw";

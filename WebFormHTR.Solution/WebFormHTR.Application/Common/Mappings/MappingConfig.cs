@@ -56,17 +56,9 @@ public class MappingConfig : IRegister
             .Map(dest => dest.ExtractedValues, src => src.ExtractedValues);
 
         config.NewConfig<AlignmentContainer, AlignmentDataDto>();
-
-        config.NewConfig<AlignmentDataModel, AlignmentDetailDto>()
-            .Map(dest => dest.Dimensions, src => src.ReferenceDimensions)
-            .Map(dest => dest.LogsheetPoints, src => src.TargetPoints)
-            .Map(dest => dest.TemplatePoints, src => src.TemplatePoints);
+        config.NewConfig<AlignmentDataDto, AlignmentContainer>();
 
         config.NewConfig<PointCoordinate, PointCoordinateDto>();
-
-        config.NewConfig<ImageDimensions, DimensionsDto>()
-            .Map(dest => dest.Height, src => src.Height)
-            .Map(dest => dest.Width, src => src.Width);
 
         config.NewConfig<CreateLogsheetCommand, Logsheet>()
             .Map(dest => dest.TemplateId, src => src.TemplateId)

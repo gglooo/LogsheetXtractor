@@ -11,4 +11,6 @@ public interface IFileService
 
     Task<GetFileDto?> GetFileFromContentAsync(byte[] content, string fileName, string contentType,
         CancellationToken cancellationToken);
+
+    Task<GetFileDto?> ConvertToImageAsync(Guid fileId);
 }

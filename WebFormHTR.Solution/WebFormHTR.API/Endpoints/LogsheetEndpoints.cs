@@ -1,12 +1,18 @@
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using WebFormHTR.API.Extensions;
+using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
+using WebFormHTR.Application.Features.ROIs.DTOs;
 using Wolverine;
 using Wolverine.Http;
 
 namespace WebFormHTR.API.Endpoints;
+
+public sealed record SetLogsheetAlignmentRequest(
+    AlignmentDataDto Alignment
+);
 
 public static class LogsheetEndpoints
 {
@@ -153,6 +159,22 @@ public static class LogsheetEndpoints
         return result.ToHttpResult();
     }
 
+    [WolverinePost("/api/logsheets/{id}/alignment/set")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> SetLogsheetAlignment(
+        Guid id,
+        SetLogsheetAlignmentRequest request,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new SetLogsheetAlignmentCommand(id, request.Alignment);
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
     [WolverinePost("/api/logsheets/{id}/proofreading/complete")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -164,6 +186,39 @@ public static class LogsheetEndpoints
     {
         var command = new CompleteLogsheetProofreadingCommand(id);
         var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverineGet("/api/logsheets/{id}/image")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> GetLogsheetImage(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        // TODO: support backside (the method supports it, just parse from request)
+        var command = new GetLogsheetImageQuery(id, true);
+        var result = await bus.InvokeAsync<Result<GetFileDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverineGet("/api/logsheets/{id}/aligned-rois")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> GetAlignedRois(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        // TODO: support backside (the method supports it, just parse from request)
+        // TODO: this does not work as expected
+        var command = new GetAlignedRoisQuery(id, true);
+        var result = await bus.InvokeAsync<Result<IEnumerable<RoiDto>>>(command, ct);
 
         return result.ToHttpResult();
     }

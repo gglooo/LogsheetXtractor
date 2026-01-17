@@ -1,5 +1,7 @@
+import { fileQueryFn } from "@/modules/files/api";
 import { logsheetListSchema, logsheetSchema } from "@/modules/logsheets/schema";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
+import { roiSchema } from "@/modules/rois/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useLogsheets = (templateId: string) =>
@@ -17,7 +19,7 @@ export const useLogsheets = (templateId: string) =>
 
 export const useLogsheet = (logsheetId: string) =>
     useQuery({
-        queryKey: ["logsheet", logsheetId],
+        queryKey: ["logsheets", logsheetId],
         queryFn: async () => {
             const response = await fetch(`/api/logsheets/${logsheetId}`);
             return await logsheetSchema.parseAsync(await response.json());
@@ -153,7 +155,6 @@ export const useAlignLogsheetMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationKey: ["alignLogsheet"],
         mutationFn: async ({
             logsheetId,
             frontside,
@@ -170,7 +171,18 @@ export const useAlignLogsheetMutation = () => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ frontside, backside }),
+                    body: JSON.stringify({
+                        alignment: {
+                            frontside: frontside.map((p) => ({
+                                x: Math.round(p.x),
+                                y: Math.round(p.y),
+                            })),
+                            backside: backside?.map((p) => ({
+                                x: Math.round(p.x),
+                                y: Math.round(p.y),
+                            })),
+                        },
+                    }),
                 }
             );
 
@@ -183,3 +195,47 @@ export const useAlignLogsheetMutation = () => {
         },
     });
 };
+
+export const useAutomaticAlignLogsheetMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (logsheetId: string) => {
+            const response = await fetch(`/api/logsheets/${logsheetId}/align`, {
+                method: "POST",
+            });
+
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+
+            return logsheetSchema.parseAsync(await response.json());
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
+        },
+    });
+};
+
+export const useLogsheetImage = (logsheetId: string) =>
+    useQuery({
+        queryKey: ["logsheets", logsheetId, "image"],
+        refetchOnWindowFocus: false,
+        queryFn: async () => fileQueryFn(`/api/logsheets/${logsheetId}/image`),
+    });
+
+export const useRoisAlignedToLogsheet = (logsheetId: string) =>
+    useQuery({
+        queryKey: ["logsheets", logsheetId, "rois-aligned"],
+        queryFn: async () => {
+            const response = await fetch(
+                `/api/logsheets/${logsheetId}/aligned-rois`
+            );
+
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+
+            return roiSchema.array().parseAsync(await response.json());
+        },
+    });

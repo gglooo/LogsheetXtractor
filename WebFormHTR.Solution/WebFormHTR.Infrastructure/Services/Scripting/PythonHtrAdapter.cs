@@ -5,6 +5,7 @@ using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Services.Credentials;
 using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 using WebFormHTR.Infrastructure.Services.Storage;
@@ -16,7 +17,9 @@ public class PythonHtrAdapter(
     IScriptExecutor scriptExecutor,
     ICredentialService credentialService,
     IFileStorageService fileStorageService,
-    IMapper mapper) : IHtrScriptEngine
+    IMapper mapper,
+    IScriptInputPreparer inputPreparer,
+    IScriptOutputParser outputParser) : IHtrScriptEngine
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
 
@@ -38,7 +41,7 @@ public class PythonHtrAdapter(
             $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials} --headless",
             ct);
 
-        var rois = ParseRoisFromFile(outputFilePath, input.Template.Id);
+        var rois = outputParser.ParseSelectRoisJson(outputFilePath, input.Template.Id);
 
         return rois;
     }
@@ -84,20 +87,19 @@ public class PythonHtrAdapter(
 
         var outputFilePath = fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_processed_logsheet.csv");
 
-        var templateConfig = mapper.Map<PythonTemplateConfig>(logsheet.Template);
-        var configJson = JsonSerializer.Serialize(templateConfig);
-        var configBytes = Encoding.UTF8.GetBytes(configJson);
-        var configPath = await fileStorageService.SaveTemporaryFileAsync(configBytes, Guid.NewGuid() + ".json", ct);
+        var configPath = await inputPreparer.CreateTemplateConfigAsync(logsheet.Template, ct);
 
         var credentialsString =
             string.Join(" ", credentials.Select(c => $"--{c.Item1.ToString().ToLower()} {c.Item2}"));
 
         // TODO: support backside template
+        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, ct);
+
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet,
-            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} {credentialsString} --aligned --store_csv",
+            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} {credentialsString} {alignmentArgument} --store_csv",
             ct);
 
-        var parsedData = ParseProcessedLogsheetFromCsv(outputFilePath);
+        var parsedData = outputParser.ParseProcessLogsheetCsv(outputFilePath);
 
         return new ProcessLogsheetOutputDto(parsedData);
     }
@@ -111,32 +113,5 @@ public class PythonHtrAdapter(
             $"--pdf_file {filePath}", ct);
 
         return dimensions;
-    }
-
-    private SelectRoisOutputDto ParseRoisFromFile(string filePath, Guid templateId)
-    {
-        var jsonContent = fileStorageService.ReadAllText(filePath);
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var rois = JsonSerializer.Deserialize<PythonSelectRoisOutputDto>(jsonContent, options);
-
-        return rois?.ToSelectRoisOutputDtoList(templateId) ?? new SelectRoisOutputDto([], []);
-    }
-
-    private Dictionary<string, string> ParseProcessedLogsheetFromCsv(string filePath)
-    {
-        var csvContent = fileStorageService.ReadAllText(filePath);
-        var result = new Dictionary<string, string>();
-
-        var lines = csvContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1);
-        foreach (var line in lines)
-        {
-            var parts = line.Split(',', 2);
-            if (parts.Length == 2)
-            {
-                result[parts[0]] = parts[1];
-            }
-        }
-
-        return result;
     }
 }

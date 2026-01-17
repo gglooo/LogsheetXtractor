@@ -6,5 +6,7 @@ public record TemplateListDto(
     Guid? ParentId,
     Guid? FileId,
     int RoiCount,
+    int Width,
+    int Height,
     DateTime CreatedAt
 );

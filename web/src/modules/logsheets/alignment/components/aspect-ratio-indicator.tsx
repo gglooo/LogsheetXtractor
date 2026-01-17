@@ -1,3 +1,8 @@
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
 import { useIntl } from "react-intl";
 
@@ -73,17 +78,26 @@ export const AspectRatioIndicator = ({
     }
 
     return (
-        <div>
-            <div
-                className={`flex items-center gap-2 px-3 py-1 rounded-md border text-sm font-medium ${colorClass}`}
-                title={`Ratio Deviation: ${percent}% | Shape Deviation: ${parallelPercent}%`}
-            >
-                <span>{message}</span>
-                <span className="text-xs opacity-80 gap-1 flex">
-                    <span>R: {percent}%</span>
-                    <span>S: {parallelPercent}%</span>
-                </span>
-            </div>
-        </div>
+        <Tooltip>
+            <TooltipTrigger>
+                <div
+                    className={`flex items-center gap-2 px-3 py-1 rounded-md border text-sm font-medium ${colorClass}`}
+                    title={`Ratio Deviation: ${percent}% | Shape Deviation: ${parallelPercent}%`}
+                >
+                    <span>{message}</span>
+                    <span className="text-xs opacity-80 gap-1 flex">
+                        <span>R: {percent}%</span>
+                        <span>S: {parallelPercent}%</span>
+                    </span>
+                </div>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+                {intl.formatMessage({
+                    id: "alignment.quality.description",
+                    defaultMessage:
+                        "The quality of the alignment is based on the ratio of the width to the height of the rectangle. The closer the ratio is to 1, the better the alignment.",
+                })}
+            </TooltipContent>
+        </Tooltip>
     );
 };

@@ -61,50 +61,86 @@ export const LogsheetTableActions = ({
             <div className="flex gap-2">
                 <Button
                     variant="ghost"
+                    title={intl.formatMessage({
+                        id: "logsheets.actions.preview",
+                        defaultMessage: "Preview",
+                    })}
                     onClick={() => onPreview(logsheet.file.id)}
+                    tooltip={intl.formatMessage({
+                        id: "logsheets.actions.preview",
+                        defaultMessage: "Preview",
+                    })}
                 >
                     <EyeIcon className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="ghost"
-                    title="Proofread"
+                    title={intl.formatMessage({
+                        id: "logsheets.actions.proofread",
+                        defaultMessage: "Proofread",
+                    })}
                     disabled={logsheet.status !== "NeedsReview"}
                     onClick={() =>
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/proofread`
                         )
                     }
+                    tooltip={intl.formatMessage({
+                        id: "logsheets.actions.proofread",
+                        defaultMessage: "Proofread",
+                    })}
                 >
                     <FileSignature className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="ghost"
-                    title="Align"
+                    title={intl.formatMessage({
+                        id: "logsheets.actions.align",
+                        defaultMessage: "Align",
+                    })}
                     onClick={() =>
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/align`
                         )
                     }
+                    tooltip={intl.formatMessage({
+                        id: "logsheets.actions.align",
+                        defaultMessage: "Align",
+                    })}
                 >
                     <ScanLine className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="ghost"
-                    title="Download"
+                    title={intl.formatMessage({
+                        id: "logsheets.actions.download",
+                        defaultMessage: "Download",
+                    })}
                     disabled={fileDownloadMutation.isPending}
                     onClick={async () =>
                         fileDownloadMutation.mutateAsync({
                             fileId: logsheet.file.id,
                         })
                     }
+                    tooltip={intl.formatMessage({
+                        id: "logsheets.actions.download",
+                        defaultMessage: "Download",
+                    })}
                 >
                     <DownloadIcon className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="ghost"
-                    title="Delete"
+                    title={intl.formatMessage({
+                        id: "logsheets.actions.delete",
+                        defaultMessage: "Delete",
+                    })}
                     disabled={deleteLogsheetMutation.isPending}
                     onClick={handleDelete}
+                    tooltip={intl.formatMessage({
+                        id: "logsheets.actions.delete",
+                        defaultMessage: "Delete",
+                    })}
                 >
                     {deleteLogsheetMutation.isPending ? (
                         <Spinner />
@@ -117,6 +153,14 @@ export const LogsheetTableActions = ({
                         variant="outline"
                         disabled={processLogsheetMutation.isPending}
                         onClick={handleProcess}
+                        title={intl.formatMessage({
+                            id: "logsheets.actions.process",
+                            defaultMessage: "Process",
+                        })}
+                        tooltip={intl.formatMessage({
+                            id: "logsheets.actions.process",
+                            defaultMessage: "Process",
+                        })}
                     >
                         {processLogsheetMutation.isPending ? (
                             <Spinner />

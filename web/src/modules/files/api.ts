@@ -40,11 +40,20 @@ export const fileQueryFn = async (url: string, method: string = "GET") => {
     };
 };
 
-export const useFile = (fileId: string) =>
+export const useFile = (fileId: string | undefined | null) =>
     useQuery({
         queryKey: ["file", fileId],
         refetchOnWindowFocus: false,
         queryFn: () => fileQueryFn(`/api/files/${fileId}`),
+        enabled: !!fileId,
+    });
+
+export const usePdfFileImage = (fileId: string | undefined | null) =>
+    useQuery({
+        queryKey: ["file-image", fileId],
+        refetchOnWindowFocus: false,
+        queryFn: () => fileQueryFn(`/api/files/${fileId}/image`),
+        enabled: !!fileId,
     });
 
 export const downloadFile = async (blob: Blob, filename: string) => {

@@ -4,8 +4,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { SvgWrapper } from "@/modules/canvas/svg-wrapper";
 import { PdfViewer } from "@/modules/pdf/components/pdf-viewer";
-import { PdfWrapper } from "@/modules/pdf/components/pdf-wrapper";
 import { useIntl } from "react-intl";
 
 type Props = {
@@ -28,12 +28,12 @@ export const PreviewModal = ({ isOpen, onClose, fileId }: Props) => {
                     </DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 overflow-y-auto min-h-0">
-                    <PdfWrapper
+                    <SvgWrapper
                         includeHistoryControls={false}
                         includeZoomControls={false}
                     >
                         {fileId ? <PdfViewer fileId={fileId} /> : null}
-                    </PdfWrapper>
+                    </SvgWrapper>
                 </div>
             </DialogContent>
         </Dialog>

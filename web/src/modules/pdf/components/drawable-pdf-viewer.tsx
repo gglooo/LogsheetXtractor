@@ -1,6 +1,7 @@
-import { PdfSvgCanvas } from "@/modules/pdf/components/overlay/pdf-svg-canvas";
+import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
+import { SvgCanvas } from "@/modules/canvas/svg-canvas";
+import { PdfDrawingSvgOverlay } from "@/modules/pdf/components/overlay/pdf-drawing-svg-overlay";
 import { PdfViewer } from "@/modules/pdf/components/pdf-viewer";
-import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
 import { useSplitTool } from "@/modules/pdf/hooks/use-split-tool";
 import { getDuplicates, type Point } from "@/modules/pdf/utils";
 import { RoiSvg } from "@/modules/rois/components/roi-svg";
@@ -18,7 +19,7 @@ export const DrawablePdfViewer = ({
     fileId: string;
     template: TemplateType;
 }) => {
-    const { scale, width } = usePdfZoom();
+    const { scale, width } = useSvgZoom();
 
     const { rois, removeRoi, setRois, mode } = useTemplateEditor();
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
@@ -133,13 +134,17 @@ export const DrawablePdfViewer = ({
     return (
         <div className="w-full relative" ref={containerRef}>
             <PdfViewer fileId={fileId} />
-            <PdfSvgCanvas
-                dragEnded={onDragEnd}
-                resizeEnded={onResizeEnd}
-                width={template.width}
-                rois={rois}
-                render={renderRoi}
-            />
+            {mode === "draw" ? (
+                <PdfDrawingSvgOverlay rois={rois} render={renderRoi} />
+            ) : (
+                <SvgCanvas
+                    dragEnded={onDragEnd}
+                    resizeEnded={onResizeEnd}
+                    width={template.width}
+                    rois={rois}
+                    render={renderRoi}
+                />
+            )}
         </div>
     );
 };

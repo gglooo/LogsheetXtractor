@@ -5,7 +5,7 @@ using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.File;
 
-public sealed record GetFileQuery(string Id);
+public sealed record GetFileQuery(Guid Id);
 
 public static class GetFileHandler
 {
@@ -13,7 +13,7 @@ public static class GetFileHandler
     {
         try
         {
-            var res = await fileService.GetFileAsync(Guid.Parse(request.Id));
+            var res = await fileService.GetFileAsync(request.Id);
             return Result.Ok(res);
         }
         catch (Exception ex)

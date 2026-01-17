@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
 import { useFile } from "@/modules/files/api";
-import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
 import { useMemo, useState } from "react";
 import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -32,7 +32,7 @@ export const PdfViewer = ({
             : undefined;
     }, [file.data]);
 
-    const { scale, width } = usePdfZoom();
+    const { scale, width } = useSvgZoom();
 
     const [numPages, setNumPages] = useState<number | null>(null);
 

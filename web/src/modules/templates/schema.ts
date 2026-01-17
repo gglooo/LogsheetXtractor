@@ -9,6 +9,8 @@ export const templateListSchema = baseSchema.extend({
     parentId: z.uuid().nullable(),
     fileId: z.uuid().nullable(),
     roiCount: z.number().min(0),
+    width: z.number(),
+    height: z.number(),
 });
 
 export type TemplateListItemType = z.infer<typeof templateListSchema>;

@@ -1,7 +1,7 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
+import { SvgWrapper } from "@/modules/canvas/svg-wrapper";
 import { DrawablePdfViewer } from "@/modules/pdf/components/drawable-pdf-viewer";
-import { PdfWrapper } from "@/modules/pdf/components/pdf-wrapper";
 import { EditorNavbar } from "@/modules/template-editor/components/navbar";
 import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
 import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
@@ -68,12 +68,12 @@ export const TemplateEditorContent = () => {
                                 }
                             >
                                 {template.file?.id ? (
-                                    <PdfWrapper>
+                                    <SvgWrapper>
                                         <DrawablePdfViewer
                                             fileId={template.file.id}
                                             template={template}
                                         />
-                                    </PdfWrapper>
+                                    </SvgWrapper>
                                 ) : null}
                             </div>
                         ) : (

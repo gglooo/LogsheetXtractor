@@ -2,7 +2,7 @@ using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using WebFormHTR.API.Extensions;
 using WebFormHTR.Application.DTOs;
-using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.File;
 using WebFormHTR.Application.Features.File.DTOs;
 using Wolverine;
 using Wolverine.Http;
@@ -24,7 +24,7 @@ public static class FileEndpoints
         using var ms = new MemoryStream();
         await formFile.CopyToAsync(ms, ct);
 
-        var command = new Application.Features.File.UploadFileCommand(
+        var command = new UploadFileCommand(
             ms.ToArray(),
             formFile.FileName,
             formFile.ContentType
@@ -39,11 +39,25 @@ public static class FileEndpoints
     [ProducesResponseType(200, Type = typeof(GetFileDto))]
     [ProducesResponseType(404)]
     public static async Task<IResult> GetFile(
-        string id,
+        Guid id,
         IMessageBus bus,
         CancellationToken ct)
     {
-        var query = new Application.Features.File.GetFileQuery(id);
+        var query = new GetFileQuery(id);
+        var result = await bus.InvokeAsync<Result<GetFileDto?>>(query, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverineGet("/api/files/{id}/image")]
+    [ProducesResponseType(200, Type = typeof(GetFileDto))]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> GetFileImage(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var query = new GetFileImageQuery(id);
         var result = await bus.InvokeAsync<Result<GetFileDto?>>(query, ct);
 
         return result.ToHttpResult();

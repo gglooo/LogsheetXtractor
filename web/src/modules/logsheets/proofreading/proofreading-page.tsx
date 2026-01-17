@@ -6,14 +6,14 @@ import {
 } from "@/components/ui/resizable";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SvgWrapper } from "@/modules/canvas/svg-wrapper";
 import {
     ExtractedValuesList,
     type ExtractedValuesListHandle,
 } from "@/modules/logsheets/proofreading/components/extracted-values-list";
+import { ProofreadingLogsheetViewer } from "@/modules/logsheets/proofreading/components/proofreading-logsheet-viewer";
 import { ProofreadingNavbar } from "@/modules/logsheets/proofreading/components/proofreading-navbar";
 import { useExtractedValues } from "@/modules/logsheets/proofreading/hooks/use-extracted-values";
-import { PdfWrapper } from "@/modules/pdf/components/pdf-wrapper";
-import { ReadonlyRoiPdfViewer } from "@/modules/pdf/components/readonly-roi-pdf-viewer";
 import type { RoiType } from "@/modules/rois/schema";
 import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
 import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
@@ -69,16 +69,16 @@ export const ProofreadingPage = () => {
                         <ResizablePanelGroup>
                             <ResizablePanel defaultSize={75} minSize={30}>
                                 <div className="h-full border-r border-border relative overflow-scroll p-4 bg-muted/30">
-                                    <PdfWrapper includeHistoryControls={false}>
-                                        <ReadonlyRoiPdfViewer
-                                            fileId={logsheet.file.id}
+                                    <SvgWrapper includeHistoryControls={false}>
+                                        <ProofreadingLogsheetViewer
+                                            logsheet={logsheet}
                                             template={template}
                                             onRoiClick={handleRoiClick}
                                             shouldRenderRoiFn={
                                                 shouldRenderRoiFn
                                             }
                                         />
-                                    </PdfWrapper>
+                                    </SvgWrapper>
                                 </div>
                             </ResizablePanel>
                             <ResizableHandle withHandle />

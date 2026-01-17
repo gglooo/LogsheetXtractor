@@ -1,6 +1,6 @@
-import { PdfSvgCanvas } from "@/modules/pdf/components/overlay/pdf-svg-canvas";
+import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
+import { SvgCanvas } from "@/modules/canvas/svg-canvas";
 import { PdfViewer } from "@/modules/pdf/components/pdf-viewer";
-import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
 import { RoiSvg } from "@/modules/rois/components/roi-svg";
 import type { RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
@@ -20,7 +20,7 @@ export const ReadonlyRoiPdfViewer = ({
     onRoiClick?: (roiId: string) => void;
     shouldRenderRoiFn?: (roi: RoiType) => boolean;
 }) => {
-    const { scale, width } = usePdfZoom();
+    const { scale, width } = useSvgZoom();
 
     const { rois } = useTemplateEditor();
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
@@ -71,11 +71,7 @@ export const ReadonlyRoiPdfViewer = ({
     return (
         <div className="w-full relative" ref={containerRef}>
             <PdfViewer fileId={fileId} />
-            <PdfSvgCanvas
-                width={template.width}
-                rois={rois}
-                render={renderRoi}
-            />
+            <SvgCanvas width={template.width} rois={rois} render={renderRoi} />
         </div>
     );
 };

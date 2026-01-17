@@ -40,7 +40,7 @@ export const useVerifyExtractedValueMutation = (logsheetId: string) => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["logsheet", logsheetId],
+                queryKey: ["logsheets", logsheetId],
             });
         },
     });

@@ -16,6 +16,7 @@ using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Infrastructure.Persistence.Interceptors;
 using WebFormHTR.Infrastructure.Services;
+using WebFormHTR.Infrastructure.Services.Coordinates;
 using WebFormHTR.Infrastructure.Services.Credentials;
 using WebFormHTR.Infrastructure.Services.Scripting;
 using WebFormHTR.Infrastructure.Services.Storage;
@@ -51,5 +52,8 @@ public static class InfrastructureInstaller
         services.AddScoped<IResidualService, ResidualService>();
         services.AddScoped<ILogsheetService, LogsheetService>();
         services.AddScoped<IPdfCropperService, PdfCropperService>();
+        services.AddScoped<IScriptOutputParser, ScriptOutputParser>();
+        services.AddScoped<IScriptInputPreparer, ScriptInputPreparer>();
+        services.AddScoped<ICoordinateTransformerService, CoordinateTransformerService>();
     }
 }

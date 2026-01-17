@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/refs */
-import type { PdfCanvasRenderFn } from "@/modules/pdf/components/overlay/pdf-svg-canvas";
-import { usePdfZoom } from "@/modules/pdf/context/pdf-zoom-context";
+import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
+import type { SvgCanvasRenderFn } from "@/modules/canvas/svg-canvas";
 import { useDrag } from "@/modules/pdf/hooks/use-drag";
 import {
     useDrawRectangle,
@@ -19,7 +19,7 @@ import { useCallback, useLayoutEffect, useRef } from "react";
 
 type InteractionMode = "drawing" | "dragging" | "resizing" | null;
 
-export const PdfSelectSvgOverlay = ({
+export const SelectSvgOverlay = ({
     rois,
     render,
     width,
@@ -27,12 +27,12 @@ export const PdfSelectSvgOverlay = ({
     resizeEnded,
 }: {
     rois: RoiType[];
-    render: PdfCanvasRenderFn;
+    render: SvgCanvasRenderFn;
     width: number;
     dragEnded?: (rois: RoiType[]) => void;
     resizeEnded?: (rois: RoiType[]) => void;
 }) => {
-    const { width: pdfWidth, scale } = usePdfZoom();
+    const { width: pdfWidth, scale } = useSvgZoom();
     const { isSelectedRoi, setSelectedRoiIds } = useSelectedRois();
 
     const interactionMode = useRef<InteractionMode>(null);

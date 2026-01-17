@@ -1,6 +1,10 @@
+using System.Runtime.InteropServices;
+using Docnet.Core;
+using Docnet.Core.Models;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SkiaSharp;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File;
 using WebFormHTR.Application.Features.File.DTOs;
@@ -10,7 +14,11 @@ using WebFormHTR.Infrastructure.Services.Storage;
 
 namespace WebFormHTR.Infrastructure.Services;
 
-public class FileService(IAppDbContext dbContext, IMapper mapper, IFileStorageService fileStorageService) : IFileService
+public class FileService(
+    IAppDbContext dbContext,
+    IMapper mapper,
+    IFileStorageService fileStorageService,
+    IDocLib docLib) : IFileService
 {
     public async Task<FileDto> UploadFileAsync(byte[] fileContent, string fileName, string contentType)
     {
@@ -67,5 +75,52 @@ public class FileService(IAppDbContext dbContext, IMapper mapper, IFileStorageSe
         var stream = fileStorageService.GetFile(tempFilePath);
 
         return new GetFileDto { Stream = stream, ContentType = contentType, FileName = fileName };
+    }
+
+    public async Task<GetFileDto?> ConvertToImageAsync(Guid fileId)
+    {
+        var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == fileId);
+        if (file is null || file.ContentType != "application/pdf")
+        {
+            return null;
+        }
+
+        var fileContent = await fileStorageService.ReadFileAsync(file.StoragePath);
+
+        using var docReader = docLib.GetDocReader(fileContent, new PageDimensions(2.0));
+        // NOTE: only supporting first page, as this only gets used for templates
+        using var pageReader = docReader.GetPageReader(0);
+
+        var rawBytes = pageReader.GetImage();
+        var width = pageReader.GetPageWidth();
+        var height = pageReader.GetPageHeight();
+
+        var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        using var bitmap = new SKBitmap(info);
+
+        var pixelsAddr = bitmap.GetPixels();
+        Marshal.Copy(rawBytes, 0, pixelsAddr, rawBytes.Length);
+
+        var destInfo = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
+        using var destSurface = SKSurface.Create(destInfo);
+        var canvas = destSurface.Canvas;
+
+        // White background to replace transparency
+        canvas.Clear(SKColors.White);
+        canvas.DrawBitmap(bitmap, 0, 0);
+
+        using var image = destSurface.Snapshot();
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+
+        var encodedStream = new MemoryStream();
+        data.SaveTo(encodedStream);
+        encodedStream.Position = 0;
+
+        return new GetFileDto
+        {
+            Stream = encodedStream,
+            ContentType = "image/png",
+            FileName = Path.ChangeExtension(file.OriginalFileName, ".png")
+        };
     }
 }
