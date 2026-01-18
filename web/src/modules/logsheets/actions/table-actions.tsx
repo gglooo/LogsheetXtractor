@@ -65,7 +65,7 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.preview",
                         defaultMessage: "Preview",
                     })}
-                    onClick={() => onPreview(logsheet.file.id)}
+                    onClick={() => onPreview(logsheet.id)}
                     tooltip={intl.formatMessage({
                         id: "logsheets.actions.preview",
                         defaultMessage: "Preview",
@@ -82,7 +82,7 @@ export const LogsheetTableActions = ({
                     disabled={logsheet.status !== "NeedsReview"}
                     onClick={() =>
                         navigate(
-                            `/templates/${templateId}/logsheets/${logsheet.id}/proofread`
+                            `/templates/${templateId}/logsheets/${logsheet.id}/proofread`,
                         )
                     }
                     tooltip={intl.formatMessage({
@@ -100,7 +100,7 @@ export const LogsheetTableActions = ({
                     })}
                     onClick={() =>
                         navigate(
-                            `/templates/${templateId}/logsheets/${logsheet.id}/align`
+                            `/templates/${templateId}/logsheets/${logsheet.id}/align`,
                         )
                     }
                     tooltip={intl.formatMessage({

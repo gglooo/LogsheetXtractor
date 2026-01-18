@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.File.Interfaces;
-using WebFormHTR.Application.Features.PdfImage;
+using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.ValueObjects;
 using WebFormHTR.Infrastructure.Extensions;

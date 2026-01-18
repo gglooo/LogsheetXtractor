@@ -19,9 +19,11 @@ import { SelectedRoisProvider } from "@/modules/template-editor/context/selected
 import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
 import { useTemplate } from "@/modules/templates/api";
 import { useCallback, useRef } from "react";
+import { useIntl } from "react-intl";
 import { useParams } from "react-router-dom";
 
 export const ProofreadingPage = () => {
+    const intl = useIntl();
     const { id, templateId } = useParams<{ id: string; templateId: string }>();
 
     const {
@@ -35,7 +37,7 @@ export const ProofreadingPage = () => {
     const unverifiedListRef = useRef<ExtractedValuesListHandle>(null);
 
     const { data: template, isLoading: isTemplateLoading } = useTemplate(
-        templateId!
+        templateId!,
     );
 
     const handleRoiClick = (roiId: string) => {
@@ -46,7 +48,7 @@ export const ProofreadingPage = () => {
         (roi: RoiType) => {
             return Boolean(unverifiedExtractedValuesMap[roi.id]);
         },
-        [unverifiedExtractedValuesMap]
+        [unverifiedExtractedValuesMap],
     );
 
     if (isLogsheetLoading || isTemplateLoading || !logsheet || !template) {
@@ -94,7 +96,11 @@ export const ProofreadingPage = () => {
                                                     value="unverified"
                                                     className="flex items-center gap-2"
                                                 >
-                                                    To Review
+                                                    {intl.formatMessage({
+                                                        id: "logsheets.proofreading.unverified.tab",
+                                                        defaultMessage:
+                                                            "Unverified",
+                                                    })}
                                                     <Badge
                                                         variant="secondary"
                                                         className="h-5 px-1.5 text-[10px]"
@@ -108,7 +114,11 @@ export const ProofreadingPage = () => {
                                                     value="verified"
                                                     className="flex items-center gap-2"
                                                 >
-                                                    Verified
+                                                    {intl.formatMessage({
+                                                        id: "logsheets.proofreading.verified.tab",
+                                                        defaultMessage:
+                                                            "Verified",
+                                                    })}
                                                     <Badge
                                                         variant="secondary"
                                                         className="h-5 px-1.5 text-[10px]"

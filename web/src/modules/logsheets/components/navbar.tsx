@@ -17,12 +17,12 @@ export const LogsheetsNavbar = () => {
                     onClick={() => navigate(baseDashboardPath)}
                 />
                 <div className="flex justify-between w-full">
-                    <div className="p-4 text-lg font-bold">
+                    <h1 className="p-4 text-lg font-bold">
                         {intl.formatMessage({
                             id: "logsheets.title",
                             defaultMessage: "Logsheets",
                         })}
-                    </div>
+                    </h1>
                     <div className="flex items-center gap-2 p-4"></div>
                 </div>
             </div>

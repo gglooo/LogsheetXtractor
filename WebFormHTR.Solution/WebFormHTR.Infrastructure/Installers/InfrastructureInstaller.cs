@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WebFormHTR.Application;
 using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Logsheets;
-using WebFormHTR.Application.Features.PdfImage;
+using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.Scripting;
@@ -55,5 +55,6 @@ public static class InfrastructureInstaller
         services.AddScoped<IScriptOutputParser, ScriptOutputParser>();
         services.AddScoped<IScriptInputPreparer, ScriptInputPreparer>();
         services.AddScoped<ICoordinateTransformerService, CoordinateTransformerService>();
+        services.AddScoped<IPerspectiveMatrixComputer, PerspectiveMatrixComputer>();
     }
 }

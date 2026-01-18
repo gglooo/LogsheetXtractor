@@ -205,21 +205,4 @@ public static class LogsheetEndpoints
 
         return result.ToHttpResult();
     }
-
-    [WolverineGet("/api/logsheets/{id}/aligned-rois")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
-    public static async Task<IResult> GetAlignedRois(
-        Guid id,
-        IMessageBus bus,
-        CancellationToken ct)
-    {
-        // TODO: support backside (the method supports it, just parse from request)
-        // TODO: this does not work as expected
-        var command = new GetAlignedRoisQuery(id, true);
-        var result = await bus.InvokeAsync<Result<IEnumerable<RoiDto>>>(command, ct);
-
-        return result.ToHttpResult();
-    }
 }

@@ -1,3 +1,4 @@
+import { getUrlFromBytes } from "@/lib/utils";
 import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
 import type { DownloadedFileType } from "@/modules/files/schema";
 import { getHomographyMatrix } from "@/modules/logsheets/alignment/utils";
@@ -30,7 +31,7 @@ export const WarpedTemplateOverlay = ({
         const referenceScale = getScaleFromReferenceScale(
             width,
             scale,
-            templateWidth
+            templateWidth,
         );
 
         const dstPoints = points.map((p) => ({
@@ -64,7 +65,7 @@ export const WarpedTemplateOverlay = ({
             }}
         >
             <img
-                src={URL.createObjectURL(new Blob([templateFile.bytes]))}
+                src={getUrlFromBytes(templateFile.bytes)}
                 alt=""
                 className="w-full h-full object-contain"
                 style={{

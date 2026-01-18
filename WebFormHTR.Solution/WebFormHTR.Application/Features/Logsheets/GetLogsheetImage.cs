@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.File.Interfaces;
-using WebFormHTR.Application.Features.PdfImage;
+using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.ValueObjects;
 using WebFormHTR.Infrastructure.Extensions;
@@ -40,38 +40,41 @@ public static class GetLogsheetImageHandler
             return Result.Fail<GetFileDto>("Logsheet template not found");
         }
 
-        // This is a little hack -- we transform the entire logsheet area to get its aligned coordinates
-        var alignedLogsheetCoordinates = coordinateTransformerService.TransformCoordinates(new Coordinates
-        {
-            X = 0,
-            Y = 0,
-            Width = template.Width ?? 0,
-            Height = template.Height ?? 0
-        }, new Coordinates
-        {
-            X = 0,
-            Y = 0,
-            Width = template.Width ?? 0,
-            Height = template.Height ?? 0
-        }, alignmentData);
-
         var pdfStream = (await fileService.GetFileAsync(logsheet.FileId))?.Stream;
         if (pdfStream is null)
         {
             return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 
-        var logsheetPdfStream = pdfCropperService.GetCroppedSection(pdfStream.ToByteArray(), 0,
-            alignedLogsheetCoordinates.X, alignedLogsheetCoordinates.Y,
-            alignedLogsheetCoordinates.Width,
-            alignedLogsheetCoordinates.Height, (int)template.Width!,
-            (int)template.Height!, cancellationToken);
+        var srcPoints = alignmentData;
+        if (srcPoints?.Count != 4)
+        {
+            srcPoints = GetTemplateCorners(template, 1);
+        }
+
+        var outputScale = 2;
+        var dstPoints = GetTemplateCorners(template, outputScale);
+
+        var warpedStream = pdfCropperService.GetWarpedSection(pdfStream.ToByteArray(), 0, srcPoints, dstPoints,
+            template.Width * outputScale ?? 0, (int)(template.Height * outputScale ?? 0),
+            template.Width ?? 0, template.Height ?? 0, cancellationToken);
 
         return Result.Ok(new GetFileDto
         {
             FileName = $"logsheet_{logsheet.Id}.png",
             ContentType = "image/png",
-            Stream = logsheetPdfStream
+            Stream = warpedStream
         });
+    }
+
+    private static List<PointCoordinate> GetTemplateCorners(Domain.Entities.Template template, int scale)
+    {
+        return
+        [
+            new PointCoordinate { X = 0, Y = 0 },
+            new PointCoordinate { X = template.Width * scale ?? 0, Y = 0 },
+            new PointCoordinate { X = template.Width * scale ?? 0, Y = template.Height * scale ?? 0 },
+            new PointCoordinate { X = 0, Y = template.Height * scale ?? 0 }
+        ];
     }
 }

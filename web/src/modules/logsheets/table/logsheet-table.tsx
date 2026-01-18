@@ -54,8 +54,8 @@ export function TableSkeleton(props: ComponentProps<typeof Table>) {
                                         colIndex % 3 === 0
                                             ? "w-[60%]"
                                             : colIndex % 3 === 1
-                                            ? "w-[80%]"
-                                            : "w-[40%]"
+                                              ? "w-[80%]"
+                                              : "w-[40%]"
                                     }`}
                                 />
                             </TableCell>
@@ -74,7 +74,9 @@ export const LogsheetTable = ({
     const intl = useIntl();
 
     const logsheetsQuery = useLogsheets(templateId);
-    const [previewFileId, setPreviewFileId] = useState<string | null>(null);
+    const [previewLogsheetId, setPreviewLogsheetId] = useState<string | null>(
+        null,
+    );
 
     const columns = useLogsheetsColumns();
     const [pagination, setPagination] = useState<PaginationState>({
@@ -99,7 +101,7 @@ export const LogsheetTable = ({
             rowSelection: selectedRowIds,
         },
         meta: {
-            onPreview: (id: string) => setPreviewFileId(id),
+            onPreview: (id: string) => setPreviewLogsheetId(id),
         },
     });
 
@@ -137,7 +139,7 @@ export const LogsheetTable = ({
                                         ? null
                                         : flexRender(
                                               header.column.columnDef.header,
-                                              header.getContext()
+                                              header.getContext(),
                                           )}
                                 </TableHead>
                             ))}
@@ -152,7 +154,7 @@ export const LogsheetTable = ({
                                     <TableCell key={cell.id} className="p-2">
                                         {flexRender(
                                             cell.column.columnDef.cell,
-                                            cell.getContext()
+                                            cell.getContext(),
                                         )}
                                     </TableCell>
                                 ))}
@@ -185,7 +187,7 @@ export const LogsheetTable = ({
                             currentPage:
                                 table.getState().pagination.pageIndex + 1,
                             totalPages: table.getPageCount(),
-                        }
+                        },
                     )}
                 </p>
                 <Pagination className="justify-end">
@@ -221,9 +223,10 @@ export const LogsheetTable = ({
                     </PaginationContent>
                 </Pagination>
                 <PreviewModal
-                    isOpen={!!previewFileId}
-                    onClose={() => setPreviewFileId(null)}
-                    fileId={previewFileId}
+                    isOpen={!!previewLogsheetId}
+                    onClose={() => setPreviewLogsheetId(null)}
+                    logsheetId={previewLogsheetId!}
+                    templateId={templateId}
                 />
             </div>
         </div>

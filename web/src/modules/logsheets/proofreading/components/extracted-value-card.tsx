@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
+import { cn, getUrlFromBytes } from "@/lib/utils";
 import { useExtractedValueImage } from "@/modules/logsheets/proofreading/api";
 import { ExtractedValueForm } from "@/modules/logsheets/proofreading/components/extracted-value-form";
 import type { ExtractedValueType } from "@/modules/logsheets/schema";
@@ -27,7 +27,7 @@ const ExtractedValueImage = ({ id }: { id: string }) => {
 
     const Img = (
         <img
-            src={URL.createObjectURL(new Blob([data.bytes]))}
+            src={getUrlFromBytes(data.bytes)}
             alt="Extracted Value"
             className="max-w-full max-h-full object-contain"
         />
@@ -59,7 +59,7 @@ export const ExtractedValueCard = memo(
                     "cursor-pointer transition-all duration-200 border-2",
                     isSelected
                         ? "border-primary ring-1 ring-primary"
-                        : "border-border"
+                        : "border-border",
                 )}
             >
                 <CardContent className="p-4 flex gap-4">
@@ -74,5 +74,5 @@ export const ExtractedValueCard = memo(
                 </CardContent>
             </Card>
         );
-    }
+    },
 );

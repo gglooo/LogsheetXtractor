@@ -1,7 +1,6 @@
 import { fileQueryFn } from "@/modules/files/api";
 import { logsheetListSchema, logsheetSchema } from "@/modules/logsheets/schema";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
-import { roiSchema } from "@/modules/rois/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useLogsheets = (templateId: string) =>
@@ -9,7 +8,7 @@ export const useLogsheets = (templateId: string) =>
         queryKey: ["logsheets", templateId],
         queryFn: async () => {
             const response = await fetch(
-                `/api/templates/${templateId}/logsheets`
+                `/api/templates/${templateId}/logsheets`,
             );
             return await logsheetListSchema
                 .array()
@@ -52,7 +51,7 @@ export const useProcessLogsheetMutation = () => {
                 `/api/logsheets/${logsheetId}/process`,
                 {
                     method: "POST",
-                }
+                },
             );
 
             if (!response.ok) {
@@ -183,7 +182,7 @@ export const useAlignLogsheetMutation = () => {
                             })),
                         },
                     }),
-                }
+                },
             );
 
             if (!response.ok) {
@@ -222,20 +221,4 @@ export const useLogsheetImage = (logsheetId: string) =>
         queryKey: ["logsheets", logsheetId, "image"],
         refetchOnWindowFocus: false,
         queryFn: async () => fileQueryFn(`/api/logsheets/${logsheetId}/image`),
-    });
-
-export const useRoisAlignedToLogsheet = (logsheetId: string) =>
-    useQuery({
-        queryKey: ["logsheets", logsheetId, "rois-aligned"],
-        queryFn: async () => {
-            const response = await fetch(
-                `/api/logsheets/${logsheetId}/aligned-rois`
-            );
-
-            if (!response.ok) {
-                throw new Error(response.statusText);
-            }
-
-            return roiSchema.array().parseAsync(await response.json());
-        },
     });

@@ -1,14 +1,13 @@
 import { Spinner } from "@/components/ui/spinner";
+import { getUrlFromBytes } from "@/lib/utils";
 import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
 import { SvgCanvas } from "@/modules/canvas/svg-canvas";
-import {
-    useLogsheetImage,
-    useRoisAlignedToLogsheet,
-} from "@/modules/logsheets/api";
+import { useLogsheetImage } from "@/modules/logsheets/api";
 import type { LogsheetType } from "@/modules/logsheets/schema";
 import { RoiSvg } from "@/modules/rois/components/roi-svg";
 import type { RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
+import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { getScaleFromReferenceScale } from "@/modules/template-editor/utils/coordinates";
 import type { TemplateType } from "@/modules/templates/schema";
 import React, { useCallback, useRef } from "react";
@@ -26,20 +25,16 @@ export const ProofreadingLogsheetViewer = ({
 }) => {
     const { scale, width } = useSvgZoom();
 
-    // TODO: this is not displaying the rois properly
-    const {
-        data: rois,
-        isLoading,
-        isError,
-    } = useRoisAlignedToLogsheet(logsheet.id);
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
+
+    const { rois } = useTemplateEditor();
 
     const logsheetImageQuery = useLogsheetImage(logsheet.id);
 
     const referenceScale = getScaleFromReferenceScale(
         width,
         scale,
-        template.width
+        template.width,
     );
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +47,7 @@ export const ProofreadingLogsheetViewer = ({
 
             onRoiClick?.(roiId);
         },
-        [onRoiClick, setSelectedRoiIds]
+        [onRoiClick, setSelectedRoiIds],
     );
 
     const shouldRenderRoiFn = useCallback(
@@ -62,7 +57,7 @@ export const ProofreadingLogsheetViewer = ({
             }
             return true;
         },
-        [customShouldRenderRoiFn]
+        [customShouldRenderRoiFn],
     );
 
     const renderRoi = useCallback(
@@ -76,7 +71,7 @@ export const ProofreadingLogsheetViewer = ({
                     isSelected={isSelectedRoi(roi.id ?? "")}
                 />
             ) : null,
-        [shouldRenderRoiFn, referenceScale, handleRoiClick, isSelectedRoi]
+        [shouldRenderRoiFn, referenceScale, handleRoiClick, isSelectedRoi],
     );
 
     return (
@@ -89,23 +84,15 @@ export const ProofreadingLogsheetViewer = ({
                 <p className="text-red-500">Error loading image</p>
             ) : (
                 <img
-                    src={URL.createObjectURL(
-                        new Blob([logsheetImageQuery.data!.bytes])
-                    )}
+                    src={getUrlFromBytes(logsheetImageQuery.data!.bytes)}
                     alt="Logsheet"
                 />
             )}
-            {isLoading ? (
-                <Spinner />
-            ) : isError ? (
-                <p className="text-red-500">Error loading ROIs</p>
-            ) : (
-                <SvgCanvas
-                    width={template.width}
-                    rois={rois ?? []}
-                    render={renderRoi}
-                />
-            )}
+            <SvgCanvas
+                width={template.width}
+                rois={rois ?? []}
+                render={renderRoi}
+            />
         </div>
     );
 };
