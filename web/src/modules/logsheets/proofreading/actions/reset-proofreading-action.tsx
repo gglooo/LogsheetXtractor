@@ -57,7 +57,7 @@ export const ResetProofreadingAction = ({
                 >
                     {intl.formatMessage({
                         id: "logsheets.proofreading.reset.action",
-                        defaultMessage: "Reset Proofreading",
+                        defaultMessage: "Reset proofreading",
                     })}
                 </Button>
             </DialogTrigger>

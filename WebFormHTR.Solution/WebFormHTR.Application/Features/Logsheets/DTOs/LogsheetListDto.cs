@@ -9,6 +9,7 @@ public record LogsheetListDto(
     Guid? BacksideTemplateId,
     FileDto File,
     ELogSheetStatus Status,
+    bool IsAligned,
     DateTime? ProcessedAt,
     DateTime CreatedAt,
     DateTime? UpdatedAt

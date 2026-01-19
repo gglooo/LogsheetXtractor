@@ -74,7 +74,8 @@ public class MappingConfig : IRegister
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
-            .Map(dest => dest.BacksideTemplateId, src => src.BacksideTemplateId);
+            .Map(dest => dest.BacksideTemplateId, src => src.BacksideTemplateId)
+            .Map(dest => dest.IsAligned, src => src.AlignmentData != null);
 
         config.NewConfig<CreateRoiDto, Roi>()
             .Map(dest => dest.Type, src => src.Type)
@@ -141,5 +142,8 @@ public class MappingConfig : IRegister
         config.NewConfig<ExtractedValue, ExtractedValueDto>()
             .Map(dest => dest.VariableName, src => src.Roi.VariableName)
             .Map(dest => dest.RoiType, src => src.Roi.Type);
+        config.NewConfig<ExtractedValueDto, ExtractedValue>();
+
+        config.NewConfig<Coordinates, ExportCoordinateDto>();
     }
 }

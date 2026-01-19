@@ -190,6 +190,21 @@ public static class LogsheetEndpoints
         return result.ToHttpResult();
     }
 
+    [WolverinePost("/api/logsheets/{id}/proofreading/reset")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> ResetLogsheetProofreading(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new ResetLogsheetProofreadingCommand(id);
+        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
     [WolverineGet("/api/logsheets/{id}/image")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -201,6 +216,21 @@ public static class LogsheetEndpoints
     {
         // TODO: support backside (the method supports it, just parse from request)
         var command = new GetLogsheetImageQuery(id, true);
+        var result = await bus.InvokeAsync<Result<GetFileDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/logsheets/{id}/export")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> ExportLogsheetData(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new ExportLogsheetDataCommand(id);
         var result = await bus.InvokeAsync<Result<GetFileDto>>(command, ct);
 
         return result.ToHttpResult();

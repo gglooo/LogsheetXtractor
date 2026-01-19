@@ -4,7 +4,8 @@ namespace WebFormHTR.Infrastructure.Services.Storage;
 
 public class FileStorageService(IConfiguration config) : IFileStorageService
 {
-    private readonly string _storageDirectory = config["Storage:LocalStoragePath"] ?? "app_data/storage";
+    private readonly string _storageDirectory =
+        Path.GetFullPath(config["Storage:LocalStoragePath"] ?? "app_data/storage");
 
     private void CheckAndCreateStorageDirectory()
     {
@@ -94,5 +95,29 @@ public class FileStorageService(IConfiguration config) : IFileStorageService
         await File.WriteAllBytesAsync(tempFilePath, fileData, ct);
 
         return tempFilePath;
+    }
+
+    public FileStream GetTemporaryFile(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException("Temporary file not found", filePath);
+        }
+
+        return new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read);
+    }
+
+    public Task<byte[]> ReadTemporaryFileAsync(string filePath, CancellationToken ct)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException("Temporary file not found", filePath);
+        }
+
+        return File.ReadAllBytesAsync(filePath, ct);
     }
 }

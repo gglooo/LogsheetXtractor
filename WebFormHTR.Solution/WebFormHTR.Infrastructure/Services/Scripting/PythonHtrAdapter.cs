@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.Json;
 using MapsterMapper;
+using WebFormHTR.Application.DTOs;
+using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
@@ -113,5 +115,43 @@ public class PythonHtrAdapter(
             $"--pdf_file {filePath}", ct);
 
         return dimensions;
+    }
+
+    public async Task<GetFileDto> ExportLogsheetDataAsync(Logsheet logsheet,
+        IEnumerable<ExportLogsheetDataDto> data,
+        File logsheetFile,
+        File templateFile,
+        CancellationToken ct)
+    {
+        var filePath = fileStorageService.GetResolvedPath(logsheetFile.StoragePath);
+        var templatePath = fileStorageService.GetResolvedPath(templateFile.StoragePath);
+
+        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, ct);
+
+        var payload = new ExportLogsheetPayloadDto
+        {
+            Data = data.ToList(),
+            Width = logsheet.Template.Width ?? 0,
+            Height = logsheet.Template.Height ?? 0
+        };
+
+        var configJson = JsonSerializer.Serialize(payload);
+        var configBytes = Encoding.UTF8.GetBytes(configJson);
+
+        var configName = $"{Guid.NewGuid()}_export_config.json";
+        var configPath = await fileStorageService.SaveTemporaryFileAsync(configBytes, configName, ct);
+
+        var outputFilePath = fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_exported_logsheet.csv");
+        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ExportLogsheet,
+            $"--pdf_logsheet {filePath} --pdf_template {templatePath} --config_file {configPath} --output_file {outputFilePath} {alignmentArgument}",
+            ct);
+
+        var fileStream = fileStorageService.GetTemporaryFile(outputFilePath);
+        return new GetFileDto
+        {
+            FileName = $"exported_logsheet_{Guid.NewGuid()}.xlsx",
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            Stream = fileStream
+        };
     }
 }

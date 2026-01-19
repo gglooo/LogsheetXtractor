@@ -10,4 +10,6 @@ public interface IFileStorageService
     string ReadAllText(string filePath);
     string GetTemporaryFilePath(string fileName);
     Task<string> SaveTemporaryFileAsync(byte[] fileData, string fileName, CancellationToken ct);
+    FileStream GetTemporaryFile(string filePath);
+    Task<byte[]> ReadTemporaryFileAsync(string filePath, CancellationToken ct);
 }

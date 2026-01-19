@@ -1,4 +1,4 @@
-import { fileQueryFn } from "@/modules/files/api";
+import { downloadFile, fileQueryFn } from "@/modules/files/api";
 import { logsheetListSchema, logsheetSchema } from "@/modules/logsheets/schema";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -221,4 +221,17 @@ export const useLogsheetImage = (logsheetId: string) =>
         queryKey: ["logsheets", logsheetId, "image"],
         refetchOnWindowFocus: false,
         queryFn: async () => fileQueryFn(`/api/logsheets/${logsheetId}/image`),
+    });
+
+export const useExportLogsheetMutation = () =>
+    useMutation({
+        mutationFn: async ({ logsheetId }: { logsheetId: string }) => {
+            const { bytes, fileName, contentType } = await fileQueryFn(
+                `/api/logsheets/${logsheetId}/export`,
+                "POST",
+            );
+
+            const blob = new Blob([bytes], { type: contentType ?? undefined });
+            await downloadFile(blob, fileName);
+        },
     });

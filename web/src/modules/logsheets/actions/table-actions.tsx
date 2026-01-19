@@ -4,10 +4,12 @@ import { Spinner } from "@/components/ui/spinner";
 import { useFileDownloadMutation } from "@/modules/files/api";
 import {
     useDeleteLogsheetMutation,
+    useExportLogsheetMutation,
     useProcessLogsheetMutation,
 } from "@/modules/logsheets/api";
 import type { LogsheetListType } from "@/modules/logsheets/schema";
 import {
+    ArrowRightFromLineIcon,
     DownloadIcon,
     EyeIcon,
     FileCog,
@@ -35,6 +37,7 @@ export const LogsheetTableActions = ({
     const fileDownloadMutation = useFileDownloadMutation();
     const deleteLogsheetMutation = useDeleteLogsheetMutation();
     const processLogsheetMutation = useProcessLogsheetMutation();
+    const exportLogsheetMutation = useExportLogsheetMutation();
 
     const handleDelete = async () => {
         try {
@@ -128,6 +131,29 @@ export const LogsheetTableActions = ({
                     })}
                 >
                     <DownloadIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="ghost"
+                    title={intl.formatMessage({
+                        id: "logsheets.actions.export",
+                        defaultMessage: "Export",
+                    })}
+                    disabled={exportLogsheetMutation.isPending}
+                    onClick={async () =>
+                        exportLogsheetMutation.mutateAsync({
+                            logsheetId: logsheet.id,
+                        })
+                    }
+                    tooltip={intl.formatMessage({
+                        id: "logsheets.actions.export",
+                        defaultMessage: "Export",
+                    })}
+                >
+                    {exportLogsheetMutation.isPending ? (
+                        <Spinner />
+                    ) : (
+                        <ArrowRightFromLineIcon className="h-4 w-4" />
+                    )}
                 </Button>
                 <Button
                     variant="ghost"

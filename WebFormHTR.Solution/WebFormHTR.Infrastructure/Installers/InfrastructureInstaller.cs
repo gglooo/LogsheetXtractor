@@ -4,9 +4,10 @@ using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using WebFormHTR.Application;
+using WebFormHTR.Application.Features.ExtractedValues;
 using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Logsheets;
+using WebFormHTR.Application.Features.Logsheets.Export;
 using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
@@ -56,5 +57,7 @@ public static class InfrastructureInstaller
         services.AddScoped<IScriptInputPreparer, ScriptInputPreparer>();
         services.AddScoped<ICoordinateTransformerService, CoordinateTransformerService>();
         services.AddScoped<IPerspectiveMatrixComputer, PerspectiveMatrixComputer>();
+        services.AddScoped<ILogsheetExportService, LogsheetExportService>();
+        services.AddScoped<IExtractedValuesService, ExtractedValuesService>();
     }
 }
