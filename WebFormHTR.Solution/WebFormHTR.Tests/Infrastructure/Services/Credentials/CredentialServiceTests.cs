@@ -32,7 +32,9 @@ public class CredentialServiceTests
         finally
         {
             if (File.Exists(tempFile))
+            {
                 File.Delete(tempFile);
+            }
         }
     }
 

@@ -1,25 +1,34 @@
 using FluentResults;
+using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.ROIs;
 
-public sealed record SetTemplateRoisCommand
-(
+public sealed record SetTemplateRoisCommand(
     Guid TemplateId,
     IEnumerable<SetRoiDto> Rois
 );
 
-
 public static class SetTemplateRoisHandler
 {
-    public static async Task<Result<IEnumerable<RoiDto>>> Handle(SetTemplateRoisCommand request, IRoiService roiService, IAppDbContext dbContext, CancellationToken ct)
+    public static async Task<Result<IEnumerable<RoiDto>>> Handle(SetTemplateRoisCommand request, IRoiService roiService,
+        IAppDbContext dbContext, CancellationToken ct)
     {
-        var template = await dbContext.Templates.FindAsync(request.TemplateId, ct);
-        if (template is null)
+        var templateEditStatus = await dbContext.Templates
+            .Where(t => t.Id == request.TemplateId)
+            .Select(TemplateRules.IsEditable)
+            .ToListAsync(ct);
+
+        if (!templateEditStatus.Any())
         {
-            return Result.Fail(new NotFoundError("Template not found"));
+            return Result.Fail<IEnumerable<RoiDto>>(new NotFoundError("Template not found"));
+        }
+
+        if (!templateEditStatus[0])
+        {
+            return Result.Fail(new InvalidStateError("Template is not editable"));
         }
 
         try

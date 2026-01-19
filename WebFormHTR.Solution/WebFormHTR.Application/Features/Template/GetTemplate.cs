@@ -10,7 +10,8 @@ public sealed record GetTemplateQuery(Guid Id);
 
 public static class GetTemplateHandler
 {
-    public static Task<Result<TemplateDetailDto?>> Handle(GetTemplateQuery request, IAppDbContext dbContext, IMapper mapper)
+    public static Task<Result<TemplateDetailDto?>> Handle(GetTemplateQuery request, IAppDbContext dbContext,
+        IMapper mapper)
     {
         var template = dbContext.Templates
             .AsNoTracking()

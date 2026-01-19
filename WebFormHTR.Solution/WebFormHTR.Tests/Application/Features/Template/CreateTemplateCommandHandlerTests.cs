@@ -32,7 +32,7 @@ public class CreateTemplateCommandHandlerTests
         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "New Template", 0, 0, null,
             new FileDto(file.Id, file.StoredFileName, file.ContentType, file.SizeBytes, file.CreatedAt),
             DateTime.UtcNow,
-            DateTime.UtcNow, [], []);
+            DateTime.UtcNow, [], [], true);
 
         _templateServiceMock.Setup(x => x.CreateTemplateAsync(command, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);

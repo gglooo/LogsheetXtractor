@@ -26,15 +26,16 @@ public class CompleteLogsheetProofreadingTests : IDisposable
     [Fact]
     public async Task Handle_ShouldCompleteLogsheet_WhenAllValuesVerified()
     {
-        var logsheet = new Logsheet 
-        { 
-            Id = Guid.NewGuid(), 
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
             Status = ELogSheetStatus.NeedsReview,
-            Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"} } 
+            Template = new Domain.Entities.Template
+                { Name = "T", File = new Domain.Entities.File { StoredFileName = "t" } }
         };
-        var extractedValue = new ExtractedValue 
-        { 
-            Id = Guid.NewGuid(), 
+        var extractedValue = new ExtractedValue
+        {
+            Id = Guid.NewGuid(),
             Status = EVerificationStatus.Verified,
             LogsheetId = logsheet.Id,
             Logsheet = logsheet
@@ -50,7 +51,7 @@ public class CompleteLogsheetProofreadingTests : IDisposable
         var expectedDto = new LogsheetDetailDto
         (
             logsheet.Id,
-            new TemplateListDto(logsheet.Template.Id.ToString(), "T", null, null, 0, 100, 100, DateTime.UtcNow),
+            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, true, DateTime.UtcNow),
             null,
             new FileDto(Guid.NewGuid(), "t", "t", 0, DateTime.UtcNow),
             ELogSheetStatus.Completed,
@@ -61,15 +62,19 @@ public class CompleteLogsheetProofreadingTests : IDisposable
             DateTime.UtcNow
         );
 
-        _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.Is<Logsheet>(l => l.Id == logsheet.Id && l.Status == ELogSheetStatus.Completed)))
+        _mapperMock.Setup(x =>
+                x.Map<LogsheetDetailDto>(It.Is<Logsheet>(l =>
+                    l.Id == logsheet.Id && l.Status == ELogSheetStatus.Completed)))
             .Returns(expectedDto);
 
-        var result = await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+                CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
         result.Value.Status.Should().Be(ELogSheetStatus.Completed);
-        
+
         var dbLogsheet = await _dbContext.Logsheets.FindAsync(logsheet.Id);
         dbLogsheet!.Status.Should().Be(ELogSheetStatus.Completed);
     }
@@ -78,7 +83,9 @@ public class CompleteLogsheetProofreadingTests : IDisposable
     public async Task Handle_ShouldFail_WhenLogsheetNotFound()
     {
         var command = new CompleteLogsheetProofreadingCommand(Guid.NewGuid());
-        var result = await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -88,9 +95,9 @@ public class CompleteLogsheetProofreadingTests : IDisposable
     public async Task Handle_ShouldFail_WhenValuesNotVerified()
     {
         var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.NeedsReview };
-        var extractedValue = new ExtractedValue 
-        { 
-            Id = Guid.NewGuid(), 
+        var extractedValue = new ExtractedValue
+        {
+            Id = Guid.NewGuid(),
             Status = EVerificationStatus.Unverified,
             LogsheetId = logsheet.Id,
             Logsheet = logsheet
@@ -101,7 +108,9 @@ public class CompleteLogsheetProofreadingTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var command = new CompleteLogsheetProofreadingCommand(logsheet.Id);
-        var result = await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<InvalidStateError>();
@@ -115,7 +124,9 @@ public class CompleteLogsheetProofreadingTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var command = new CompleteLogsheetProofreadingCommand(logsheet.Id);
-        var result = await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<InvalidStateError>();

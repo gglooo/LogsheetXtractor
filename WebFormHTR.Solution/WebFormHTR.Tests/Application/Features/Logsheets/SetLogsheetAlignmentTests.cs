@@ -26,26 +26,30 @@ public class SetLogsheetAlignmentTests : IDisposable
     [Fact]
     public async Task Handle_ShouldUpdateAlignment_WhenLogsheetExists()
     {
-        var logsheet = new Logsheet 
-        { 
+        var logsheet = new Logsheet
+        {
             Id = Guid.NewGuid(),
-            Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"} } 
+            Template = new Domain.Entities.Template
+                { Name = "T", File = new Domain.Entities.File { StoredFileName = "t" } }
         };
         _dbContext.Logsheets.Add(logsheet);
         await _dbContext.SaveChangesAsync();
 
         var alignmentDataDto = new AlignmentDataDto(
-            new List<PointCoordinateDto> { new() { X = 1, Y = 1 } },
+            new AlignmentSideDataDto(
+                new List<PointCoordinateDto>(),
+                new List<PointCoordinateDto> { new() { X = 1, Y = 1 } }
+            ),
             null
         );
         var alignmentContainer = new AlignmentContainer();
-        
+
         var command = new SetLogsheetAlignmentCommand(logsheet.Id, alignmentDataDto);
 
         var expectedDto = new LogsheetDetailDto
         (
             logsheet.Id,
-            new TemplateListDto(logsheet.Template.Id.ToString(), "T", null, null, 0, 100, 100, DateTime.UtcNow),
+            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, true, DateTime.UtcNow),
             null,
             new FileDto(Guid.NewGuid(), "t", "t", 0, DateTime.UtcNow),
             ELogSheetStatus.Pending,
@@ -62,7 +66,8 @@ public class SetLogsheetAlignmentTests : IDisposable
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.Is<Logsheet>(l => l.Id == logsheet.Id)))
             .Returns(expectedDto);
 
-        var result = await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -75,8 +80,9 @@ public class SetLogsheetAlignmentTests : IDisposable
     public async Task Handle_ShouldFail_WhenLogsheetNotFound()
     {
         var command = new SetLogsheetAlignmentCommand(Guid.NewGuid(), new AlignmentDataDto(null, null));
-        
-        var result = await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+
+        var result =
+            await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();

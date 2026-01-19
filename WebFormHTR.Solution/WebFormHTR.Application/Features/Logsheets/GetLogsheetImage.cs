@@ -56,7 +56,7 @@ public static class GetLogsheetImageHandler
         var dstPoints = GetTemplateCorners(template, outputScale);
 
         var warpedStream = pdfCropperService.GetWarpedSection(pdfStream.ToByteArray(), 0, srcPoints, dstPoints,
-            template.Width * outputScale ?? 0, (int)(template.Height * outputScale ?? 0),
+            template.Width * outputScale ?? 0, template.Height * outputScale ?? 0,
             template.Width ?? 0, template.Height ?? 0, cancellationToken);
 
         return Result.Ok(new GetFileDto

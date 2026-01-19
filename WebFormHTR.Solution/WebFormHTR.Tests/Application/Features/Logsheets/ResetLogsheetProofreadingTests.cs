@@ -25,16 +25,17 @@ public class ResetLogsheetProofreadingTests : IDisposable
     [Fact]
     public async Task Handle_ShouldResetLogsheet_AndRemoveExtractedValues()
     {
-        var logsheet = new Logsheet 
-        { 
-            Id = Guid.NewGuid(), 
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
             Status = ELogSheetStatus.NeedsReview,
             ProcessedAt = DateTime.UtcNow,
-            Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"} } 
+            Template = new Domain.Entities.Template
+                { Name = "T", File = new Domain.Entities.File { StoredFileName = "t" } }
         };
-        var extractedValue = new ExtractedValue 
-        { 
-            Id = Guid.NewGuid(), 
+        var extractedValue = new ExtractedValue
+        {
+            Id = Guid.NewGuid(),
             LogsheetId = logsheet.Id,
             Logsheet = logsheet
         };
@@ -44,11 +45,11 @@ public class ResetLogsheetProofreadingTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var command = new ResetLogsheetProofreadingCommand(logsheet.Id);
-        
+
         var expectedDto = new LogsheetDetailDto
         (
             logsheet.Id,
-            new TemplateListDto(logsheet.Template.Id.ToString(), "T", null, null, 0, 100, 100, DateTime.UtcNow),
+            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, true, DateTime.UtcNow),
             null,
             new FileDto(Guid.NewGuid(), "t", "t", 0, DateTime.UtcNow),
             ELogSheetStatus.Pending,
@@ -59,10 +60,14 @@ public class ResetLogsheetProofreadingTests : IDisposable
             DateTime.UtcNow
         );
 
-        _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(It.Is<Logsheet>(l => l.Id == logsheet.Id && l.Status == ELogSheetStatus.Pending)))
+        _mapperMock.Setup(x =>
+                x.Map<LogsheetDetailDto>(
+                    It.Is<Logsheet>(l => l.Id == logsheet.Id && l.Status == ELogSheetStatus.Pending)))
             .Returns(expectedDto);
 
-        var result = await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+                CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -82,7 +87,9 @@ public class ResetLogsheetProofreadingTests : IDisposable
     public async Task Handle_ShouldFail_WhenLogsheetNotFound()
     {
         var command = new ResetLogsheetProofreadingCommand(Guid.NewGuid());
-        var result = await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+        var result =
+            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();

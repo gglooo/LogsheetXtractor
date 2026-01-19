@@ -1,4 +1,5 @@
 using FluentResults;
+using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
@@ -69,17 +70,20 @@ public static class CreateBatchLogsheetsHandler
 
         var newIds = logsheets.Select(x => x.Id).ToList();
 
-        var resultLogsheets = await dbContext.Logsheets
+        var resultEntities = await dbContext.Logsheets
             .AsNoTracking()
-            .Include(l => l.File)
             .Include(l => l.Template)
-            .ThenInclude(t => t.Rois)
+                .ThenInclude(t => t.Rois)
             .Include(l => l.BacksideTemplate)
+                .ThenInclude(t => t.Rois)
+            .Include(l => l.File)
             .Include(l => l.ExtractedValues)
+                .ThenInclude(e => e.Roi)
             .Where(l => newIds.Contains(l.Id))
             .ToListAsync(ct);
 
+        var resultDtos = mapper.Map<IEnumerable<LogsheetDetailDto>>(resultEntities);
 
-        return Result.Ok(mapper.Map<IEnumerable<LogsheetDetailDto>>(resultLogsheets));
+        return Result.Ok<IEnumerable<LogsheetDetailDto>>(resultDtos);
     }
 }
