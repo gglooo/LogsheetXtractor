@@ -9,7 +9,7 @@ public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
     private readonly string _pythonInterpreterPath = config["Python:InterpreterPath"] ?? "python3";
     private readonly string _scriptsBasePath = config["Python:ScriptsFolder"] ?? "../../formHTR";
 
-    public async Task<string> ExecuteScriptAsync(string scriptName, string args,
+    public virtual async Task<string> ExecuteScriptAsync(string scriptName, string args,
         CancellationToken cancellationToken)
     {
         var scriptPath = Path.Combine(_scriptsBasePath, scriptName);
