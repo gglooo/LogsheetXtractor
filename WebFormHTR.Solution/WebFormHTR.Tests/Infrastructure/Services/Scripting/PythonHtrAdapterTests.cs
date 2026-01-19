@@ -12,12 +12,19 @@ using WebFormHTR.Infrastructure.Services.Storage;
 
 namespace WebFormHTR.Tests.Infrastructure.Services.Scripting;
 
+using WebFormHTR.Application.Features.ROIs.DTOs;
+using WebFormHTR.Application.Features.Residuals.DTOs;
+using WebFormHTR.Domain.Enums;
+using WebFormHTR.Domain.ValueObjects;
+
 public class PythonHtrAdapterTests
 {
     private readonly Mock<IScriptExecutor> _scriptExecutorMock;
     private readonly Mock<ICredentialService> _credentialServiceMock;
     private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly Mock<IConfiguration> _configMock;
+    private readonly Mock<IScriptInputPreparer> _inputPreparerMock;
+    private readonly Mock<IScriptOutputParser> _outputParserMock;
     private readonly PythonHtrAdapter _adapter;
     private readonly IMapper _mapper;
 
@@ -27,13 +34,17 @@ public class PythonHtrAdapterTests
         _credentialServiceMock = new Mock<ICredentialService>();
         _fileStorageServiceMock = new Mock<IFileStorageService>();
         _configMock = new Mock<IConfiguration>();
+        _inputPreparerMock = new Mock<IScriptInputPreparer>();
+        _outputParserMock = new Mock<IScriptOutputParser>();
         _mapper = new Mock<IMapper>().Object;
 
         _adapter = new PythonHtrAdapter(
             _scriptExecutorMock.Object,
             _credentialServiceMock.Object,
             _fileStorageServiceMock.Object,
-            _mapper);
+            _mapper,
+            _inputPreparerMock.Object,
+            _outputParserMock.Object);
     }
 
     [Fact]
@@ -71,30 +82,36 @@ public class PythonHtrAdapterTests
                 ct))
             .ReturnsAsync("Script output");
 
-        var pythonOutput = new PythonSelectRoisOutputDto
-        {
-            Content = new List<PythonRoiDto>
+        var expectedOutput = new SelectRoisOutputDto(
+            new List<RoiDto>
             {
-                new()
-                {
-                    Coords = new List<int> { 10, 20, 110, 70 }, // x, y, x2, y2 -> w=100, h=50
-                    VarName = "TestROI",
-                    Type = "Text"
-                }
+                new RoiDto
+                (
+                    Guid.NewGuid(),
+                    "TestROI",
+                    template.Id,
+                    ERoiType.Handwritten,
+                    new Coordinates { X = 10, Y = 20, Width = 100, Height = 50 },
+                    DateTime.UtcNow,
+                    null
+                )
             },
-            ToIgnore = new List<PythonResidualDto>
+            new List<ResidualDto>
             {
-                new()
-                {
-                    Coords = new List<int> { 200, 200, 250, 250 }, // x, y, x2, y2 -> w=50, h=50
-                    Content = "Ignored Content"
-                }
+                new ResidualDto
+                (
+                    Guid.NewGuid(),
+                    template.Id,
+                    "Ignored Content",
+                    new Coordinates { X = 200, Y = 200, Width = 50, Height = 50 },
+                    DateTime.UtcNow,
+                    null
+                )
             }
-        };
-        var jsonOutput = JsonSerializer.Serialize(pythonOutput);
+        );
 
-        _fileStorageServiceMock.Setup(x => x.ReadAllText(resolvedOutputPath))
-            .Returns(jsonOutput);
+        _outputParserMock.Setup(x => x.ParseSelectRoisJson(resolvedOutputPath, template.Id))
+            .Returns(expectedOutput);
 
         var result = await _adapter.SelectRoisAsync(input, ct);
 

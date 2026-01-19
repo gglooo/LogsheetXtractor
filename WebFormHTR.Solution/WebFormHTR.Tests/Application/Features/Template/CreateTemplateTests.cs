@@ -74,7 +74,7 @@ public class CreateTemplateTests : IDisposable
         };
 
         var expectedDto =
-            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0f, 0f, null, null, DateTime.Now, DateTime.Now, [], []);
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0, 0, null, null, DateTime.Now, DateTime.Now, [], []);
         _templateServiceMock.Setup(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);
 
@@ -107,7 +107,7 @@ public class CreateTemplateTests : IDisposable
         };
 
         var expectedDto =
-            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0f, 0f, null, null, DateTime.Now, DateTime.Now, [], []);
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0, 0, null, null, DateTime.Now, DateTime.Now, [], []);
         _templateServiceMock.Setup(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);
 

@@ -25,7 +25,7 @@ public class GetFileQueryHandlerTests
         _fileServiceMock.Setup(x => x.GetFileAsync(fileId))
             .ReturnsAsync(expectedFile);
 
-        var query = new GetFileQuery(fileId.ToString());
+        var query = new GetFileQuery(fileId);
 
         var result = await GetFileHandler.Handle(query, _fileServiceMock.Object);
 
@@ -41,7 +41,7 @@ public class GetFileQueryHandlerTests
         _fileServiceMock.Setup(x => x.GetFileAsync(fileId))
             .ThrowsAsync(new Exception(errorMessage));
 
-        var query = new GetFileQuery(fileId.ToString());
+        var query = new GetFileQuery(fileId);
 
         var result = await GetFileHandler.Handle(query, _fileServiceMock.Object);
 

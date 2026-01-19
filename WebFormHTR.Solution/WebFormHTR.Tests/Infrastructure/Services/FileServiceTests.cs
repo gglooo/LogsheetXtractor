@@ -12,11 +12,14 @@ using WebFormHTR.Tests.Common;
 
 namespace WebFormHTR.Tests.Infrastructure.Services;
 
+using Docnet.Core;
+
 public class FileServiceTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IFileStorageService> _fileStorageServiceMock;
+    private readonly Mock<IDocLib> _docLibMock;
     private readonly FileService _fileService;
 
     public FileServiceTests()
@@ -24,7 +27,8 @@ public class FileServiceTests : IDisposable
         _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
         _fileStorageServiceMock = new Mock<IFileStorageService>();
-        _fileService = new FileService(_dbContext, _mapperMock.Object, _fileStorageServiceMock.Object);
+        _docLibMock = new Mock<IDocLib>();
+        _fileService = new FileService(_dbContext, _mapperMock.Object, _fileStorageServiceMock.Object, _docLibMock.Object);
     }
 
     [Fact]

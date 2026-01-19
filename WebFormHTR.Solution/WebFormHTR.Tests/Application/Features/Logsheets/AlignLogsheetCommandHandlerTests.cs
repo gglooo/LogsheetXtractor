@@ -40,7 +40,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         var command = new AlignLogsheetCommand(logsheet.Id);
         
         var expectedDto = new LogsheetDetailDto(logsheet.Id, 
-            new TemplateListDto(template.Id.ToString(), template.Name, null, null, 0, DateTime.UtcNow), 
+            new TemplateListDto(template.Id.ToString(), template.Name, null, null, 0, 0, 0, DateTime.UtcNow), 
             null, 
             new WebFormHTR.Application.Features.File.DTOs.FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt), 
             logsheet.Status, 

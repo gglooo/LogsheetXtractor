@@ -37,8 +37,8 @@ public class ListTemplatesTests : IDisposable
 
         var expectedDtos = new List<TemplateListDto>
         {
-            new(Guid.NewGuid().ToString(), "Template 1", null, null, 0, DateTime.UtcNow),
-            new(Guid.NewGuid().ToString(), "Template 2", null, null, 0, DateTime.UtcNow)
+            new(Guid.NewGuid().ToString(), "Template 1", null, null, 0, 0, 0, DateTime.UtcNow),
+            new(Guid.NewGuid().ToString(), "Template 2", null, null, 0, 0, 0, DateTime.UtcNow)
         };
 
         _mapperMock.Setup(m => m.Map<IEnumerable<TemplateListDto>>(It.IsAny<List<Domain.Entities.Template>>()))

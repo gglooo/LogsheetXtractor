@@ -62,8 +62,8 @@ public class TemplateServiceTests
         var expectedDto = new TemplateDetailDto(
             Guid.NewGuid(),
             newTemplateName,
-            0f,
-            0f,
+            0,
+            0,
             null,
             null,
             DateTime.UtcNow,
@@ -136,8 +136,8 @@ public class TemplateServiceTests
             .Returns(new TemplateDetailDto(
                 Guid.NewGuid(),
                 newTemplateName,
-                0f,
-                0f,
+                0,
+                0,
                 null,
                 null,
                 DateTime.UtcNow,

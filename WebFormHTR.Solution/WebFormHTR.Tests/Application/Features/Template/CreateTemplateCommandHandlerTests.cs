@@ -29,7 +29,7 @@ public class CreateTemplateCommandHandlerTests
 
         var command = new CreateTemplateCommand { Name = "New Template", FileId = file.Id };
 
-        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "New Template", 0f, 0f, null,
+        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "New Template", 0, 0, null,
             new FileDto(file.Id, file.StoredFileName, file.ContentType, file.SizeBytes, file.CreatedAt),
             DateTime.UtcNow,
             DateTime.UtcNow, [], []);

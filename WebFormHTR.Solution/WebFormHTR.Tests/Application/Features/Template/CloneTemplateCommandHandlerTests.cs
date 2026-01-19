@@ -30,7 +30,7 @@ public class CloneTemplateCommandHandlerTests : IDisposable
 
         var command = new CloneTemplateCommand(template.Id, "Cloned Template", file.Id);
 
-         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "Cloned Template", 0f, 0f, null, null, DateTime.UtcNow, DateTime.UtcNow, [], []);
+         var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "Cloned Template", 0, 0, null, null, DateTime.UtcNow, DateTime.UtcNow, [], []);
 
         _templateServiceMock.Setup(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);

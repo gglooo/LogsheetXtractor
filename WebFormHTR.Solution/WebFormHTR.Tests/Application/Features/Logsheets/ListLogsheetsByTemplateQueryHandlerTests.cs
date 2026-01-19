@@ -66,10 +66,10 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
         {
             new(logsheet1.Id, templateId, null,
                 new FileDto(logsheet1.FileId, "test.pdf", "application/pdf", 123, DateTime.UtcNow),
-                ELogSheetStatus.Pending, null, DateTime.UtcNow, null),
+                ELogSheetStatus.Pending, false, null, DateTime.UtcNow, null),
             new(logsheet2.Id, templateId, null,
                 new FileDto(logsheet2.FileId, "test.pdf", "application/pdf", 123, DateTime.UtcNow),
-                ELogSheetStatus.Pending, null, DateTime.UtcNow, null)
+                ELogSheetStatus.Pending, false, null, DateTime.UtcNow, null)
         };
 
         _mapperMock.Setup(x => x.Map<IEnumerable<LogsheetListDto>>(It.IsAny<IEnumerable<Logsheet>>()))
