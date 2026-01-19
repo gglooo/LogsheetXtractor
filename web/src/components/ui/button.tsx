@@ -39,7 +39,7 @@ const buttonVariants = cva(
             variant: "default",
             size: "default",
         },
-    }
+    },
 );
 
 function Button({
@@ -67,7 +67,7 @@ function Button({
 
     return props.tooltip ? (
         <Tooltip>
-            <TooltipTrigger>{BaseComponent}</TooltipTrigger>
+            <TooltipTrigger asChild>{BaseComponent}</TooltipTrigger>
             <TooltipContent>{props.tooltip}</TooltipContent>
         </Tooltip>
     ) : (

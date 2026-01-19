@@ -1,7 +1,7 @@
 import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
 import { getScaleFromReferenceScale } from "@/modules/template-editor/utils/coordinates";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type AlignmentOverlayProps = {
     coordinates: Position[];
@@ -48,19 +48,22 @@ export const AlignmentOverlay = ({
         scaleRef.current = scale;
     }, [scale]);
 
-    const getCoordinates = (clientX: number, clientY: number) => {
-        if (!svgRef.current) {
-            return null;
-        }
+    const getCoordinates = useCallback(
+        (clientX: number, clientY: number) => {
+            if (!svgRef.current) {
+                return null;
+            }
 
-        const rect = svgRef.current.getBoundingClientRect();
-        const currentScale = rect.width / templateWidth;
+            const rect = svgRef.current.getBoundingClientRect();
+            const currentScale = rect.width / templateWidth;
 
-        return {
-            x: (clientX - rect.left) / currentScale,
-            y: (clientY - rect.top) / currentScale,
-        };
-    };
+            return {
+                x: (clientX - rect.left) / currentScale,
+                y: (clientY - rect.top) / currentScale,
+            };
+        },
+        [svgRef, templateWidth],
+    );
 
     const handleMouseDown = (index: number, e: React.MouseEvent) => {
         e.stopPropagation();

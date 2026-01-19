@@ -216,11 +216,12 @@ export const useAutomaticAlignLogsheetMutation = () => {
     });
 };
 
-export const useLogsheetImage = (logsheetId: string) =>
+export const useLogsheetImage = (logsheetId?: string | null) =>
     useQuery({
         queryKey: ["logsheets", logsheetId, "image"],
         refetchOnWindowFocus: false,
         queryFn: async () => fileQueryFn(`/api/logsheets/${logsheetId}/image`),
+        enabled: !!logsheetId,
     });
 
 export const useExportLogsheetMutation = () =>

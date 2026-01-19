@@ -225,7 +225,7 @@ export const LogsheetTable = ({
                 <PreviewModal
                     isOpen={!!previewLogsheetId}
                     onClose={() => setPreviewLogsheetId(null)}
-                    logsheetId={previewLogsheetId!}
+                    logsheetId={previewLogsheetId}
                     templateId={templateId}
                 />
             </div>

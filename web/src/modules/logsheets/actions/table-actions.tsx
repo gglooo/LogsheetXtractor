@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { useFileDownloadMutation } from "@/modules/files/api";
 import {
@@ -14,6 +20,7 @@ import {
     EyeIcon,
     FileCog,
     FileSignature,
+    MoreHorizontal,
     ScanLine,
     TrashIcon,
 } from "lucide-react";
@@ -26,17 +33,10 @@ export type LogsheetTableActionsProps = {
     onPreview: (id: string) => void;
 };
 
-export const LogsheetTableActions = ({
-    logsheet,
-    onPreview,
-}: LogsheetTableActionsProps) => {
+const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
     const intl = useIntl();
-    const navigate = useNavigate();
-    const { templateId } = useParams<{ templateId: string }>();
-
     const fileDownloadMutation = useFileDownloadMutation();
     const deleteLogsheetMutation = useDeleteLogsheetMutation();
-    const processLogsheetMutation = useProcessLogsheetMutation();
     const exportLogsheetMutation = useExportLogsheetMutation();
 
     const handleDelete = async () => {
@@ -48,6 +48,84 @@ export const LogsheetTableActions = ({
             toast.error("Failed to delete logsheet.");
         }
     };
+
+    const isAnyActionPending =
+        fileDownloadMutation.isPending ||
+        deleteLogsheetMutation.isPending ||
+        exportLogsheetMutation.isPending;
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    title={intl.formatMessage({
+                        id: "common.actions.more",
+                        defaultMessage: "More actions",
+                    })}
+                >
+                    {isAnyActionPending ? (
+                        <Spinner />
+                    ) : (
+                        <MoreHorizontal className="h-4 w-4" />
+                    )}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                    onClick={async () =>
+                        fileDownloadMutation.mutateAsync({
+                            fileId: logsheet.file.id,
+                        })
+                    }
+                    disabled={fileDownloadMutation.isPending}
+                >
+                    <DownloadIcon className="mr-2 h-4 w-4" />
+                    {intl.formatMessage({
+                        id: "logsheets.actions.download",
+                        defaultMessage: "Download",
+                    })}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={async () =>
+                        exportLogsheetMutation.mutateAsync({
+                            logsheetId: logsheet.id,
+                        })
+                    }
+                    disabled={exportLogsheetMutation.isPending}
+                >
+                    <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
+                    {intl.formatMessage({
+                        id: "logsheets.actions.export",
+                        defaultMessage: "Export",
+                    })}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={handleDelete}
+                    className="text-red-600 focus:text-red-600"
+                    disabled={deleteLogsheetMutation.isPending}
+                >
+                    <TrashIcon className="mr-2 h-4 w-4" />
+                    {intl.formatMessage({
+                        id: "logsheets.actions.delete",
+                        defaultMessage: "Delete",
+                    })}
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
+export const LogsheetTableActions = ({
+    logsheet,
+    onPreview,
+}: LogsheetTableActionsProps) => {
+    const intl = useIntl();
+    const navigate = useNavigate();
+    const { templateId } = useParams<{ templateId: string }>();
+
+    const processLogsheetMutation = useProcessLogsheetMutation();
 
     const handleProcess = async () => {
         try {
@@ -113,68 +191,10 @@ export const LogsheetTableActions = ({
                 >
                     <ScanLine className="h-4 w-4" />
                 </Button>
-                <Button
-                    variant="ghost"
-                    title={intl.formatMessage({
-                        id: "logsheets.actions.download",
-                        defaultMessage: "Download",
-                    })}
-                    disabled={fileDownloadMutation.isPending}
-                    onClick={async () =>
-                        fileDownloadMutation.mutateAsync({
-                            fileId: logsheet.file.id,
-                        })
-                    }
-                    tooltip={intl.formatMessage({
-                        id: "logsheets.actions.download",
-                        defaultMessage: "Download",
-                    })}
-                >
-                    <DownloadIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                    variant="ghost"
-                    title={intl.formatMessage({
-                        id: "logsheets.actions.export",
-                        defaultMessage: "Export",
-                    })}
-                    disabled={exportLogsheetMutation.isPending}
-                    onClick={async () =>
-                        exportLogsheetMutation.mutateAsync({
-                            logsheetId: logsheet.id,
-                        })
-                    }
-                    tooltip={intl.formatMessage({
-                        id: "logsheets.actions.export",
-                        defaultMessage: "Export",
-                    })}
-                >
-                    {exportLogsheetMutation.isPending ? (
-                        <Spinner />
-                    ) : (
-                        <ArrowRightFromLineIcon className="h-4 w-4" />
-                    )}
-                </Button>
-                <Button
-                    variant="ghost"
-                    title={intl.formatMessage({
-                        id: "logsheets.actions.delete",
-                        defaultMessage: "Delete",
-                    })}
-                    disabled={deleteLogsheetMutation.isPending}
-                    onClick={handleDelete}
-                    tooltip={intl.formatMessage({
-                        id: "logsheets.actions.delete",
-                        defaultMessage: "Delete",
-                    })}
-                >
-                    {deleteLogsheetMutation.isPending ? (
-                        <Spinner />
-                    ) : (
-                        <TrashIcon className="h-4 w-4" />
-                    )}
-                </Button>
-                {!logsheet.processedAt ? (
+
+                <ActionsInDialog logsheet={logsheet} />
+
+                {!logsheet.processedAt && (
                     <Button
                         variant="outline"
                         disabled={processLogsheetMutation.isPending}
@@ -194,7 +214,7 @@ export const LogsheetTableActions = ({
                             <FileCog className="h-4 w-4" />
                         )}
                     </Button>
-                ) : null}
+                )}
             </div>
             <Dialog open={processLogsheetMutation.isPending}>
                 <DialogContent>

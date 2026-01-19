@@ -21,7 +21,7 @@ import { useIntl } from "react-intl";
 type Props = {
     isOpen: boolean;
     onClose: () => void;
-    logsheetId: string;
+    logsheetId?: string | null;
     templateId: string;
 };
 

@@ -52,7 +52,7 @@ export const TemplateListItem = ({
                 intl.formatMessage({
                     id: "templates.actions.delete.success",
                     defaultMessage: "Template deleted successfully!",
-                })
+                }),
             );
         } catch (error) {
             console.error("Error deleting template:", error);
@@ -60,7 +60,7 @@ export const TemplateListItem = ({
                 intl.formatMessage({
                     id: "templates.actions.delete.error",
                     defaultMessage: "Failed to delete template",
-                })
+                }),
             );
         }
     };
@@ -72,7 +72,7 @@ export const TemplateListItem = ({
                 intl.formatMessage({
                     id: "templates.actions.export.success",
                     defaultMessage: "Template config exported.",
-                })
+                }),
             );
         } catch (error) {
             console.error("Error exporting template config:", error);
@@ -80,7 +80,7 @@ export const TemplateListItem = ({
                 intl.formatMessage({
                     id: "templates.actions.export.error",
                     defaultMessage: "Failed to export template config",
-                })
+                }),
             );
         }
     };
