@@ -43,7 +43,7 @@ public class GetLogsheetQueryHandlerTests : IDisposable
         var query = new GetLogsheetQuery(logsheet.Id);
 
         var expectedDto = new LogsheetDetailDto(logsheet.Id,
-            new TemplateListDto(template.Id, template.Name, null, null, 0, 0, 0, true, DateTime.UtcNow),
+            new TemplateListDto(template.Id, template.Name, null, null, 0, 0, 0, DateTime.UtcNow),
             null,
             new FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt),
             logsheet.Status,

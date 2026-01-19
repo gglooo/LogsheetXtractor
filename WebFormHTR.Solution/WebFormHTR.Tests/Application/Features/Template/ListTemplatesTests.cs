@@ -39,7 +39,11 @@ public class ListTemplatesTests : IDisposable
 
         var query = new ListTemplatesQuery(null);
 
-        var result = await ListTemplatesHandler.Handle(query, _dbContext);
+        var config = new TypeAdapterConfig();
+        new MappingConfig().Register(config);
+        var mapper = new Mapper(config);
+        
+        var result = await ListTemplatesHandler.Handle(query, _dbContext, mapper);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().HaveCount(2);

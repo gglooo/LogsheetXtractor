@@ -36,11 +36,8 @@ public class SetLogsheetAlignmentTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var alignmentDataDto = new AlignmentDataDto(
-            new AlignmentSideDataDto(
-                new List<PointCoordinateDto>(),
-                new List<PointCoordinateDto> { new() { X = 1, Y = 1 } }
-            ),
-            null
+            new List<PointCoordinateDto>(),
+            new List<PointCoordinateDto> { new() { X = 1, Y = 1 } }
         );
         var alignmentContainer = new AlignmentContainer();
 
@@ -49,7 +46,7 @@ public class SetLogsheetAlignmentTests : IDisposable
         var expectedDto = new LogsheetDetailDto
         (
             logsheet.Id,
-            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, true, DateTime.UtcNow),
+            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, DateTime.UtcNow),
             null,
             new FileDto(Guid.NewGuid(), "t", "t", 0, DateTime.UtcNow),
             ELogSheetStatus.Pending,

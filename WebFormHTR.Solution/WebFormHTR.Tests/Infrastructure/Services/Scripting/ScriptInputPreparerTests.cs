@@ -55,7 +55,7 @@ public class ScriptInputPreparerTests
     {
         var logsheet = new Logsheet 
         { 
-            AlignmentDataModelConfig = new AlignmentContainer { Frontside = new AlignmentSideData { TargetPoints = new List<PointCoordinate>() } } 
+            AlignmentDataModelConfig = new AlignmentContainer { Frontside = new List<PointCoordinate>() } 
         };
 
         var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
@@ -71,7 +71,7 @@ public class ScriptInputPreparerTests
             Template = new Template { Width = 100, Height = 100 },
             AlignmentDataModelConfig = new AlignmentContainer 
             { 
-                Frontside = new AlignmentSideData { TargetPoints = new List<PointCoordinate> { new PointCoordinate { X = 1, Y = 1 } } } 
+                Frontside = new List<PointCoordinate> { new PointCoordinate { X = 1, Y = 1 } } 
             }
         };
         var expectedPath = "path/to/alignment.json";
@@ -96,7 +96,7 @@ public class ScriptInputPreparerTests
             Template = new Template { Width = 0, Height = 0 },
             AlignmentDataModelConfig = new AlignmentContainer 
             { 
-                Frontside = new AlignmentSideData { TargetPoints = new List<PointCoordinate> { new PointCoordinate { X = 1, Y = 1 } } } 
+                Frontside = new List<PointCoordinate> { new PointCoordinate { X = 1, Y = 1 } } 
             }
         };
 

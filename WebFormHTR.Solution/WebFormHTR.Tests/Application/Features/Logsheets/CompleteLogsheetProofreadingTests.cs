@@ -51,7 +51,7 @@ public class CompleteLogsheetProofreadingTests : IDisposable
         var expectedDto = new LogsheetDetailDto
         (
             logsheet.Id,
-            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, true, DateTime.UtcNow),
+            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, DateTime.UtcNow),
             null,
             new FileDto(Guid.NewGuid(), "t", "t", 0, DateTime.UtcNow),
             ELogSheetStatus.Completed,
