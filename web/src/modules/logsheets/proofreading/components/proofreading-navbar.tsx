@@ -1,6 +1,7 @@
 import { NavbarContainer } from "@/components/navbar-container";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { ResetProofreadingAction } from "@/modules/logsheets/proofreading/actions/reset-proofreading-action";
 import { useCompleteProofreadingMutation } from "@/modules/logsheets/proofreading/api";
 import { ArrowLeft } from "lucide-react";
 import { useIntl } from "react-intl";
@@ -30,7 +31,7 @@ export const ProofreadingNavbar = ({
                 intl.formatMessage({
                     id: "proofreading.complete.success",
                     defaultMessage: "Proofreading completed successfully.",
-                })
+                }),
             );
         } catch (error) {
             console.error("Error completing proofreading:", error);
@@ -39,7 +40,7 @@ export const ProofreadingNavbar = ({
                     id: "proofreading.complete.error",
                     defaultMessage:
                         "An error occurred while completing proofreading.",
-                })
+                }),
             );
         }
     };
@@ -62,6 +63,7 @@ export const ProofreadingNavbar = ({
                 </div>
             </div>
             <div className="flex items-center gap-2">
+                <ResetProofreadingAction logsheetId={logsheetId} />
                 <Button
                     onClick={handleCompleteProofreading}
                     disabled={

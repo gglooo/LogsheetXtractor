@@ -26,7 +26,7 @@ export const AlignmentOverlay = ({
     const referenceScale = getScaleFromReferenceScale(
         width,
         scale,
-        templateWidth
+        templateWidth,
     );
 
     const lastMousePositionRef = useRef<Position | null>(null);
@@ -135,7 +135,7 @@ export const AlignmentOverlay = ({
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [coordinates.length, onChange]);
+    }, [coordinates.length, getCoordinates, onChange]);
 
     const renderEdges = () => {
         const edges = [];
@@ -155,7 +155,7 @@ export const AlignmentOverlay = ({
                     onMouseDown={(e) =>
                         handleMouseDown(i + EDGE_INDEX_START, e)
                     }
-                />
+                />,
             );
         }
         return edges;
@@ -200,7 +200,8 @@ export const AlignmentOverlay = ({
             <polygon
                 points={coordinates
                     .map(
-                        (p) => `${p.x * referenceScale},${p.y * referenceScale}`
+                        (p) =>
+                            `${p.x * referenceScale},${p.y * referenceScale}`,
                     )
                     .join(" ")}
                 fill="rgba(0, 128, 255, 0.2)"

@@ -18,7 +18,7 @@ export const LogsheetAlignmentPage = () => {
                 {logsheet ? <AlignmentEditor logsheet={logsheet} /> : null}
                 {isLoading ? <Spinner className="p-4" /> : null}
                 {isError ? (
-                    <p className="text-red-500 p-4">
+                    <p className="text-destructive p-4">
                         {intl.formatMessage({
                             id: "logsheets.alignment.error",
                             defaultMessage: "Error loading logsheet",

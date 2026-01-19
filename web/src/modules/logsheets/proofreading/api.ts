@@ -29,7 +29,7 @@ export const useVerifyExtractedValueMutation = (logsheetId: string) => {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({ correctedValue }),
-                }
+                },
             );
 
             if (!response.ok) {
@@ -55,7 +55,7 @@ export const useCompleteProofreadingMutation = (logsheetId: string) => {
                 `/api/logsheets/${logsheetId}/proofreading/complete`,
                 {
                     method: "POST",
-                }
+                },
             );
 
             if (!response.ok) {
@@ -67,6 +67,32 @@ export const useCompleteProofreadingMutation = (logsheetId: string) => {
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ["logsheet", logsheetId],
+            });
+        },
+    });
+};
+
+export const useResetProofreadingMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (logsheetId: string) => {
+            const response = await fetch(
+                `/api/logsheets/${logsheetId}/proofreading/reset`,
+                {
+                    method: "POST",
+                },
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to reset proofreading");
+            }
+
+            return await logsheetSchema.parseAsync(await response.json());
+        },
+        onSuccess: (_data, logsheetId) => {
+            queryClient.invalidateQueries({
+                queryKey: ["logsheets", logsheetId],
             });
         },
     });

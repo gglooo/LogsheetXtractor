@@ -58,13 +58,6 @@ export const useLogsheetsColumns = () => {
                 </div>
             ),
         }),
-        columnHelper.accessor("id", {
-            header: intl.formatMessage({
-                id: "logsheets.table.columns.id",
-                defaultMessage: "ID",
-            }),
-            cell: (info) => info.getValue(),
-        }),
         columnHelper.accessor("status", {
             header: intl.formatMessage({
                 id: "logsheets.table.columns.status",
@@ -78,6 +71,22 @@ export const useLogsheetsColumns = () => {
                 defaultMessage: "Processed",
             }),
             cell: (info) => <ProcessedBadge processedAt={info.getValue()} />,
+        }),
+        columnHelper.accessor("isAligned", {
+            header: intl.formatMessage({
+                id: "logsheets.table.columns.alignmentStatus",
+                defaultMessage: "Aligned",
+            }),
+            cell: (info) =>
+                info.getValue()
+                    ? intl.formatMessage({
+                          id: "logsheets.table.columns.alignmentStatus.yes",
+                          defaultMessage: "Yes",
+                      })
+                    : intl.formatMessage({
+                          id: "logsheets.table.columns.alignmentStatus.no",
+                          defaultMessage: "No",
+                      }),
         }),
         columnHelper.display({
             id: "actions",

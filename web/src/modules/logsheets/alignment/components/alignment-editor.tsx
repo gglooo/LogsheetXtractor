@@ -36,17 +36,17 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
 
     const [frontCoordinates, setFrontCoordinates] = useState<Position[]>(
         logsheet.alignmentData?.frontside ??
-            getDefaultCoords(logsheet.template.width, logsheet.template.height)
+            getDefaultCoords(logsheet.template.width, logsheet.template.height),
     );
 
     const [backCoordinates, setBackCoordinates] = useState<Position[]>(
         logsheet.backsideTemplate
-            ? logsheet.alignmentData?.backside ??
+            ? (logsheet.alignmentData?.backside ??
                   getDefaultCoords(
                       logsheet.backsideTemplate.width,
-                      logsheet.backsideTemplate.height
-                  )
-            : []
+                      logsheet.backsideTemplate.height,
+                  ))
+            : [],
     );
 
     const frontFile = usePdfFileImage(logsheet.template.fileId);
@@ -77,7 +77,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                 intl.formatMessage({
                     id: "logsheets.alignment.success",
                     defaultMessage: "Alignment saved",
-                })
+                }),
             );
             navigate(`/templates/${logsheet.template.id}/logsheets`);
         } catch (error) {
@@ -86,7 +86,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                 intl.formatMessage({
                     id: "logsheets.alignment.error",
                     defaultMessage: "Failed to save alignment",
-                })
+                }),
             );
         }
     };
@@ -94,7 +94,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     const handleReset = () => {
         if (activeSide === "front") {
             setFrontCoordinates(
-                getDefaultCoords(templateWidth, templateHeight)
+                getDefaultCoords(templateWidth, templateHeight),
             );
         } else {
             setBackCoordinates(getDefaultCoords(templateWidth, templateHeight));
@@ -109,7 +109,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                 intl.formatMessage({
                     id: "logsheets.alignment.automatic.success",
                     defaultMessage: "Automatic alignment successful",
-                })
+                }),
             );
         } catch (error) {
             console.error(error);
@@ -117,7 +117,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                 intl.formatMessage({
                     id: "logsheets.alignment.automatic.error",
                     defaultMessage: "Automatic alignment failed",
-                })
+                }),
             );
         }
     };
@@ -126,7 +126,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between px-6 py-3 bg-white border-b shadow-sm z-10">
+            <div className="flex items-center justify-between px-6 py-3 border-b bg-card shadow-sm z-10">
                 <div className="flex gap-2 items-center justify-center">
                     {hasBackside ? (
                         <Tabs
@@ -205,7 +205,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                 </div>
             </div>
 
-            <div className="flex-1 relative overflow-hidden bg-gray-100 flex items-center justify-center mb-6">
+            <div className="flex-1 relative overflow-hidden bg-card flex items-center justify-center mb-6">
                 <SvgWrapper
                     includeHistoryControls={false}
                     includeZoomControls={false}
