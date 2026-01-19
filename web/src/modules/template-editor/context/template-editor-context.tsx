@@ -19,16 +19,25 @@ type EditorStateWithHistory = {
     residuals: ResidualType[];
 };
 
+const roundCoordinates = (coords: Coordinates): Coordinates => ({
+    ...coords,
+    x: Math.round(coords.x),
+    y: Math.round(coords.y),
+    width: Math.round(coords.width),
+    height: Math.round(coords.height),
+});
+
 const addRequiredParamsToRoi = (roi: DetectedRoiType): RoiType => {
     return {
         ...roi,
         id: roi.id ?? crypto.randomUUID(),
         type: roi.type ?? "Handwritten",
+        coordinates: roundCoordinates(roi.coordinates),
     };
 };
 
 const addRequiredParamsToResidual = (
-    residual: DetectedResidualType
+    residual: DetectedResidualType,
 ): ResidualType => {
     return {
         ...residual,
@@ -67,7 +76,7 @@ export const TemplateEditorProvider = ({
     };
     const residuals = state.residuals;
     const setResiduals = (
-        residuals: React.SetStateAction<DetectedResidualType[]>
+        residuals: React.SetStateAction<DetectedResidualType[]>,
     ) => {
         set((prev) => {
             if (typeof residuals === "function") {
@@ -83,7 +92,7 @@ export const TemplateEditorProvider = ({
 
     const setRoisAndResiduals = (
         rois: DetectedRoiType[],
-        residuals: DetectedResidualType[]
+        residuals: DetectedResidualType[],
     ) => {
         set((prev) => ({
             ...prev,
@@ -105,7 +114,7 @@ export const TemplateEditorProvider = ({
             templateId: template.id,
             variableName: `${baseName}-${uniqueId.slice(0, 4)}`,
             type: "Handwritten",
-            coordinates,
+            coordinates: roundCoordinates(coordinates),
             createdAt: new Date().toISOString(),
         };
 
@@ -121,7 +130,7 @@ export const TemplateEditorProvider = ({
     };
 
     const addRois = (
-        roisToAdd: { coordinates: Coordinates; name?: string }[]
+        roisToAdd: { coordinates: Coordinates; name?: string }[],
     ) => {
         const addedRoiIds: string[] = [];
         const newRois: RoiType[] = [];
@@ -143,7 +152,7 @@ export const TemplateEditorProvider = ({
 
     const duplicateRoiNames = useMemo(
         () => getDuplicates(rois.map((r) => r.variableName)),
-        [rois]
+        [rois],
     );
 
     return (
