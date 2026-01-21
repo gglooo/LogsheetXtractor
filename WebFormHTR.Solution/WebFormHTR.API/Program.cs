@@ -5,6 +5,7 @@ using Wolverine.Http;
 using Mapster;
 using WebFormHTR.Infrastructure.Installers;
 using Microsoft.EntityFrameworkCore;
+using WebFormHTR.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,12 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 TypeAdapterConfig.GlobalSettings.Scan(typeof(ApplicationAssemblyReference).Assembly);
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

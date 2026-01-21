@@ -1,4 +1,5 @@
 using FluentResults;
+using Microsoft.Extensions.Logging;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.ExtractedValues;
@@ -13,15 +14,18 @@ namespace WebFormHTR.Infrastructure.Services;
 public class ExtractedValuesService(
     IFileService fileService,
     IPdfCropperService pdfCropperService,
-    ICoordinateTransformerService coordinateTransformer)
+    ICoordinateTransformerService coordinateTransformer,
+    ILogger<ExtractedValuesService> logger)
     : IExtractedValuesService
 {
     public async Task<Result<GetFileDto>> GetExtractedValueImageAsync(ExtractedValue extractedValue,
         CancellationToken ct)
     {
+        logger.LogInformation("Getting extracted value image. ExtractedValueId: {Id}", extractedValue.Id);
         var pdfStream = (await fileService.GetFileAsync(extractedValue.Logsheet.FileId))?.Stream;
         if (pdfStream is null)
         {
+            logger.LogWarning("Logsheet file not found for ExtractedValueId: {Id}", extractedValue.Id);
             return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 

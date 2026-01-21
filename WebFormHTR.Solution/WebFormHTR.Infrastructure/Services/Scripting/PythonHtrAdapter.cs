@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using MapsterMapper;
+using Microsoft.Extensions.Logging;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
@@ -21,15 +22,18 @@ public class PythonHtrAdapter(
     IFileStorageService fileStorageService,
     IMapper mapper,
     IScriptInputPreparer inputPreparer,
-    IScriptOutputParser outputParser) : IHtrScriptEngine
+    IScriptOutputParser outputParser,
+    ILogger<PythonHtrAdapter> logger) : IHtrScriptEngine
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
 
     public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
+        logger.LogInformation("Starting ROI selection for Template: {TemplateId}", input.Template.Id);
         var credentials = credentialService.GetAvailableCredentialsPath().ToList();
         if (credentials.Count == 0)
         {
+            logger.LogError("No credentials available for ROI selection.");
             throw new InvalidOperationException("No credentials available for ROI selection.");
         }
 
@@ -44,6 +48,7 @@ public class PythonHtrAdapter(
             ct);
 
         var rois = outputParser.ParseSelectRoisJson(outputFilePath, input.Template.Id);
+        logger.LogInformation("ROI selection completed. Found {Count} ROIs.", rois.Rois.Count());
 
         return rois;
     }
@@ -55,6 +60,7 @@ public class PythonHtrAdapter(
 
     public async Task<LogsheetDetailDto> AutomaticAlignAsync(AutomaticAlignmentInputDto input, CancellationToken ct)
     {
+        logger.LogInformation("Starting automatic alignment for Logsheet: {LogsheetId}", input.Logsheet.Id);
         var logsheetPath = fileStorageService.GetResolvedPath(input.Logsheet.File.StoragePath);
         var templatePath = fileStorageService.GetResolvedPath(input.Logsheet.Template.File.StoragePath);
 
@@ -71,15 +77,19 @@ public class PythonHtrAdapter(
 
         input.Logsheet.AlignmentData = stdOut;
 
+        logger.LogInformation("Automatic alignment completed for Logsheet: {LogsheetId}", input.Logsheet.Id);
+
         return mapper.Map<LogsheetDetailDto>(input.Logsheet);
     }
 
     public async Task<ProcessLogsheetOutputDto> ProcessLogsheetAsync(ProcessLogsheetInputDto input,
         CancellationToken ct)
     {
+        logger.LogInformation("Processing logsheet: {LogsheetId}", input.Logsheet.Id);
         var credentials = credentialService.GetAvailableCredentialsPath().ToList();
         if (credentials.Count == 0)
         {
+            logger.LogError("No credentials available for ProcessLogsheet.");
             throw new InvalidOperationException("No credentials available for logsheet processing.");
         }
 

@@ -20,6 +20,7 @@ public class FileServiceTests : IDisposable
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly Mock<IDocLib> _docLibMock;
+    private readonly Mock<Microsoft.Extensions.Logging.ILogger<FileService>> _loggerMock;
     private readonly FileService _fileService;
 
     public FileServiceTests()
@@ -28,7 +29,8 @@ public class FileServiceTests : IDisposable
         _mapperMock = new Mock<IMapper>();
         _fileStorageServiceMock = new Mock<IFileStorageService>();
         _docLibMock = new Mock<IDocLib>();
-        _fileService = new FileService(_dbContext, _mapperMock.Object, _fileStorageServiceMock.Object, _docLibMock.Object);
+        _loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<FileService>>();
+        _fileService = new FileService(_dbContext, _mapperMock.Object, _fileStorageServiceMock.Object, _docLibMock.Object, _loggerMock.Object);
     }
 
     [Fact]

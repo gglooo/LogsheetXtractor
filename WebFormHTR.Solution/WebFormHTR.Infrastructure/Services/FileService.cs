@@ -4,6 +4,7 @@ using Docnet.Core.Models;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.File;
@@ -18,10 +19,12 @@ public class FileService(
     IAppDbContext dbContext,
     IMapper mapper,
     IFileStorageService fileStorageService,
-    IDocLib docLib) : IFileService
+    IDocLib docLib,
+    ILogger<FileService> logger) : IFileService
 {
     public async Task<FileDto> UploadFileAsync(byte[] fileContent, string fileName, string contentType)
     {
+        logger.LogInformation("Uploading file: {FileName}, ContentType: {ContentType}, Size: {Size}", fileName, contentType, fileContent.Length);
         var storagePath = await fileStorageService.SaveFileAsync(fileContent, fileName);
 
         var file = new Domain.Entities.File
@@ -44,6 +47,7 @@ public class FileService(
 
         if (file is null)
         {
+            logger.LogWarning("File not found in database. Id: {FileId}", id);
             return null;
         }
 
@@ -56,6 +60,7 @@ public class FileService(
         }
         catch (FileNotFoundException)
         {
+            logger.LogError("File not found in storage. Path: {StoragePath}, FileId: {FileId}", filePath, id);
             return null;
         }
     }
@@ -79,9 +84,11 @@ public class FileService(
 
     public async Task<GetFileDto?> ConvertToImageAsync(Guid fileId)
     {
+        logger.LogInformation("Converting file to image. FileId: {FileId}", fileId);
         var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == fileId);
         if (file is null || file.ContentType != "application/pdf")
         {
+            logger.LogWarning("File not found or not a PDF. FileId: {FileId}", fileId);
             return null;
         }
 
@@ -115,6 +122,8 @@ public class FileService(
         var encodedStream = new MemoryStream();
         data.SaveTo(encodedStream);
         encodedStream.Position = 0;
+
+        logger.LogInformation("Successfully converted file to image. FileId: {FileId}", fileId);
 
         return new GetFileDto
         {

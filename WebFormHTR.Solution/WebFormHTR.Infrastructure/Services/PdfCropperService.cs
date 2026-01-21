@@ -6,10 +6,14 @@ using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 
 namespace WebFormHTR.Infrastructure.Services;
 
-public class PdfCropperService(IDocLib docLib, IPerspectiveMatrixComputer perspectiveMatrixComputer)
+public class PdfCropperService(
+    IDocLib docLib,
+    IPerspectiveMatrixComputer perspectiveMatrixComputer,
+    ILogger<PdfCropperService> logger)
     : IPdfCropperService
 {
     private const double RenderScale = 2.0;
@@ -61,12 +65,14 @@ public class PdfCropperService(IDocLib docLib, IPerspectiveMatrixComputer perspe
         cropRect.Intersect(imageRect);
         if (cropRect.IsEmpty)
         {
+            logger.LogError("Crop rectangle is empty or outside image bounds. FinalX: {X}, FinalY: {Y}, Width: {Width}, Height: {Height}", finalX, finalY, finalWidth, finalHeight);
             throw new InvalidOperationException("Crop rectangle is empty or outside image bounds.");
         }
 
         using var croppedBitmap = new SKBitmap(cropRect.Width, cropRect.Height);
         if (!ctx.Bitmap.ExtractSubset(croppedBitmap, cropRect))
         {
+            logger.LogError("Failed to extract image subset from bitmap.");
             throw new InvalidOperationException("Failed to extract image subset.");
         }
 

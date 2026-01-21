@@ -1,0 +1,75 @@
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
+using SkiaSharp;
+using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Domain.ValueObjects;
+using WebFormHTR.Infrastructure.Services;
+using WebFormHTR.Infrastructure.Services.Coordinates;
+
+namespace WebFormHTR.Tests.Infrastructure.Services;
+
+public class CoordinateTransformerServiceLoggingTests
+{
+    private readonly Mock<IPerspectiveMatrixComputer> _perspectiveMatrixComputerMock = new();
+    private readonly Mock<ILogger<CoordinateTransformerService>> _loggerMock = new();
+    private readonly CoordinateTransformerService _sut;
+
+    public CoordinateTransformerServiceLoggingTests()
+    {
+        _sut = new CoordinateTransformerService(_perspectiveMatrixComputerMock.Object, _loggerMock.Object);
+    }
+
+    [Fact]
+    public void TransformCoordinates_ShouldLogDebug_WhenAlignmentPointsAreValid()
+    {
+        // Arrange
+        var destinationCoordinates = new Coordinates { X = 0, Y = 0, Width = 100, Height = 100 };
+        var sourceCoordinates = new Coordinates { X = 0, Y = 0, Width = 50, Height = 50 };
+        var alignmentPoints = new List<PointCoordinate>
+        {
+            new() { X = 0, Y = 0 },
+            new() { X = 50, Y = 0 },
+            new() { X = 50, Y = 50 },
+            new() { X = 0, Y = 50 }
+        };
+
+        _perspectiveMatrixComputerMock.Setup(x => x.ComputePerspectiveMatrix(It.IsAny<SKPoint[]>(), It.IsAny<SKPoint[]>()))
+            .Returns(SKMatrix.Identity);
+
+        // Act
+        _sut.TransformCoordinates(destinationCoordinates, sourceCoordinates, alignmentPoints, 1.0);
+
+        // Assert
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Debug,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Transforming coordinates with perspective matrix")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public void TransformCoordinates_ShouldLogWarning_WhenAlignmentPointsAreInvalid()
+    {
+        // Arrange
+        var destinationCoordinates = new Coordinates { X = 0, Y = 0, Width = 100, Height = 100 };
+        var sourceCoordinates = new Coordinates { X = 0, Y = 0, Width = 50, Height = 50 };
+        var alignmentPoints = new List<PointCoordinate>(); // Invalid count
+
+        // Act
+        _sut.TransformCoordinates(destinationCoordinates, sourceCoordinates, alignmentPoints, 1.0);
+
+        // Assert
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Adjustment points invalid or missing")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+}

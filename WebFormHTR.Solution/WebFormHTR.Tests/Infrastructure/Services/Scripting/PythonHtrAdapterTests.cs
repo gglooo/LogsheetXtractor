@@ -25,6 +25,7 @@ public class PythonHtrAdapterTests
     private readonly Mock<IConfiguration> _configMock;
     private readonly Mock<IScriptInputPreparer> _inputPreparerMock;
     private readonly Mock<IScriptOutputParser> _outputParserMock;
+    private readonly Mock<Microsoft.Extensions.Logging.ILogger<PythonHtrAdapter>> _loggerMock;
     private readonly PythonHtrAdapter _adapter;
     private readonly IMapper _mapper;
 
@@ -36,6 +37,7 @@ public class PythonHtrAdapterTests
         _configMock = new Mock<IConfiguration>();
         _inputPreparerMock = new Mock<IScriptInputPreparer>();
         _outputParserMock = new Mock<IScriptOutputParser>();
+        _loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<PythonHtrAdapter>>();
         _mapper = new Mock<IMapper>().Object;
 
         _adapter = new PythonHtrAdapter(
@@ -44,7 +46,8 @@ public class PythonHtrAdapterTests
             _fileStorageServiceMock.Object,
             _mapper,
             _inputPreparerMock.Object,
-            _outputParserMock.Object);
+            _outputParserMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]

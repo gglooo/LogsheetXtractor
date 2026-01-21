@@ -1,18 +1,15 @@
 using SkiaSharp;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 
 namespace WebFormHTR.Infrastructure.Services.Coordinates;
 
-public class CoordinateTransformerService : ICoordinateTransformerService
+public class CoordinateTransformerService(
+    IPerspectiveMatrixComputer perspectiveMatrixComputer,
+    ILogger<CoordinateTransformerService> logger)
+    : ICoordinateTransformerService
 {
-    public CoordinateTransformerService(IPerspectiveMatrixComputer perspectiveMatrixComputer)
-    {
-        _perspectiveMatrixComputer = perspectiveMatrixComputer;
-    }
-
-    private readonly IPerspectiveMatrixComputer _perspectiveMatrixComputer;
-
     public Domain.ValueObjects.Coordinates TransformCoordinates(
         Domain.ValueObjects.Coordinates destinationCoordinates,
         Domain.ValueObjects.Coordinates sourceCoordinates,
@@ -21,6 +18,9 @@ public class CoordinateTransformerService : ICoordinateTransformerService
     {
         if (alignmentPoints is not { Count: 4 })
         {
+            logger.LogWarning(
+                "Adjustment points invalid or missing. Returning scaled original coordinates. Count: {Count}",
+                alignmentPoints?.Count);
             return new Domain.ValueObjects.Coordinates
             {
                 X = (int)(destinationCoordinates.X * renderScaleFactor),
@@ -29,6 +29,8 @@ public class CoordinateTransformerService : ICoordinateTransformerService
                 Height = (int)(destinationCoordinates.Height * renderScaleFactor)
             };
         }
+
+        logger.LogDebug("Transforming coordinates with perspective matrix.");
 
         var srcPoints = new SKPoint[]
         {
@@ -43,7 +45,7 @@ public class CoordinateTransformerService : ICoordinateTransformerService
             .Select(p => new SKPoint(p.X, p.Y))
             .ToArray();
 
-        var matrix = _perspectiveMatrixComputer.ComputePerspectiveMatrix(srcPoints, dstPoints);
+        var matrix = perspectiveMatrixComputer.ComputePerspectiveMatrix(srcPoints, dstPoints);
 
         var roiCorners = new SKPoint[]
         {

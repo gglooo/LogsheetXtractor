@@ -18,6 +18,7 @@ public class ExtractedValuesServiceTests
     private readonly Mock<IFileService> _fileServiceMock = new();
     private readonly Mock<IPdfCropperService> _pdfCropperServiceMock = new();
     private readonly Mock<ICoordinateTransformerService> _coordinateTransformerMock = new();
+    private readonly Mock<Microsoft.Extensions.Logging.ILogger<ExtractedValuesService>> _loggerMock = new();
     private readonly ExtractedValuesService _service;
 
     public ExtractedValuesServiceTests()
@@ -25,7 +26,8 @@ public class ExtractedValuesServiceTests
         _service = new ExtractedValuesService(
             _fileServiceMock.Object,
             _pdfCropperServiceMock.Object,
-            _coordinateTransformerMock.Object);
+            _coordinateTransformerMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]

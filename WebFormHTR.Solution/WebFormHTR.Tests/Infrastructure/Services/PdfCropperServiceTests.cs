@@ -18,11 +18,12 @@ public class PdfCropperServiceTests
     private readonly Mock<IPerspectiveMatrixComputer> _matrixComputerMock = new();
     private readonly Mock<IDocReader> _docReaderMock = new();
     private readonly Mock<IPageReader> _pageReaderMock = new();
+    private readonly Mock<Microsoft.Extensions.Logging.ILogger<PdfCropperService>> _loggerMock = new();
     private readonly PdfCropperService _service;
 
     public PdfCropperServiceTests()
     {
-        _service = new PdfCropperService(_docLibMock.Object, _matrixComputerMock.Object);
+        _service = new PdfCropperService(_docLibMock.Object, _matrixComputerMock.Object, _loggerMock.Object);
         
         _docLibMock.Setup(x => x.GetDocReader(It.IsAny<byte[]>(), It.IsAny<PageDimensions>()))
             .Returns(_docReaderMock.Object);

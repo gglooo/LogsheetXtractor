@@ -1,10 +1,11 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Infrastructure.Services.Scripting;
 
-public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
+public class PythonScriptExecutor(IConfiguration config, ILogger<PythonScriptExecutor> logger) : IScriptExecutor
 {
     private readonly string _pythonInterpreterPath = config["Python:InterpreterPath"] ?? "python3";
     private readonly string _scriptsBasePath = config["Python:ScriptsFolder"] ?? "../../formHTR";
@@ -15,8 +16,7 @@ public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
         var scriptPath = Path.Combine(_scriptsBasePath, scriptName);
         var formattedArgs = $"\"{scriptPath}\" {args.Replace("\"", "\\\"")}";
 
-        Console.WriteLine("Executing Python script:");
-        Console.WriteLine($"{_pythonInterpreterPath} {formattedArgs}");
+        logger.LogDebug("Executing Python script: {Interpreter} {Args}", _pythonInterpreterPath, formattedArgs);
 
         ProcessStartInfo startInfo = new()
         {
@@ -49,6 +49,7 @@ public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
 
         if (process is null)
         {
+            logger.LogError("Failed to start the Python script process. Script: {ScriptName}", scriptName);
             throw new InvalidOperationException("Failed to start the Python script process.");
         }
 
@@ -61,6 +62,7 @@ public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
 
         if (process.ExitCode != 0)
         {
+            logger.LogError("Python script execution failed. Script: {ScriptName}, ExitCode: {ExitCode}, Error: {Error}", scriptName, process.ExitCode, error);
             throw new InvalidOperationException(
                 $"Python script execution failed with exit code {process.ExitCode}: {error}");
         }
@@ -72,7 +74,14 @@ public class PythonScriptExecutor(IConfiguration config) : IScriptExecutor
         CancellationToken cancellationToken)
     {
         var stdout = await ExecuteScriptAsync(scriptName, args, cancellationToken);
-        return System.Text.Json.JsonSerializer.Deserialize<T>(stdout)
-               ?? throw new InvalidOperationException("Failed to deserialize JSON output from Python script.");
+        var result = System.Text.Json.JsonSerializer.Deserialize<T>(stdout);
+        
+        if (result == null)
+        {
+            logger.LogError("Failed to deserialize JSON output from Python script. Script: {ScriptName}", scriptName);
+            throw new InvalidOperationException("Failed to deserialize JSON output from Python script.");
+        }
+
+        return result;
     }
 }
