@@ -16,7 +16,7 @@ import { useCreateTemplateMutation } from "@/modules/templates/api";
 import { pdfFileSchema } from "@/schema";
 import { BracesIcon } from "lucide-react";
 import { useState } from "react";
-import { useFormState } from "react-hook-form";
+import { useFormContext, useFormState } from "react-hook-form";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
 import z from "zod";
@@ -32,6 +32,7 @@ type CreateTemplateFormValues = z.infer<typeof createTemplateSchema>;
 const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
     const intl = useIntl();
     const { isSubmitting } = useFormState();
+    const { setValue } = useFormContext<CreateTemplateFormValues>();
 
     const uploadFileMutation = useUploadFileMutation();
     const createTemplateMutation = useCreateTemplateMutation();
@@ -44,7 +45,7 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
             }
 
             const uploadedFile = await uploadFileMutation.mutateAsync(
-                values.file
+                values.file,
             );
 
             await createTemplateMutation.mutateAsync({
@@ -57,7 +58,7 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
                 intl.formatMessage({
                     id: "templates.actions.createTemplate.success",
                     defaultMessage: "Template created successfully!",
-                })
+                }),
             );
         } catch (error) {
             console.log(error);
@@ -66,21 +67,21 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
                     id: "templates.actions.createTemplate.error",
                     defaultMessage:
                         "An error occurred while creating the template.",
-                })
+                }),
             );
         }
     };
 
+    const onFileChange = (file: File | File[] | null) => {
+        if (!file || Array.isArray(file)) {
+            return;
+        }
+
+        setValue("name", file.name.replace(/\.[^/.]+$/, ""));
+    };
+
     return (
         <div className="space-y-4 py-4">
-            <FormInput
-                name="name"
-                label={intl.formatMessage({
-                    id: "templates.actions.createTemplate.form.name.label",
-                    defaultMessage: "Template name",
-                })}
-            />
-
             <FormFileUpload
                 name="file"
                 label={intl.formatMessage({
@@ -89,6 +90,15 @@ const CreateTemplateFormContent = ({ onClose }: { onClose: () => void }) => {
                 })}
                 accept=".pdf"
                 validator={(file) => file.type === "application/pdf"}
+                onChange={onFileChange}
+            />
+
+            <FormInput
+                name="name"
+                label={intl.formatMessage({
+                    id: "templates.actions.createTemplate.form.name.label",
+                    defaultMessage: "Template name",
+                })}
             />
 
             <FormFileUpload

@@ -10,6 +10,7 @@ import {
 type Props = {
     name: string;
     label: string;
+    onChange?: (file: File | File[] | null) => void;
 } & Omit<FileUploadProps, "file" | "onFileChange">;
 
 export const FormFileUpload = ({ name, label, ...props }: Props) => {
@@ -22,7 +23,10 @@ export const FormFileUpload = ({ name, label, ...props }: Props) => {
                     <FormControl>
                         <FileUpload
                             file={field.value}
-                            onFileChange={field.onChange}
+                            onFileChange={(file) => {
+                                field.onChange(file);
+                                props.onChange?.(file);
+                            }}
                             {...props}
                             {...field}
                         />

@@ -10,6 +10,7 @@ namespace WebFormHTR.Tests.Infrastructure.Services.Scripting;
 public class PythonScriptExecutorTests
 {
     private readonly Mock<IConfiguration> _configMock = new();
+    private readonly Mock<Microsoft.Extensions.Logging.ILogger<PythonScriptExecutor>> _loggerMock = new();
     private readonly Mock<PythonScriptExecutor> _serviceMock;
 
     public PythonScriptExecutorTests()
@@ -17,7 +18,7 @@ public class PythonScriptExecutorTests
         _configMock.Setup(c => c["Python:InterpreterPath"]).Returns("python3");
         _configMock.Setup(c => c["Python:ScriptsFolder"]).Returns("./");
 
-        _serviceMock = new Mock<PythonScriptExecutor>(_configMock.Object) { CallBase = true };
+        _serviceMock = new Mock<PythonScriptExecutor>(_configMock.Object, _loggerMock.Object) { CallBase = true };
     }
 
     [Fact]

@@ -2,8 +2,10 @@ using FluentResults;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Infrastructure.Extensions;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
@@ -16,7 +18,7 @@ public sealed record CreateLogsheetCommand(
 public static class CreateLogsheetHandler
 {
     public static async Task<Result<LogsheetDetailDto>> Handle(CreateLogsheetCommand request, CancellationToken ct,
-        IAppDbContext dbContext, IMapper mapper)
+        IAppDbContext dbContext, IMapper mapper, IPdfQrCodeScanner pdfQrCodeScanner, IFileService fileService)
     {
         var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == request.FileId, ct);
         if (file is null)

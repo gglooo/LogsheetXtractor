@@ -59,5 +59,6 @@ public static class InfrastructureInstaller
         services.AddScoped<IPerspectiveMatrixComputer, PerspectiveMatrixComputer>();
         services.AddScoped<ILogsheetExportService, LogsheetExportService>();
         services.AddScoped<IExtractedValuesService, ExtractedValuesService>();
+        services.AddScoped<IPdfQrCodeScanner, PdfQrCodeScanner>();
     }
 }
