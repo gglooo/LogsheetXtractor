@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebFormHTR.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using WebFormHTR.Infrastructure.Persistence;
 namespace WebFormHTR.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260124202349_MakeTemplateNameUnique")]
+    partial class MakeTemplateNameUnique
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
@@ -105,6 +108,9 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                     b.Property<string>("AlignmentData")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("BacksideTemplateId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
@@ -129,20 +135,17 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TemplateId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("TemplateId1")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BacksideTemplateId");
+
                     b.HasIndex("FileId")
                         .IsUnique();
 
                     b.HasIndex("TemplateId");
-
-                    b.HasIndex("TemplateId1");
 
                     b.ToTable("Logsheets");
                 });
@@ -216,9 +219,6 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("BacksideTemplateId")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -245,9 +245,6 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BacksideTemplateId")
-                        .IsUnique();
 
                     b.HasIndex("FileId")
                         .IsUnique();
@@ -282,6 +279,10 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Logsheet", b =>
                 {
+                    b.HasOne("WebFormHTR.Domain.Entities.Template", "BacksideTemplate")
+                        .WithMany("BacksideLogsheets")
+                        .HasForeignKey("BacksideTemplateId");
+
                     b.HasOne("WebFormHTR.Domain.Entities.File", "File")
                         .WithOne()
                         .HasForeignKey("WebFormHTR.Domain.Entities.Logsheet", "FileId")
@@ -294,9 +295,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebFormHTR.Domain.Entities.Template", null)
-                        .WithMany("BacksideLogsheets")
-                        .HasForeignKey("TemplateId1");
+                    b.Navigation("BacksideTemplate");
 
                     b.Navigation("File");
 
@@ -383,11 +382,6 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Template", b =>
                 {
-                    b.HasOne("WebFormHTR.Domain.Entities.Template", "BacksideTemplate")
-                        .WithOne()
-                        .HasForeignKey("WebFormHTR.Domain.Entities.Template", "BacksideTemplateId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("WebFormHTR.Domain.Entities.File", "File")
                         .WithOne()
                         .HasForeignKey("WebFormHTR.Domain.Entities.Template", "FileId")
@@ -398,8 +392,6 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .WithMany("Children")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("BacksideTemplate");
 
                     b.Navigation("File");
 

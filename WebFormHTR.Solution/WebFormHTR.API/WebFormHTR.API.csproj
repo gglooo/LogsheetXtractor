@@ -8,28 +8,28 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentResults" Version="4.0.0" />
-        <PackageReference Include="Mapster" Version="7.4.0" />
-        <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
+        <PackageReference Include="FluentResults" Version="4.0.0"/>
+        <PackageReference Include="Mapster" Version="7.4.0"/>
+        <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
-        <PackageReference Include="WolverineFx" Version="5.2.0" />
-        <PackageReference Include="WolverineFx.Http" Version="5.2.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1"/>
+        <PackageReference Include="WolverineFx" Version="5.2.0"/>
+        <PackageReference Include="WolverineFx.Http" Version="5.2.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\WebFormHTR.Application\WebFormHTR.Application.csproj" />
-      <ProjectReference Include="..\WebFormHTR.Infrastructure\WebFormHTR.Infrastructure.csproj" />
+        <ProjectReference Include="..\WebFormHTR.Application\WebFormHTR.Application.csproj"/>
+        <ProjectReference Include="..\WebFormHTR.Infrastructure\WebFormHTR.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

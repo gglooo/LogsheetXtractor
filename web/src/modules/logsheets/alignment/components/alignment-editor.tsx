@@ -12,6 +12,7 @@ import {
 import type { LogsheetType } from "@/modules/logsheets/schema";
 import { PdfViewer } from "@/modules/pdf/components/pdf-viewer";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
+import { useTemplate } from "@/modules/templates/api";
 import { BotIcon, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useIntl } from "react-intl";
@@ -32,6 +33,10 @@ const getDefaultCoords = (w: number, h: number): Position[] => [
 export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     const intl = useIntl();
     const navigate = useNavigate();
+
+    const templateQuery = useTemplate(logsheet.template.id);
+    const template = templateQuery.data;
+
     const [activeSide, setActiveSide] = useState<"front" | "back">("front");
 
     const [frontCoordinates, setFrontCoordinates] = useState<Position[]>(
@@ -40,27 +45,26 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     );
 
     const [backCoordinates, setBackCoordinates] = useState<Position[]>(
-        logsheet.backsideTemplate
+        template?.backsideTemplate
             ? (logsheet.alignmentData?.backside ??
                   getDefaultCoords(
-                      logsheet.backsideTemplate.width,
-                      logsheet.backsideTemplate.height,
+                      template.backsideTemplate.width,
+                      template.backsideTemplate.height,
                   ))
             : [],
     );
 
     const frontFile = usePdfFileImage(logsheet.template.fileId);
-    const backFile = usePdfFileImage(logsheet.backsideTemplate?.fileId);
+    const backFile = usePdfFileImage(template?.backsideTemplate?.file?.id);
 
     const templateWidth =
         activeSide === "front"
             ? logsheet.template.width
-            : logsheet.backsideTemplate!.width;
+            : template!.backsideTemplate!.width!;
     const templateHeight =
         activeSide === "front"
             ? logsheet.template.height
-            : logsheet.backsideTemplate!.height;
-
+            : template!.backsideTemplate!.height!;
     const alignMutation = useAlignLogsheetMutation();
     const automaticAlignMutation = useAutomaticAlignLogsheetMutation();
 
@@ -69,7 +73,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
             await alignMutation.mutateAsync({
                 logsheetId: logsheet.id,
                 frontside: frontCoordinates,
-                backside: logsheet.backsideTemplate
+                backside: template?.backsideTemplate
                     ? backCoordinates
                     : undefined,
             });
@@ -122,7 +126,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
         }
     };
 
-    const hasBackside = !!logsheet.backsideTemplate;
+    const hasBackside = !!template?.backsideTemplate;
 
     return (
         <div className="flex flex-col h-full">

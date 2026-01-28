@@ -6,7 +6,6 @@ namespace WebFormHTR.Application.Features.Logsheets.DTOs;
 public record LogsheetListDto(
     Guid Id,
     Guid TemplateId,
-    Guid? BacksideTemplateId,
     FileDto File,
     ELogSheetStatus Status,
     bool IsAligned,

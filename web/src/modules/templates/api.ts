@@ -1,4 +1,9 @@
-import { downloadFile, fileQueryFn } from "@/modules/files/api";
+import {
+    downloadFile,
+    fileQueryFn,
+    useUploadFileMutation,
+} from "@/modules/files/api";
+import type { CreateTemplateFormValues } from "@/modules/templates/schema";
 import { templateListSchema, templateSchema } from "@/modules/templates/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -73,21 +78,46 @@ export const useDeleteTemplateMutation = () => {
 
 export const useCreateTemplateMutation = () => {
     const queryClient = useQueryClient();
+    const uploadFileMutation = useUploadFileMutation();
 
     return useMutation({
         mutationKey: ["createTemplate"],
-        mutationFn: async ({
-            name,
-            fileId,
-            importedConfig,
-        }: {
-            name: string;
-            fileId: string;
-            importedConfig?: string;
-        }) => {
+        mutationFn: async (values: CreateTemplateFormValues) => {
+            let importedConfig: string | undefined;
+            if (values.importedConfig) {
+                importedConfig = await values.importedConfig.text();
+            }
+
+            const uploadedFile = await uploadFileMutation.mutateAsync(
+                values.file,
+            );
+
+            let backside;
+            if (values.backside) {
+                let backsideImportedConfig: string | undefined;
+                if (values.backside.importedConfig) {
+                    backsideImportedConfig =
+                        await values.backside.importedConfig.text();
+                }
+
+                const backsideUploadedFile =
+                    await uploadFileMutation.mutateAsync(values.backside.file);
+
+                backside = {
+                    name: values.backside.name,
+                    fileId: backsideUploadedFile.id,
+                    importedConfig: backsideImportedConfig,
+                };
+            }
+
             const response = await fetch(`/api/templates`, {
                 method: "POST",
-                body: JSON.stringify({ name, fileId, importedConfig }),
+                body: JSON.stringify({
+                    name: values.name,
+                    fileId: uploadedFile.id,
+                    importedConfig,
+                    backside,
+                }),
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -106,7 +136,7 @@ export const useExportConfigMutation = () => {
         mutationFn: async ({ templateId }: { templateId: string }) => {
             const { bytes, fileName, contentType } = await fileQueryFn(
                 `api/templates/${templateId}/export-config`,
-                "POST"
+                "POST",
             );
 
             const blob = new Blob([bytes], { type: contentType || undefined });

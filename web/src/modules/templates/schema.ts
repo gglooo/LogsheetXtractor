@@ -1,12 +1,13 @@
 import { fileSchema } from "@/modules/files/schema";
 import { residualSchema } from "@/modules/residuals/schema";
 import { roiSchema } from "@/modules/rois/schema";
-import { baseSchema } from "@/schema";
+import { baseSchema, pdfFileSchema } from "@/schema";
 import z from "zod";
 
 export const templateListSchema = baseSchema.extend({
     name: z.string(),
     parentId: z.uuid().nullable(),
+    backsideTemplateId: z.uuid().nullable(),
     fileId: z.uuid().nullable(),
     roiCount: z.number().min(0),
     width: z.number(),
@@ -26,7 +27,7 @@ export type TemplateWithoutParentType = z.infer<
     typeof templateWithoutParentSchema
 >;
 
-export const templateSchema = baseSchema.extend({
+const baseTemplateDetailSchema = baseSchema.extend({
     name: z.string(),
     parent: templateWithoutParentSchema.nullable(),
     width: z.number(),
@@ -35,5 +36,21 @@ export const templateSchema = baseSchema.extend({
     rois: z.array(roiSchema),
     residuals: z.array(residualSchema),
 });
+
+export const templateSchema = baseTemplateDetailSchema.extend({
+    backsideTemplate: baseTemplateDetailSchema.nullable(),
+});
+
+export const baseCreateTemplateSchema = z.object({
+    name: z.string().min(1).trim(),
+    file: pdfFileSchema,
+    importedConfig: z.instanceof(File).optional(),
+});
+
+export const createTemplateSchema = baseCreateTemplateSchema.extend({
+    backside: baseCreateTemplateSchema.optional(),
+});
+
+export type CreateTemplateFormValues = z.infer<typeof createTemplateSchema>;
 
 export type TemplateType = z.infer<typeof templateSchema>;

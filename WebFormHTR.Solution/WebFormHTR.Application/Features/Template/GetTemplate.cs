@@ -16,6 +16,8 @@ public static class GetTemplateHandler
         var template = dbContext.Templates
             .AsNoTracking()
             .Include(t => t.Rois)
+            .Include(t => t.BacksideTemplate)
+            .ThenInclude(t => t!.Rois)
             .FirstOrDefault(t => t.Id == request.Id);
 
         var result = template is null ? null : mapper.Map<TemplateDetailDto>(template);

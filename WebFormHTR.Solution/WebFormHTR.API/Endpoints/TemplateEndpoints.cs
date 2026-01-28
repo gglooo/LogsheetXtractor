@@ -11,7 +11,7 @@ using Wolverine.Http;
 
 namespace WebFormHTR.API.Endpoints;
 
-public sealed record CreateTemplateRequest(string NewName, Guid FileId);
+public sealed record CloneTemplateRequest(string NewName, Guid FileId);
 
 public static class TemplateEndpoints
 {
@@ -80,7 +80,7 @@ public static class TemplateEndpoints
     [ProducesResponseType(400)]
     public static async Task<IResult> CloneTemplate(
         Guid id,
-        CreateTemplateRequest request,
+        CloneTemplateRequest request,
         IMessageBus bus,
         CancellationToken ct)
     {
@@ -115,6 +115,20 @@ public static class TemplateEndpoints
     {
         var query = new ExportTemplateConfigQuery(id);
         var result = await bus.InvokeAsync<Result<GetFileDto>>(query, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/templates/identify-from-file/{fileId}")]
+    [ProducesResponseType(200, Type = typeof(GetFileDto))]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> IdentifyFromFile(
+        Guid fileId,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var query = new IdentifyTemplatesFromFileQuery(fileId);
+        var result = await bus.InvokeAsync<Result<Dictionary<int, TemplateListDto>>>(query, ct);
 
         return result.ToHttpResult();
     }

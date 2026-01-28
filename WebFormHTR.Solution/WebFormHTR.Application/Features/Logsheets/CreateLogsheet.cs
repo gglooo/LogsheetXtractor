@@ -5,7 +5,6 @@ using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
-using WebFormHTR.Infrastructure.Extensions;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 

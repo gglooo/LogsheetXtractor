@@ -25,17 +25,29 @@ public class TemplateService(
     public async Task<TemplateDetailDto> CreateTemplateAsync(CreateTemplateCommand command,
         CancellationToken cancellationToken)
     {
+        var backsideTemplate = command.Backside is not null
+            ? command.Backside.ImportedConfig is not null
+                ? GetTemplateFromImportedConfig(command.Backside.ImportedConfig, command.Backside.FileId,
+                    command.Backside.Name, command.Backside.ParentId)
+                : GetTemplate(command.Backside.Name, command.Backside.FileId, command.Backside.ParentId)
+            : null;
+
         var template = command.ImportedConfig is not null
             ? GetTemplateFromImportedConfig(command.ImportedConfig, command.FileId, command.Name, command.ParentId)
             : GetTemplate(command.Name, command.FileId, command.ParentId);
 
+
         await dbContext.Templates.AddAsync(template, cancellationToken);
+
+        template.SetBacksideTemplate(backsideTemplate);
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         var createdTemplate = await dbContext.Templates
             .AsNoTracking()
             .Include(t => t.File)
             .Include(t => t.Parent)
+            .Include(t => t.BacksideTemplate)
             .FirstAsync(t => t.Id == template.Id, cancellationToken);
 
         return mapper.Map<TemplateDetailDto>(createdTemplate);

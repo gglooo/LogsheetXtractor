@@ -27,6 +27,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Name, src => src.Name)
             .Map(dest => dest.Parent, src => src.Parent)
             .Map(dest => dest.File, src => src.File)
+            .Map(dest => dest.BacksideTemplate, src => src.BacksideTemplate)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt)
             .Map(dest => dest.UpdatedAt, src => src.UpdatedAt);
 
@@ -34,6 +35,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Name, src => src.Name)
             .Map(dest => dest.ParentId, src => src.ParentId)
+            .Map(dest => dest.BacksideTemplateId, src => src.BacksideTemplateId)
             .Map(dest => dest.FileId, src => src.FileId)
             .Map(dest => dest.RoiCount, src => src.Rois.Count)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt);
@@ -52,7 +54,6 @@ public class MappingConfig : IRegister
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
             .Map(dest => dest.AlignmentData, src => src.AlignmentDataModelConfig)
-            .Map(dest => dest.BacksideTemplate, src => src.BacksideTemplate)
             .Map(dest => dest.ExtractedValues, src => src.ExtractedValues);
 
         config.NewConfig<AlignmentContainer, AlignmentDataDto>();
@@ -74,7 +75,6 @@ public class MappingConfig : IRegister
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
-            .Map(dest => dest.BacksideTemplateId, src => src.BacksideTemplateId)
             .Map(dest => dest.IsAligned, src => src.AlignmentData != null);
 
         config.NewConfig<CreateRoiDto, Roi>()

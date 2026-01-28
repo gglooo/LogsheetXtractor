@@ -2,11 +2,11 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.ValueObjects;
-using WebFormHTR.Infrastructure.Extensions;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
@@ -22,7 +22,10 @@ public static class GetLogsheetImageHandler
         IFileService fileService,
         CancellationToken cancellationToken)
     {
-        var logsheet = await dbContext.Logsheets.FirstOrDefaultAsync(l => l.Id == query.LogsheetId, cancellationToken);
+        var logsheet = await dbContext.Logsheets
+            .Include(l => l.Template)
+            .ThenInclude(t => t.BacksideTemplate)
+            .FirstOrDefaultAsync(l => l.Id == query.LogsheetId, cancellationToken);
         if (logsheet is null)
         {
             return Result.Fail<GetFileDto>(new NotFoundError("Logsheet not found"));
@@ -33,7 +36,7 @@ public static class GetLogsheetImageHandler
             : logsheet.AlignmentDataModelConfig.Backside;
         var template = query.IsFrontside
             ? logsheet.Template
-            : logsheet.BacksideTemplate;
+            : logsheet.Template.BacksideTemplate;
 
         if (template is null)
         {

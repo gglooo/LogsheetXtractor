@@ -13,8 +13,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TemplateEditButton } from "@/modules/dashboard/components/template-edit-button";
 import { baseLogsheetsPath } from "@/modules/logsheets/routes";
-import { baseTemplateEditorPath } from "@/modules/template-editor/routes";
 import { CloneTemplateAction } from "@/modules/templates/actions/clone-template-action";
 import {
     useDeleteTemplateMutation,
@@ -24,7 +24,6 @@ import type { TemplateListItemType } from "@/modules/templates/schema";
 import { format } from "date-fns";
 import {
     ArrowRightFromLineIcon,
-    EditIcon,
     FilesIcon,
     MoreVertical,
     Trash2,
@@ -83,10 +82,6 @@ export const TemplateListItem = ({
                 }),
             );
         }
-    };
-
-    const handleEditTemplate = () => {
-        navigate(`${baseTemplateEditorPath}/${template.id}`);
     };
 
     const handleLogsheetsClick = () => {
@@ -165,18 +160,7 @@ export const TemplateListItem = ({
                             defaultMessage: "Logsheets",
                         })}
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 gap-2"
-                        onClick={handleEditTemplate}
-                    >
-                        <EditIcon />
-                        {intl.formatMessage({
-                            id: "templates.actions.edit",
-                            defaultMessage: "Edit",
-                        })}
-                    </Button>
+                    <TemplateEditButton template={template} />
                 </div>
             </CardContent>
         </Card>

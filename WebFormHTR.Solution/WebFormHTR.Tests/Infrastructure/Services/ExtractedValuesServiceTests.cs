@@ -7,7 +7,6 @@ using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.ValueObjects;
-using WebFormHTR.Infrastructure.Extensions;
 using WebFormHTR.Infrastructure.Services;
 using Xunit;
 
@@ -33,16 +32,17 @@ public class ExtractedValuesServiceTests
     [Fact]
     public async Task GetExtractedValueImageAsync_ShouldReturnImage_WhenFileExists()
     {
-        var template = new Domain.Entities.Template { Width = 100, Height = 100 };
-        var logsheet = new Logsheet 
-        { 
-            FileId = Guid.NewGuid(), 
+        var template = new Template { Width = 100, Height = 100 };
+        var logsheet = new Logsheet
+        {
+            FileId = Guid.NewGuid(),
             Template = template,
-            AlignmentDataModelConfig = new AlignmentContainer { Frontside = new List<PointCoordinate> { new PointCoordinate { X = 0, Y = 0 } } }
+            AlignmentDataModelConfig = new AlignmentContainer
+                { Frontside = new List<PointCoordinate> { new() { X = 0, Y = 0 } } }
         };
         var roi = new Roi { Coordinates = new Coordinates { X = 10, Y = 10, Width = 10, Height = 10 } };
         var extractedValue = new ExtractedValue { Id = Guid.NewGuid(), Logsheet = logsheet, Roi = roi };
-        
+
         var fileStream = new MemoryStream();
         var fileDto = new GetFileDto { Stream = fileStream };
         var croppedStream = new MemoryStream();
@@ -50,10 +50,13 @@ public class ExtractedValuesServiceTests
         _fileServiceMock.Setup(x => x.GetFileAsync(logsheet.FileId))
             .ReturnsAsync(fileDto);
 
-        _coordinateTransformerMock.Setup(x => x.TransformCoordinates(It.IsAny<Coordinates>(), It.IsAny<Coordinates>(), It.IsAny<List<PointCoordinate>>()))
+        _coordinateTransformerMock.Setup(x =>
+                x.TransformCoordinates(It.IsAny<Coordinates>(), It.IsAny<Coordinates>(),
+                    It.IsAny<List<PointCoordinate>>()))
             .Returns(roi.Coordinates);
 
-        _pdfCropperServiceMock.Setup(x => x.GetCroppedSection(It.IsAny<byte[]>(), 0, 10, 10, 10, 10, 100, 100, It.IsAny<CancellationToken>()))
+        _pdfCropperServiceMock.Setup(x =>
+                x.GetCroppedSection(It.IsAny<byte[]>(), 0, 10, 10, 10, 10, 100, 100, It.IsAny<CancellationToken>()))
             .Returns(croppedStream);
 
         var result = await _service.GetExtractedValueImageAsync(extractedValue, CancellationToken.None);

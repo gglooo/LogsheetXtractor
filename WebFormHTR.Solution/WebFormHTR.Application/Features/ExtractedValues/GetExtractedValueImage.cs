@@ -7,7 +7,6 @@ using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.ValueObjects;
-using WebFormHTR.Infrastructure.Extensions;
 
 namespace WebFormHTR.Application.Features.ExtractedValues;
 

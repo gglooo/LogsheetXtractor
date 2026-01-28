@@ -11,6 +11,7 @@ public record TemplateDetailDto(
     int Width,
     int Height,
     TemplateWithoutParentDto? Parent,
+    TemplateDetailDto? BacksideTemplate,
     FileDto? File,
     DateTime CreatedAt,
     DateTime? UpdatedAt,

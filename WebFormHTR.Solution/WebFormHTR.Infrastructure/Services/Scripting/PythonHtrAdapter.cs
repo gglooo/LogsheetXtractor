@@ -64,8 +64,9 @@ public class PythonHtrAdapter(
         var logsheetPath = fileStorageService.GetResolvedPath(input.Logsheet.File.StoragePath);
         var templatePath = fileStorageService.GetResolvedPath(input.Logsheet.Template.File.StoragePath);
 
-        var backsideTemplatePath = input.Logsheet.BacksideTemplate is not null
-            ? fileStorageService.GetResolvedPath(input.Logsheet.BacksideTemplate.File.StoragePath)
+        var backsideTemplate = input.Logsheet.Template.BacksideTemplate;
+        var backsideTemplatePath = backsideTemplate is not null
+            ? fileStorageService.GetResolvedPath(backsideTemplate.File.StoragePath)
             : null;
 
         var stdOut = await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.AutomaticAlignment,
@@ -104,11 +105,11 @@ public class PythonHtrAdapter(
         var credentialsString =
             string.Join(" ", credentials.Select(c => $"--{c.Item1.ToString().ToLower()} {c.Item2}"));
 
-        // TODO: support backside template
         var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, ct);
+        var backsideArgument = await inputPreparer.CreateBacksideArgumentAsync(logsheet, ct);
 
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet,
-            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} {credentialsString} {alignmentArgument} --store_csv",
+            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} {credentialsString} {alignmentArgument} {backsideArgument} --store_csv",
             ct);
 
         var parsedData = outputParser.ParseProcessLogsheetCsv(outputFilePath);

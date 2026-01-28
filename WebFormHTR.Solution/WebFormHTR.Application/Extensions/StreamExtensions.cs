@@ -1,4 +1,4 @@
-namespace WebFormHTR.Infrastructure.Extensions;
+namespace WebFormHTR.Application.Extensions;
 
 public static class StreamExtensions
 {

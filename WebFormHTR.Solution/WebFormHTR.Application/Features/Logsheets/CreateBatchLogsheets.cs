@@ -73,12 +73,10 @@ public static class CreateBatchLogsheetsHandler
         var resultEntities = await dbContext.Logsheets
             .AsNoTracking()
             .Include(l => l.Template)
-                .ThenInclude(t => t.Rois)
-            .Include(l => l.BacksideTemplate)
-                .ThenInclude(t => t.Rois)
+            .ThenInclude(t => t.Rois)
             .Include(l => l.File)
             .Include(l => l.ExtractedValues)
-                .ThenInclude(e => e.Roi)
+            .ThenInclude(e => e.Roi)
             .Where(l => newIds.Contains(l.Id))
             .ToListAsync(ct);
 

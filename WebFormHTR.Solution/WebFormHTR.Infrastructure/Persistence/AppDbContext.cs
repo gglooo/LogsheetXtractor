@@ -41,11 +41,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasQueryFilter(e => e.DeletedAt == null)
             .HasOne(t => t.Parent)
             .WithMany(t => t.Children)
+            .HasForeignKey(t => t.ParentId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<Template>()
+            .HasQueryFilter(e => e.DeletedAt == null)
+            .HasOne<Template>(t => t.BacksideTemplate)
+            .WithOne()
+            .HasForeignKey<Template>(t => t.BacksideTemplateId)
             .OnDelete(DeleteBehavior.SetNull);
         modelBuilder.Entity<Template>()
             .HasOne<File>(t => t.File)
             .WithOne()
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Template>()
+            .HasIndex(t => t.Name)
+            .IsUnique()
+            .HasFilter("[DeletedAt] IS NULL");
 
         modelBuilder.Entity<Residual>()
             .HasOne<Template>(r => r.Template)
@@ -66,11 +77,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Logsheet>()
             .HasOne<Template>(l => l.Template)
             .WithMany(t => t.Logsheets)
+            .HasForeignKey(l => l.TemplateId)
             .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<Logsheet>()
-            .HasOne<Template>(l => l.BacksideTemplate)
-            .WithMany(t => t.BacksideLogsheets)
-            .OnDelete(DeleteBehavior.ClientSetNull);
 
         modelBuilder.Entity<ExtractedValue>()
             .HasQueryFilter(e => e.DeletedAt == null)

@@ -7,7 +7,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CreateTemplateAction } from "@/modules/templates/actions/create-template-action";
+import { CreateTemplateAction } from "@/modules/templates/actions/create-template-action/create-template-action";
 import { Menu, PlusIcon } from "lucide-react";
 import { useIntl } from "react-intl";
 

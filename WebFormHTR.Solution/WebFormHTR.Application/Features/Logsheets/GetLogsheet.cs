@@ -19,14 +19,13 @@ public static class GetLogsheetHandler
         CancellationToken cancellationToken)
     {
         var logsheet = await dbContext.Logsheets
-            .Include(l => l.File)
+            .AsNoTracking()
             .Include(l => l.Template)
-                .ThenInclude(t => t.Rois)
-            .Include(l => l.BacksideTemplate)
-                .ThenInclude(t => t.Rois)
+            .ThenInclude(t => t.Rois)
             .Include(l => l.ExtractedValues)
             .ThenInclude(e => e.Roi)
             .FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
+
 
         if (logsheet is null)
         {

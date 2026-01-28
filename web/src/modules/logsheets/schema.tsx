@@ -49,7 +49,6 @@ export const logsheetAlignmentDataContainerSchema = z.object({
 
 export const logsheetSchema = baseSchema.extend({
     template: templateListSchema,
-    backsideTemplate: templateListSchema.nullable(),
     file: fileSchema,
     status: logsheetStatusSchema,
     processedAt: dateSchema.nullable(),
@@ -61,7 +60,6 @@ export type LogsheetType = z.infer<typeof logsheetSchema>;
 
 export const logsheetListSchema = baseSchema.extend({
     templateId: z.guid(),
-    backsideTemplateId: z.guid().nullable(),
     file: fileSchema,
     status: logsheetStatusSchema,
     processedAt: dateSchema.nullable(),

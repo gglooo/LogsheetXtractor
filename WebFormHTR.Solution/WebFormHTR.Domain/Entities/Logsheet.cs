@@ -10,9 +10,6 @@ public class Logsheet : BaseEntity
     public Guid TemplateId { get; set; }
     public virtual Template Template { get; set; }
 
-    public Guid? BacksideTemplateId { get; set; }
-    public virtual Template? BacksideTemplate { get; set; }
-
     public Guid FileId { get; set; }
     public virtual File File { get; set; }
 
