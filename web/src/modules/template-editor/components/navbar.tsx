@@ -18,7 +18,8 @@ export const EditorNavbar = () => {
 
     const [isCancelDialogOpen, setCancelDialogOpen] = useState(false);
 
-    const { rois, template, canUndo, duplicateRoiNames } = useTemplateEditor();
+    const { rois, template, duplicateRoiNames, isDirty, markAsSaved } =
+        useTemplateEditor();
     const setRoisMutation = useSetRoisMutation(template?.id);
 
     const isSavingChanges = setRoisMutation.isPending;
@@ -44,6 +45,7 @@ export const EditorNavbar = () => {
             await setRoisMutation.mutateAsync({
                 rois,
             });
+            markAsSaved();
             toast.success("ROIs saved successfully.");
         } catch (error) {
             console.error("Error saving ROIs:", error);
@@ -52,7 +54,7 @@ export const EditorNavbar = () => {
     };
 
     const handleCancel = () => {
-        if (canUndo && !isCancelDialogOpen) {
+        if (isDirty && !isCancelDialogOpen) {
             setCancelDialogOpen(true);
             return;
         }
@@ -62,7 +64,7 @@ export const EditorNavbar = () => {
     return (
         <NavbarContainer
             AsideContent={
-                canUndo ? (
+                isDirty ? (
                     <CancelDialog
                         open={isCancelDialogOpen}
                         onCancel={handleCancel}

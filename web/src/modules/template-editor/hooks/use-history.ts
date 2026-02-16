@@ -1,4 +1,4 @@
-import { useCallback, useReducer } from "react";
+import { useCallback, useMemo, useReducer, useState } from "react";
 
 type HistoryState<T> = {
     past: T[];
@@ -13,7 +13,7 @@ type Action<T> =
 
 const historyReducer = <T>(
     state: HistoryState<T>,
-    action: Action<T>
+    action: Action<T>,
 ): HistoryState<T> => {
     switch (action.type) {
         case "SET": {
@@ -75,11 +75,13 @@ export const useHistory = <T>(initialState: T, depth = 20) => {
         future: [],
     }) as [HistoryState<T>, React.Dispatch<Action<T>>];
 
+    const [savedState, setSavedState] = useState<T>(initialState);
+
     const set = useCallback(
         (newState: T | ((prev: T) => T)) => {
             dispatch({ type: "SET", payload: newState, depth });
         },
-        [depth, dispatch]
+        [depth, dispatch],
     );
 
     const undo = useCallback(() => {
@@ -90,6 +92,15 @@ export const useHistory = <T>(initialState: T, depth = 20) => {
         dispatch({ type: "REDO" });
     }, [dispatch]);
 
+    const markAsSaved = useCallback(() => {
+        setSavedState(state.present);
+    }, [state.present]);
+
+    const isDirty = useMemo(
+        () => JSON.stringify(state.present) !== JSON.stringify(savedState),
+        [state.present, savedState],
+    );
+
     return {
         state: state.present,
         set,
@@ -97,5 +108,7 @@ export const useHistory = <T>(initialState: T, depth = 20) => {
         redo,
         canUndo: state.past.length > 0,
         canRedo: state.future.length > 0,
+        isDirty,
+        markAsSaved,
     };
 };

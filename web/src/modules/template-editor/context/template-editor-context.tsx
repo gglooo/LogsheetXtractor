@@ -55,7 +55,7 @@ export const TemplateEditorProvider = ({
     const [mode, setMode] = useState<EditorMode>("select");
     const roiInputRef = useRef<HTMLInputElement>(null);
 
-    const { state, set, undo, redo, canUndo, canRedo } =
+    const { state, set, undo, redo, canUndo, canRedo, isDirty, markAsSaved } =
         useHistory<EditorStateWithHistory>({
             rois: sortRoisByPosition(template?.rois ?? []),
             residuals: sortRoisByPosition(template?.residuals ?? []),
@@ -176,6 +176,8 @@ export const TemplateEditorProvider = ({
                 canRedo,
                 roiInputRef,
                 duplicateRoiNames,
+                isDirty,
+                markAsSaved,
             }}
         >
             {children}

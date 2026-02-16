@@ -18,7 +18,7 @@ export type TemplateEditorContextType = {
     setResiduals: React.Dispatch<SetStateAction<DetectedResidualType[]>>;
     setRoisAndResiduals: (
         rois: DetectedRoiType[],
-        residuals: DetectedResidualType[]
+        residuals: DetectedResidualType[],
     ) => void;
     addRoi: (coordinates: Coordinates, name?: string) => string | undefined;
     addRois: (rois: { coordinates: Coordinates; name?: string }[]) => string[];
@@ -31,6 +31,8 @@ export type TemplateEditorContextType = {
     canRedo: boolean;
     roiInputRef: React.RefObject<HTMLInputElement | null>;
     duplicateRoiNames: Set<string>;
+    isDirty: boolean;
+    markAsSaved: () => void;
 };
 
 export const TemplateEditorContext = createContext<
@@ -41,7 +43,7 @@ export const useTemplateEditor = (): TemplateEditorContextType => {
     const context = useContext(TemplateEditorContext);
     if (!context) {
         throw new Error(
-            "useTemplateEditor must be used within a TemplateEditorProvider"
+            "useTemplateEditor must be used within a TemplateEditorProvider",
         );
     }
     return context;
