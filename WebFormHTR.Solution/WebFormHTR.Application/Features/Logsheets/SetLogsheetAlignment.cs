@@ -30,7 +30,8 @@ public static class SetLogsheetAlignmentHandler
 
         if (logsheet.Status == ELogSheetStatus.Completed || logsheet.Status == ELogSheetStatus.NeedsReview)
         {
-            return Result.Fail<LogsheetDetailDto>(new ValidationError("Logsheet is already processed and cannot be re-aligned."));
+            return Result.Fail<LogsheetDetailDto>(
+                new InvalidStateError("Logsheet is already processed and cannot be re-aligned."));
         }
 
         logsheet.AlignmentDataModelConfig = mapper.Map<AlignmentContainer>(command.AlignmentData);

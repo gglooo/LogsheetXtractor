@@ -1,4 +1,5 @@
 import { NavbarContainer } from "@/components/navbar-container";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useSetRoisMutation } from "@/modules/rois/api";
@@ -81,15 +82,39 @@ export const EditorNavbar = () => {
                 >
                     <ArrowLeft />
                 </Button>
-                <div className="text-lg font-bold">Template Editor</div>
+                <div className="text-lg font-bold">
+                    {intl.formatMessage({
+                        id: "template-editor.navbar.title",
+                        defaultMessage: "Template Editor",
+                    })}
+                </div>
+                {!template?.isEditable && (
+                    <Badge variant="default">
+                        {intl.formatMessage({
+                            id: "template.editor.read-only",
+                            defaultMessage: "Read only",
+                        })}
+                    </Badge>
+                )}
             </div>
             <div className="flex items-center gap-2 p-4">
                 <TemplateSideToggle />
                 <Button size="sm" variant="outline" onClick={handleCancel}>
-                    Cancel
+                    {intl.formatMessage({
+                        id: "template-editor.navbar.cancel",
+                        defaultMessage: "Cancel",
+                    })}
                 </Button>
-                <Button size="sm" onClick={handleSaveChanges}>
-                    {isSavingChanges ? <Spinner /> : null}Save Changes
+                <Button
+                    size="sm"
+                    onClick={handleSaveChanges}
+                    disabled={!template?.isEditable || isSavingChanges}
+                >
+                    {isSavingChanges ? <Spinner /> : null}
+                    {intl.formatMessage({
+                        id: "template-editor.navbar.save-changes",
+                        defaultMessage: "Save Changes",
+                    })}
                 </Button>
             </div>
         </NavbarContainer>

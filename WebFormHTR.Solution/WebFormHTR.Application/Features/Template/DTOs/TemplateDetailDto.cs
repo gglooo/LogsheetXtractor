@@ -17,5 +17,6 @@ public record TemplateDetailDto(
     DateTime CreatedAt,
     DateTime? UpdatedAt,
     IEnumerable<RoiDto> Rois,
-    IEnumerable<ResidualDto> Residuals
+    IEnumerable<ResidualDto> Residuals,
+    bool IsEditable
 );

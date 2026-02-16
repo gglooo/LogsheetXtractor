@@ -35,6 +35,7 @@ const baseTemplateDetailSchema = baseSchema.extend({
     file: fileSchema.nullable(),
     rois: z.array(roiSchema),
     residuals: z.array(residualSchema),
+    isEditable: z.boolean(),
 });
 
 const templateReferenceSchema = z.object({
