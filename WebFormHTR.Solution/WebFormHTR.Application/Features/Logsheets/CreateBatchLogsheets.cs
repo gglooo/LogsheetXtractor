@@ -1,4 +1,5 @@
 using FluentResults;
+using Microsoft.Extensions.Logging;
 using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +22,15 @@ public static class CreateBatchLogsheetsHandler
         BatchCreateLogsheetCommand request,
         CancellationToken ct,
         IAppDbContext dbContext,
-        IMapper mapper)
+        IMapper mapper,
+        ILogger<BatchCreateLogsheetCommand> logger)
     {
         var fileIds = request.FileIds.ToList();
+        logger.LogInformation("Starting batch logsheet creation for {Count} files with Template {TemplateId}", fileIds.Count, request.TemplateId);
+
         if (!fileIds.Any())
         {
+            logger.LogWarning("No files provided for batch logsheet creation");
             return Result.Ok<IEnumerable<LogsheetDetailDto>>(new List<LogsheetDetailDto>());
         }
 
@@ -36,6 +41,7 @@ public static class CreateBatchLogsheetsHandler
 
         if (files.Count != fileIds.Count)
         {
+            logger.LogWarning("One or more files not found during batch logsheet creation");
             return Result.Fail(new NotFoundError("One or more files not found"));
         }
 
@@ -45,6 +51,7 @@ public static class CreateBatchLogsheetsHandler
 
         if (existingAssignments)
         {
+            logger.LogWarning("One or more files are already assigned to a logsheet");
             return Result.Fail(new ConstraintError("One or more files are already assigned to a logsheet"));
         }
 
@@ -55,6 +62,7 @@ public static class CreateBatchLogsheetsHandler
 
         if (templates.Count != (request.BacksideTemplateId.HasValue ? 2 : 1))
         {
+            logger.LogWarning("One or more templates not found during batch logsheet creation");
             return Result.Fail(new NotFoundError("One or more templates not found"));
         }
 
@@ -67,6 +75,7 @@ public static class CreateBatchLogsheetsHandler
             
         if (logsheets is null)
         {
+            logger.LogError("Failed to map logsheets from command");
             return Result.Fail(new Error("Failed to map logsheets"));
         }
 
@@ -87,6 +96,7 @@ public static class CreateBatchLogsheetsHandler
 
         var resultDtos = mapper.Map<IEnumerable<LogsheetDetailDto>>(resultEntities);
 
+        logger.LogInformation("Successfully created {Count} logsheets", resultDtos.Count());
         return Result.Ok<IEnumerable<LogsheetDetailDto>>(resultDtos);
     }
 }

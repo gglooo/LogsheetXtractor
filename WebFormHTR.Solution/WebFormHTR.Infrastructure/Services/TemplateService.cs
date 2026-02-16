@@ -12,6 +12,8 @@ using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 
+using Microsoft.Extensions.Logging;
+
 namespace WebFormHTR.Infrastructure.Services;
 
 public class TemplateService(
@@ -19,12 +21,15 @@ public class TemplateService(
     IMapper mapper,
     IResidualService residualService,
     IRoiService roiService,
-    IHtrScriptEngine scriptEngine
+    IHtrScriptEngine scriptEngine,
+    ILogger<TemplateService> logger
 ) : ITemplateService
 {
     public async Task<TemplateDetailDto> CreateTemplateAsync(CreateTemplateCommand command,
         CancellationToken cancellationToken)
     {
+        logger.LogInformation("Creating template {TemplateName}", command.Name);
+
         var backsideTemplate = command.Backside is not null
             ? command.Backside.ImportedConfig is not null
                 ? GetTemplateFromImportedConfig(command.Backside.ImportedConfig, command.Backside.FileId,
@@ -42,6 +47,8 @@ public class TemplateService(
         template.SetBacksideTemplate(backsideTemplate);
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        
+        logger.LogInformation("Template {TemplateId} ('{TemplateName}') created successfully", template.Id, template.Name);
 
         var createdTemplate = await dbContext.Templates
             .AsNoTracking()
@@ -56,6 +63,7 @@ public class TemplateService(
     public async Task<TemplateDetailDto> CloneTemplateAsync(Guid templateId, string newTemplateName, Guid fileId,
         CancellationToken cancellationToken)
     {
+        logger.LogInformation("Cloning template {TemplateId} to new name '{NewTemplateName}'", templateId, newTemplateName);
         var parentTemplate = await dbContext
             .Templates
             .AsNoTracking()
@@ -78,12 +86,15 @@ public class TemplateService(
 
         await residualService.CloneResidualsForTemplateAsync(parentTemplate.Id, newId, cancellationToken);
         await roiService.CloneRoisForTemplateAsync(parentTemplate.Id, newId, cancellationToken);
+        
+        logger.LogInformation("Template cloned successfully. New Template ID: {NewTemplateId}", newId);
 
         return mapper.Map<TemplateDetailDto>(clonedTemplate);
     }
 
     public async Task<string> ExportTemplateConfigAsync(Guid templateId, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Exporting config for template {TemplateId}", templateId);
         var template = await dbContext.Templates
             .AsNoTracking()
             .Include(t => t.File)
@@ -91,6 +102,7 @@ public class TemplateService(
 
         if (template is null)
         {
+            logger.LogWarning("Template {TemplateId} not found for export", templateId);
             throw new Exception("Template not found");
         }
 
@@ -104,12 +116,14 @@ public class TemplateService(
         var file = dbContext.Files.FirstOrDefault(f => f.Id == fileId);
         if (file is null)
         {
+            logger.LogError("File {FileId} not found", fileId);
             throw new Exception("File not found");
         }
 
         var dimensions = scriptEngine.GetPdfDimensionsAsync(file, CancellationToken.None).Result;
         if (dimensions is null)
         {
+            logger.LogError("Unable to get PDF dimensions for file {FileId}", fileId);
             throw new Exception("Unable to get PDF dimensions");
         }
 
@@ -140,6 +154,7 @@ public class TemplateService(
 
             if (deserialized is null)
             {
+                logger.LogError("Imported configuration deserialized to null");
                 throw new Exception("Imported configuration is null");
             }
 
@@ -152,6 +167,7 @@ public class TemplateService(
         }
         catch (JsonException ex)
         {
+            logger.LogError(ex, "Invalid imported configuration format");
             throw new Exception("Invalid imported configuration format", ex);
         }
     }

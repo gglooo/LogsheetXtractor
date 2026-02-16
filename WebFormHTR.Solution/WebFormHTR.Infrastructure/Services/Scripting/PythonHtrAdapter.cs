@@ -134,6 +134,7 @@ public class PythonHtrAdapter(
         File templateFile,
         CancellationToken ct)
     {
+        logger.LogInformation("Exporting data for Logsheet {LogsheetId}", logsheet.Id);
         var filePath = fileStorageService.GetResolvedPath(logsheetFile.StoragePath);
         var templatePath = fileStorageService.GetResolvedPath(templateFile.StoragePath);
 
@@ -156,9 +157,12 @@ public class PythonHtrAdapter(
 
         var backsideArgs = await inputPreparer.CreateBacksideArgumentAsync(logsheet, ct);
 
+        logger.LogInformation("Executing export script for Logsheet {LogsheetId}", logsheet.Id);
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ExportLogsheet,
             $"--pdf_logsheet {filePath} --pdf_template {templatePath} --config_file {configPath} --output_file {outputFilePath} {alignmentArgument} {backsideArgs}",
             ct);
+        
+        logger.LogInformation("Export script completed successfully for Logsheet {LogsheetId}", logsheet.Id);
 
         var fileStream = fileStorageService.GetTemporaryFile(outputFilePath);
         return new GetFileDto

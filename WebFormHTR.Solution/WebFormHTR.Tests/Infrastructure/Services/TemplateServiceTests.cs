@@ -1,6 +1,7 @@
 using FluentAssertions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.ROIs;
@@ -20,6 +21,7 @@ public class TemplateServiceTests
     private readonly AppDbContext _dbContext;
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IHtrScriptEngine> _scriptEngineMock;
+    private readonly Mock<ILogger<TemplateService>> _loggerMock;
     private readonly TemplateService _templateService;
 
     public TemplateServiceTests()
@@ -29,7 +31,9 @@ public class TemplateServiceTests
         var residualServiceMock = new ResidualService(_dbContext, _mapperMock.Object);
         var roiServiceMock = new RoiService(_dbContext, _mapperMock.Object, new Mock<IHtrScriptEngine>().Object);
         _scriptEngineMock = new Mock<IHtrScriptEngine>();
-        _templateService = new TemplateService(_dbContext, _mapperMock.Object, residualServiceMock, roiServiceMock, _scriptEngineMock.Object);
+        _loggerMock = new Mock<ILogger<TemplateService>>();
+        _templateService = new TemplateService(_dbContext, _mapperMock.Object, residualServiceMock, roiServiceMock,
+            _scriptEngineMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -75,7 +79,8 @@ public class TemplateServiceTests
             true
         );
         _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<Template>())).Returns(expectedDto);
-        _scriptEngineMock.Setup(x => x.GetPdfDimensionsAsync(It.IsAny<Domain.Entities.File>(), It.IsAny<CancellationToken>()))
+        _scriptEngineMock.Setup(x =>
+                x.GetPdfDimensionsAsync(It.IsAny<Domain.Entities.File>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PdfDimensionsDto { Width = 100, Height = 200 });
 
         var result = await _templateService.CloneTemplateAsync(
@@ -160,7 +165,8 @@ public class TemplateServiceTests
                 Coordinates = r.Coordinates
             });
 
-        _scriptEngineMock.Setup(x => x.GetPdfDimensionsAsync(It.IsAny<Domain.Entities.File>(), It.IsAny<CancellationToken>()))
+        _scriptEngineMock.Setup(x =>
+                x.GetPdfDimensionsAsync(It.IsAny<Domain.Entities.File>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PdfDimensionsDto { Width = 100, Height = 200 });
 
         _mapperMock.Setup(x => x.Map<Roi>(It.IsAny<Roi>()))

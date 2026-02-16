@@ -12,6 +12,7 @@ using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Tests.Common;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Features.File.DTOs;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
@@ -20,6 +21,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IHtrScriptEngine> _scriptEngineMock = new();
+    private readonly Mock<ILogger<AlignLogsheetCommand>> _loggerMock = new();
 
     [Fact]
     public async Task Handle_ShouldAlignLogsheet_WhenLogsheetExists()
@@ -55,7 +57,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
             .ReturnsAsync(expectedDto);
 
         var result =
-            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, CancellationToken.None);
+            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -71,7 +73,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         var command = new AlignLogsheetCommand(Guid.NewGuid());
 
         var result =
-            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, CancellationToken.None);
+            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -103,7 +105,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
             .ThrowsAsync(new Exception(errorMessage));
 
         var result =
-            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, CancellationToken.None);
+            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.First().Message.Should().Be($"Failed to align logsheet: {errorMessage}");

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FluentResults;
+using Microsoft.Extensions.Logging;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -22,11 +23,13 @@ public class CreateBatchLogsheetsTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<ILogger<BatchCreateLogsheetCommand>> _loggerMock;
 
     public CreateBatchLogsheetsTests()
     {
         _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
+        _loggerMock = new Mock<ILogger<BatchCreateLogsheetCommand>>();
     }
 
     [Fact]
@@ -34,7 +37,7 @@ public class CreateBatchLogsheetsTests : IDisposable
     {
         var command = new BatchCreateLogsheetCommand(Guid.NewGuid(), null, Array.Empty<Guid>());
 
-        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _loggerMock.Object);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEmpty();
@@ -46,7 +49,7 @@ public class CreateBatchLogsheetsTests : IDisposable
         var fileId = Guid.NewGuid();
         var command = new BatchCreateLogsheetCommand(Guid.NewGuid(), null, new[] { fileId });
 
-        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _loggerMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "One or more files not found");
@@ -65,7 +68,7 @@ public class CreateBatchLogsheetsTests : IDisposable
 
         var command = new BatchCreateLogsheetCommand(Guid.NewGuid(), null, new[] { fileId });
 
-        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _loggerMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "One or more files are already assigned to a logsheet");
@@ -81,7 +84,7 @@ public class CreateBatchLogsheetsTests : IDisposable
 
         var command = new BatchCreateLogsheetCommand(Guid.NewGuid(), null, new[] { fileId });
 
-        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _loggerMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "One or more templates not found");
@@ -103,7 +106,7 @@ public class CreateBatchLogsheetsTests : IDisposable
 
         var command = new BatchCreateLogsheetCommand(templateId, Guid.NewGuid(), new[] { fileId });
 
-        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _loggerMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "One or more templates not found");
@@ -140,7 +143,7 @@ public class CreateBatchLogsheetsTests : IDisposable
         _mapperMock.Setup(m => m.Map<IEnumerable<LogsheetDetailDto>>(It.IsAny<List<Logsheet>>()))
             .Returns(expectedDtos);
 
-        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _loggerMock.Object);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeSameAs(expectedDtos);
@@ -183,7 +186,7 @@ public class CreateBatchLogsheetsTests : IDisposable
         _mapperMock.Setup(m => m.Map<IEnumerable<LogsheetDetailDto>>(It.IsAny<List<Logsheet>>()))
             .Returns(expectedDtos);
 
-        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+        var result = await CreateBatchLogsheetsHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _loggerMock.Object);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeSameAs(expectedDtos);

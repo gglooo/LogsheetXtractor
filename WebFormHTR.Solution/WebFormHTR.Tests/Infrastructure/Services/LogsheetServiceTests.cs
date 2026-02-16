@@ -10,6 +10,7 @@ using WebFormHTR.Domain.Enums;
 using WebFormHTR.Infrastructure.Services;
 using WebFormHTR.Application.Features.ExtractedValues.DTOs;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace WebFormHTR.Tests.Infrastructure.Services;
@@ -18,11 +19,12 @@ public class LogsheetServiceTests
 {
     private readonly Mock<IMapper> _mapperMock = new();
     private readonly Mock<IHtrScriptEngine> _scriptEngineMock = new();
+    private readonly Mock<ILogger<LogsheetService>> _loggerMock = new();
     private readonly LogsheetService _service;
 
     public LogsheetServiceTests()
     {
-        _service = new LogsheetService(_mapperMock.Object, _scriptEngineMock.Object);
+        _service = new LogsheetService(_mapperMock.Object, _scriptEngineMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -30,8 +32,9 @@ public class LogsheetServiceTests
     {
         var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
         var processOutput = new ProcessLogsheetOutputDto(new Dictionary<string, string>());
-        
-        _scriptEngineMock.Setup(x => x.ProcessLogsheetAsync(It.IsAny<ProcessLogsheetInputDto>(), It.IsAny<CancellationToken>()))
+
+        _scriptEngineMock.Setup(x =>
+                x.ProcessLogsheetAsync(It.IsAny<ProcessLogsheetInputDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(processOutput);
 
         var expectedDto = new LogsheetDetailDto(
@@ -41,7 +44,7 @@ public class LogsheetServiceTests
             ELogSheetStatus.NeedsReview,
             null,
             null,
-            new List<WebFormHTR.Application.Features.ExtractedValues.DTOs.ExtractedValueDto>(),
+            new List<ExtractedValueDto>(),
             DateTime.UtcNow,
             null
         );
@@ -68,7 +71,8 @@ public class LogsheetServiceTests
     {
         var logsheet = new Logsheet { Status = ELogSheetStatus.Completed };
         Func<Task> act = async () => await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("Logsheet is not in a valid state for processing");
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("Logsheet is not in a valid state for processing");
     }
 
     [Fact]
@@ -76,18 +80,20 @@ public class LogsheetServiceTests
     {
         var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
         var errorMessage = "Engine failure";
-        
-        _scriptEngineMock.Setup(x => x.ProcessLogsheetAsync(It.IsAny<ProcessLogsheetInputDto>(), It.IsAny<CancellationToken>()))
+
+        _scriptEngineMock.Setup(x =>
+                x.ProcessLogsheetAsync(It.IsAny<ProcessLogsheetInputDto>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception(errorMessage));
 
-         
+
         var expectedDto = new LogsheetDetailDto(
-            logsheet.Id, null!, null!, ELogSheetStatus.Failed, null, null, new List<WebFormHTR.Application.Features.ExtractedValues.DTOs.ExtractedValueDto>(), DateTime.UtcNow, null
+            logsheet.Id, null!, null!, ELogSheetStatus.Failed, null, null, new List<ExtractedValueDto>(),
+            DateTime.UtcNow, null
         );
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(logsheet)).Returns(expectedDto);
 
         var result = await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
-        
+
         logsheet.Status.Should().Be(ELogSheetStatus.Failed);
         logsheet.ErrorMessage.Should().Be(errorMessage);
     }

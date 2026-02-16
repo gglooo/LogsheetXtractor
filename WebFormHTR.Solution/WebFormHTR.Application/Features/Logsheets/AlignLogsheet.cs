@@ -5,6 +5,8 @@ using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
 
+using Microsoft.Extensions.Logging;
+
 namespace WebFormHTR.Application.Features.Logsheets;
 
 public record AlignLogsheetCommand(
@@ -14,11 +16,14 @@ public record AlignLogsheetCommand(
 public static class AlignLogsheetHandler
 {
     public static async Task<Result<LogsheetDetailDto>> Handle(AlignLogsheetCommand request, IAppDbContext dbContext,
-        IHtrScriptEngine scriptEngine, CancellationToken ct)
+        IHtrScriptEngine scriptEngine, ILogger<AlignLogsheetCommand> logger, CancellationToken ct)
     {
+        logger.LogInformation("Starting automatic alignment for Logsheet {LogsheetId}", request.LogsheetId);
+
         var logsheet = await dbContext.Logsheets.FindAsync(request.LogsheetId, ct);
         if (logsheet is null)
         {
+            logger.LogWarning("Logsheet {LogsheetId} not found for alignment", request.LogsheetId);
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("Logsheet not found"));
         }
 
@@ -28,10 +33,12 @@ public static class AlignLogsheetHandler
 
             await dbContext.SaveChangesAsync(ct);
 
+            logger.LogInformation("Automatic alignment completed successfully for Logsheet {LogsheetId}", request.LogsheetId);
             return Result.Ok(alignmentResult);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Automatic alignment failed for Logsheet {LogsheetId}", request.LogsheetId);
             return Result.Fail<LogsheetDetailDto>($"Failed to align logsheet: {ex.Message}");
         }
     }

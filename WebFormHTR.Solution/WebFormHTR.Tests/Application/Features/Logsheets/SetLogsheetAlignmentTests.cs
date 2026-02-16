@@ -14,6 +14,7 @@ using WebFormHTR.Domain.Enums;
 using WebFormHTR.Domain.ValueObjects;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Tests.Common;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
@@ -22,6 +23,7 @@ public class SetLogsheetAlignmentTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IMapper> _mapperMock = new();
+    private readonly Mock<ILogger<SetLogsheetAlignmentCommand>> _loggerMock = new();
 
     [Fact]
     public async Task Handle_ShouldUpdateAlignment_WhenLogsheetExists()
@@ -63,7 +65,7 @@ public class SetLogsheetAlignmentTests : IDisposable
             .Returns(expectedDto);
 
         var result =
-            await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+            await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -78,7 +80,7 @@ public class SetLogsheetAlignmentTests : IDisposable
         var command = new SetLogsheetAlignmentCommand(Guid.NewGuid(), new AlignmentDataDto(null, null));
 
         var result =
-            await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, CancellationToken.None);
+            await SetLogsheetAlignmentHandler.Handle(command, _dbContext, _mapperMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();

@@ -67,6 +67,7 @@ public class FileService(
 
     public async Task<FileDto> CloneFileAsync(Guid fileId)
     {
+        logger.LogInformation("Cloning file {FileId}", fileId);
         var file = await dbContext.Files.FirstAsync(f => f.Id == fileId);
 
         var fileBytes = await fileStorageService.ReadFileAsync(file.StoragePath);
@@ -76,6 +77,7 @@ public class FileService(
     public async Task<GetFileDto?> GetFileFromContentAsync(byte[] content, string fileName, string contentType,
         CancellationToken cancellationToken)
     {
+        logger.LogInformation("Saving temporary file {FileName} from content (Size: {Size})", fileName, content.Length);
         var tempFilePath = await fileStorageService.SaveTemporaryFileAsync(content, fileName, cancellationToken);
         var stream = fileStorageService.GetFile(tempFilePath);
 

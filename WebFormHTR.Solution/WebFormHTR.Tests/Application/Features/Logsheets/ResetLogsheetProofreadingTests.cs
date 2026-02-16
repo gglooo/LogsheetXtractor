@@ -13,6 +13,7 @@ using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Tests.Common;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
@@ -21,6 +22,7 @@ public class ResetLogsheetProofreadingTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IMapper> _mapperMock = new();
+    private readonly Mock<ILogger<ResetLogsheetProofreadingCommand>> _loggerMock = new();
 
     [Fact]
     public async Task Handle_ShouldResetLogsheet_AndRemoveExtractedValues()
@@ -65,7 +67,7 @@ public class ResetLogsheetProofreadingTests : IDisposable
             .Returns(expectedDto);
 
         var result =
-            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext,
+            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _loggerMock.Object,
                 CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -86,7 +88,7 @@ public class ResetLogsheetProofreadingTests : IDisposable
     {
         var command = new ResetLogsheetProofreadingCommand(Guid.NewGuid());
         var result =
-            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext,
+            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _loggerMock.Object,
                 CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();

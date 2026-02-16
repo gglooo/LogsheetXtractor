@@ -10,22 +10,27 @@ using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 
+using Microsoft.Extensions.Logging;
+
 namespace WebFormHTR.Infrastructure.Services;
 
 public class LogsheetService(
     IMapper mapper,
-    IHtrScriptEngine scriptEngine
+    IHtrScriptEngine scriptEngine,
+    ILogger<LogsheetService> logger
 ) : ILogsheetService
 {
     public Error? ValidateLogsheet(Logsheet? logsheet)
     {
         if (logsheet is null)
         {
+            logger.LogWarning("Attempted to validate null logsheet");
             return new NotFoundError("Logsheet not found");
         }
 
         if (logsheet.Status == ELogSheetStatus.Completed || logsheet.ProcessedAt is not null)
         {
+            logger.LogWarning("Logsheet {LogsheetId} is not in a valid state for processing. Status: {Status}", logsheet.Id, logsheet.Status);
             return new InvalidStateError("Logsheet is not in a valid state for processing");
         }
 
@@ -36,18 +41,21 @@ public class LogsheetService(
     {
         try
         {
+            logger.LogInformation("Invoking script engine for Logsheet {LogsheetId}", logsheet.Id);
             var output = await scriptEngine.ProcessLogsheetAsync(new ProcessLogsheetInputDto(logsheet), ct);
 
             var extractedData = output.ExtractedData.BuildAdapter()
                 .AddParameters("LogsheetId", logsheet.Id)
                 .AdaptToType<IEnumerable<ExtractedValue>>()
                 .ToList();
+            
+            logger.LogInformation("Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.", logsheet.Id, extractedData.Count);
 
             AdjustAfterSuccessfulProcessing(logsheet, extractedData);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            logger.LogError(ex, "Script processing failed for Logsheet {LogsheetId}", logsheet.Id);
             AdjustAfterFailedProcessing(logsheet, ex.Message);
         }
     }
@@ -69,8 +77,11 @@ public class LogsheetService(
     public async Task<IEnumerable<LogsheetDetailDto>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets,
         CancellationToken ct)
     {
+        var logsheetList = logsheets.ToList();
+        logger.LogInformation("Processing batch of {Count} logsheets", logsheetList.Count);
+        
         var processedLogsheets = new List<LogsheetDetailDto>();
-        foreach (var logsheet in logsheets)
+        foreach (var logsheet in logsheetList)
         {
             try
             {
@@ -79,8 +90,7 @@ public class LogsheetService(
             }
             catch (ValidationException ex)
             {
-                // TODO: do something better here
-                Console.WriteLine($"Validation error for Logsheet ID {logsheet.Id}: {ex.Message}");
+                logger.LogWarning(ex, "Validation error for Logsheet ID {LogsheetId}: {Message}", logsheet.Id, ex.Message);
             }
         }
 

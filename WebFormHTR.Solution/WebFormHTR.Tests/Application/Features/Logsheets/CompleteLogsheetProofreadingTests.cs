@@ -11,6 +11,7 @@ using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Tests.Common;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
@@ -22,6 +23,7 @@ public class CompleteLogsheetProofreadingTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IMapper> _mapperMock = new();
+    private readonly Mock<ILogger<CompleteLogsheetProofreadingCommand>> _loggerMock = new();
 
     [Fact]
     public async Task Handle_ShouldCompleteLogsheet_WhenAllValuesVerified()
@@ -67,7 +69,7 @@ public class CompleteLogsheetProofreadingTests : IDisposable
             .Returns(expectedDto);
 
         var result =
-            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, _loggerMock.Object,
                 CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -83,7 +85,7 @@ public class CompleteLogsheetProofreadingTests : IDisposable
     {
         var command = new CompleteLogsheetProofreadingCommand(Guid.NewGuid());
         var result =
-            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, _loggerMock.Object,
                 CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
@@ -108,7 +110,7 @@ public class CompleteLogsheetProofreadingTests : IDisposable
 
         var command = new CompleteLogsheetProofreadingCommand(logsheet.Id);
         var result =
-            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, _loggerMock.Object,
                 CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
@@ -124,7 +126,7 @@ public class CompleteLogsheetProofreadingTests : IDisposable
 
         var command = new CompleteLogsheetProofreadingCommand(logsheet.Id);
         var result =
-            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+            await CompleteLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object, _loggerMock.Object,
                 CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
