@@ -37,7 +37,6 @@ public class LogsheetServiceTests
         var expectedDto = new LogsheetDetailDto(
             logsheet.Id,
             null!,
-            null,
             null!,
             ELogSheetStatus.NeedsReview,
             null,
@@ -83,7 +82,7 @@ public class LogsheetServiceTests
 
          
         var expectedDto = new LogsheetDetailDto(
-            logsheet.Id, null!, null, null!, ELogSheetStatus.Failed, null, null, new List<WebFormHTR.Application.Features.ExtractedValues.DTOs.ExtractedValueDto>(), DateTime.UtcNow, null
+            logsheet.Id, null!, null!, ELogSheetStatus.Failed, null, null, new List<WebFormHTR.Application.Features.ExtractedValues.DTOs.ExtractedValueDto>(), DateTime.UtcNow, null
         );
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(logsheet)).Returns(expectedDto);
 

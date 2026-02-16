@@ -66,10 +66,13 @@ public class TemplateServiceTests
             0,
             null,
             null,
+            null,
+            null,
             DateTime.UtcNow,
             DateTime.UtcNow,
             [],
-            []
+            [],
+            true
         );
         _mapperMock.Setup(x => x.Map<TemplateDetailDto>(It.IsAny<Template>())).Returns(expectedDto);
         _scriptEngineMock.Setup(x => x.GetPdfDimensionsAsync(It.IsAny<Domain.Entities.File>(), It.IsAny<CancellationToken>()))
@@ -140,10 +143,13 @@ public class TemplateServiceTests
                 0,
                 null,
                 null,
+                null,
+                null,
                 DateTime.UtcNow,
                 DateTime.UtcNow,
                 [],
-                []
+                [],
+                true
             ));
 
         _mapperMock.Setup(x => x.Map<Residual>(It.IsAny<Residual>()))

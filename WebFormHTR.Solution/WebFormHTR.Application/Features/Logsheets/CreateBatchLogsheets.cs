@@ -64,6 +64,11 @@ public static class CreateBatchLogsheetsHandler
                 request.BacksideTemplateId,
                 fileId
             )));
+            
+        if (logsheets is null)
+        {
+            return Result.Fail(new Error("Failed to map logsheets"));
+        }
 
         await dbContext.Logsheets.AddRangeAsync(logsheets, ct);
         await dbContext.SaveChangesAsync(ct);

@@ -32,7 +32,7 @@ public class GetTemplateTests : IDisposable
         var query = new GetTemplateQuery(template.Id);
 
         var expectedDto =
-            new TemplateDetailDto(template.Id, template.Name, 0, 0, null, null, DateTime.Now, DateTime.Now, [], []);
+            new TemplateDetailDto(template.Id, template.Name, 0, 0, null, null, null, null, DateTime.Now, DateTime.Now, [], [], true);
         _mapperMock.Setup(m => m.Map<TemplateDetailDto?>(It.IsAny<Domain.Entities.Template>()))
             .Returns(expectedDto);
 

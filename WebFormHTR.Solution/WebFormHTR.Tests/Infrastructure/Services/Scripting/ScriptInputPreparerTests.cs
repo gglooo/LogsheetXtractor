@@ -55,6 +55,7 @@ public class ScriptInputPreparerTests
     {
         var logsheet = new Logsheet 
         { 
+            Template = new Template { Width = 100, Height = 100 },
             AlignmentDataModelConfig = new AlignmentContainer { Frontside = new List<PointCoordinate>() } 
         };
 

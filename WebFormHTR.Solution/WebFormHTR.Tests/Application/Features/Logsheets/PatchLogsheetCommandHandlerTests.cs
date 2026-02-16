@@ -42,8 +42,7 @@ public class PatchLogsheetCommandHandlerTests : IDisposable
         var command = new PatchLogsheetCommand(logsheet.Id, patchDto);
 
         var expectedDto = new LogsheetDetailDto(logsheet.Id,
-            new TemplateListDto(template.Id, template.Name, null, null, 0, 0, 0, DateTime.UtcNow),
-            null,
+            new TemplateListDto(template.Id, template.Name, null, null, null, 0, 0, 0, DateTime.UtcNow),
             new FileDto(file.Id, file.OriginalFileName, file.ContentType, file.SizeBytes, file.CreatedAt),
             logsheet.Status,
             null,

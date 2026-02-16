@@ -13,6 +13,8 @@ using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Tests.Common;
+using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Interfaces;
 using Xunit;
 
 namespace WebFormHTR.Tests.Application.Features.Logsheets;
@@ -21,11 +23,15 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
     private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<IPdfQrCodeScanner> _pdfQrCodeScannerMock;
+    private readonly Mock<IFileService> _fileServiceMock;
 
     public CreateLogsheetCommandHandlerTests()
     {
         _dbContext = TestDbContextFactory.Create();
         _mapperMock = new Mock<IMapper>();
+        _pdfQrCodeScannerMock = new Mock<IPdfQrCodeScanner>();
+        _fileServiceMock = new Mock<IFileService>();
     }
 
     [Fact]
@@ -52,10 +58,10 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
 
         var command = new CreateLogsheetCommand(templateId, null, fileId);
 
-        var templateDto = new TemplateListDto(templateId, "Test Template", null, null, 0, 0, 0,
+        var templateDto = new TemplateListDto(templateId, "Test Template", null, null, null, 0, 0, 0,
             DateTime.UtcNow);
         var fileDto = new FileDto(fileId, "test.jpg", "image/jpeg", 100, DateTime.UtcNow);
-        var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, null!, fileDto, ELogSheetStatus.Pending,
+        var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, fileDto, ELogSheetStatus.Pending,
             DateTime.UtcNow, null, new List<ExtractedValueDto>(), DateTime.UtcNow, null);
 
         _mapperMock.Setup(x => x.Map<Logsheet>(command))
@@ -66,7 +72,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
             .Returns(expectedDto);
 
         var result =
-            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _pdfQrCodeScannerMock.Object, _fileServiceMock.Object);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -98,7 +104,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var command = new CreateLogsheetCommand(templateId, null, fileId);
 
         var result =
-            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _pdfQrCodeScannerMock.Object, _fileServiceMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "File not found");
@@ -118,7 +124,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
         var command = new CreateLogsheetCommand(templateId, null, fileId);
 
         var result =
-            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object);
+            await CreateLogsheetHandler.Handle(command, CancellationToken.None, _dbContext, _mapperMock.Object, _pdfQrCodeScannerMock.Object, _fileServiceMock.Object);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Template not found");

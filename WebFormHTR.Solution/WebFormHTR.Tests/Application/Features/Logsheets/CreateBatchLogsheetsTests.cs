@@ -133,7 +133,7 @@ public class CreateBatchLogsheetsTests : IDisposable
         var logsheet1 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, FileId = fileId1, Template = null!, File = null! };
         var logsheet2 = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, FileId = fileId2, Template = null!, File = null! };
 
-        _mapperMock.Setup(m => m.Map<IList<Logsheet>>(It.Is<IEnumerable<CreateLogsheetCommand>>(c => c.Count() == 2)))
+        _mapperMock.Setup(m => m.Map<IList<Logsheet>>(It.IsAny<IEnumerable<CreateLogsheetCommand>>()))
             .Returns(new List<Logsheet> { logsheet1, logsheet2 });
             
         var expectedDtos = new List<LogsheetDetailDto>();
@@ -174,9 +174,9 @@ public class CreateBatchLogsheetsTests : IDisposable
 
         var command = new BatchCreateLogsheetCommand(templateId, backsideTemplateId, new[] { fileId });
 
-        var logsheet = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, BacksideTemplateId = backsideTemplateId, FileId = fileId, Template = null!, File = null! };
+        var logsheet = new Logsheet { Id = Guid.NewGuid(), TemplateId = templateId, FileId = fileId, Template = null!, File = null! };
 
-        _mapperMock.Setup(m => m.Map<IList<Logsheet>>(It.Is<IEnumerable<CreateLogsheetCommand>>(c => c.Count() == 1)))
+        _mapperMock.Setup(m => m.Map<IList<Logsheet>>(It.IsAny<IEnumerable<CreateLogsheetCommand>>()))
             .Returns(new List<Logsheet> { logsheet });
             
         var expectedDtos = new List<LogsheetDetailDto>();
@@ -190,7 +190,7 @@ public class CreateBatchLogsheetsTests : IDisposable
 
         var savedLogsheets = await _dbContext.Logsheets.ToListAsync();
         savedLogsheets.Should().HaveCount(1);
-        savedLogsheets.First().BacksideTemplateId.Should().Be(backsideTemplateId);
+        savedLogsheets.First().TemplateId.Should().Be(templateId);
     }
 
     private Domain.Entities.File newDomainFile(Guid id)

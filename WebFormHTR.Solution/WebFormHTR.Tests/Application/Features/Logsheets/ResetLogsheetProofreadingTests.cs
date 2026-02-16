@@ -49,8 +49,7 @@ public class ResetLogsheetProofreadingTests : IDisposable
         var expectedDto = new LogsheetDetailDto
         (
             logsheet.Id,
-            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, DateTime.UtcNow),
-            null,
+            new TemplateListDto(logsheet.Template.Id, "T", null, null, null, 0, 100, 100, DateTime.UtcNow),
             new FileDto(Guid.NewGuid(), "t", "t", 0, DateTime.UtcNow),
             ELogSheetStatus.Pending,
             null,
@@ -66,13 +65,12 @@ public class ResetLogsheetProofreadingTests : IDisposable
             .Returns(expectedDto);
 
         var result =
-            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext,
                 CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(expectedDto);
-        result.Value.Status.Should().Be(ELogSheetStatus.Pending);
-        result.Value.ExtractedValues.Should().BeEmpty();
+        result.IsSuccess.Should().BeTrue();
+        // result is Result, no Value
 
         var dbLogsheet = await _dbContext.Logsheets.FindAsync(logsheet.Id);
         dbLogsheet!.Status.Should().Be(ELogSheetStatus.Pending);
@@ -88,7 +86,7 @@ public class ResetLogsheetProofreadingTests : IDisposable
     {
         var command = new ResetLogsheetProofreadingCommand(Guid.NewGuid());
         var result =
-            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext, _mapperMock.Object,
+            await ResetLogsheetProofreadingHandler.Handle(command, _dbContext,
                 CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();

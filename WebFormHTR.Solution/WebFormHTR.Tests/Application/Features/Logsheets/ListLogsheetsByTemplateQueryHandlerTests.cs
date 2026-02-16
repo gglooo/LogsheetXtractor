@@ -64,12 +64,12 @@ public class ListLogsheetsByTemplateQueryHandlerTests : IDisposable
         var query = new ListLogsheetsByTemplateQuery(templateId);
         var expectedDtos = new List<LogsheetListDto>
         {
-            new(logsheet1.Id, templateId, null,
+            new(logsheet1.Id, templateId,
                 new FileDto(logsheet1.FileId, "test.pdf", "application/pdf", 123, DateTime.UtcNow),
-                ELogSheetStatus.Pending, false, null, DateTime.UtcNow, null),
-            new(logsheet2.Id, templateId, null,
+                ELogSheetStatus.Pending, false, false, null, DateTime.UtcNow, null),
+            new(logsheet2.Id, templateId,
                 new FileDto(logsheet2.FileId, "test.pdf", "application/pdf", 123, DateTime.UtcNow),
-                ELogSheetStatus.Pending, false, null, DateTime.UtcNow, null)
+                ELogSheetStatus.Pending, false, false, null, DateTime.UtcNow, null)
         };
 
         _mapperMock.Setup(x => x.Map<IEnumerable<LogsheetListDto>>(It.IsAny<IEnumerable<Logsheet>>()))

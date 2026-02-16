@@ -46,8 +46,7 @@ public class SetLogsheetAlignmentTests : IDisposable
         var expectedDto = new LogsheetDetailDto
         (
             logsheet.Id,
-            new TemplateListDto(logsheet.Template.Id, "T", null, null, 0, 100, 100, DateTime.UtcNow),
-            null,
+            new TemplateListDto(logsheet.Template.Id, "T", null, null, null, 0, 100, 100, DateTime.UtcNow),
             new FileDto(Guid.NewGuid(), "t", "t", 0, DateTime.UtcNow),
             ELogSheetStatus.Pending,
             null,
