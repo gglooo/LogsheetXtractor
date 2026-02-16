@@ -4,7 +4,6 @@ using WebFormHTR.API.Extensions;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
-using WebFormHTR.Application.Features.ROIs.DTOs;
 using Wolverine;
 using Wolverine.Http;
 
@@ -200,7 +199,7 @@ public static class LogsheetEndpoints
         CancellationToken ct)
     {
         var command = new ResetLogsheetProofreadingCommand(id);
-        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
+        var result = await bus.InvokeAsync<Result>(command, ct);
 
         return result.ToHttpResult();
     }
@@ -211,11 +210,11 @@ public static class LogsheetEndpoints
     [ProducesResponseType(404)]
     public static async Task<IResult> GetLogsheetImage(
         Guid id,
+        [FromQuery] bool backside,
         IMessageBus bus,
         CancellationToken ct)
     {
-        // TODO: support backside (the method supports it, just parse from request)
-        var command = new GetLogsheetImageQuery(id, true);
+        var command = new GetLogsheetImageQuery(id, !backside);
         var result = await bus.InvokeAsync<Result<GetFileDto>>(command, ct);
 
         return result.ToHttpResult();

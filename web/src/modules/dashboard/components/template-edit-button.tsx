@@ -48,14 +48,14 @@ export const TemplateEditButton = ({
     return (
         <DropdownMenu>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleEditTemplate(true)}>
+                <DropdownMenuItem onClick={() => handleEditTemplate(false)}>
                     <FileTextIcon />
                     {intl.formatMessage({
                         id: "templates.actions.edit-front",
                         defaultMessage: "Frontside",
                     })}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleEditTemplate(false)}>
+                <DropdownMenuItem onClick={() => handleEditTemplate(true)}>
                     <SendToBackIcon />
                     {intl.formatMessage({
                         id: "templates.actions.editBackside",

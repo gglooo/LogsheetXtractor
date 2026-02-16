@@ -38,7 +38,7 @@ const baseTemplateDetailSchema = baseSchema.extend({
 });
 
 export const templateSchema = baseTemplateDetailSchema.extend({
-    backsideTemplate: baseTemplateDetailSchema.nullable(),
+    backsideTemplate: baseTemplateDetailSchema.nullish(),
 });
 
 export const baseCreateTemplateSchema = z.object({

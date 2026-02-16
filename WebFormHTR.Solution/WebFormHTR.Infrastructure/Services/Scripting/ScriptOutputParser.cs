@@ -7,19 +7,18 @@ namespace WebFormHTR.Infrastructure.Services.Scripting;
 
 public class ScriptOutputParser(IFileStorageService fileStorageService) : IScriptOutputParser
 {
-    public Dictionary<string, (string, bool)> ParseProcessLogsheetCsv(string filePath)
+    public Dictionary<string, string> ParseProcessLogsheetCsv(string filePath)
     {
         var csvContent = fileStorageService.ReadAllText(filePath);
-        var result = new Dictionary<string, (string, bool)>();
+        var result = new Dictionary<string, string>();
 
         var lines = csvContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1);
         foreach (var line in lines)
         {
-            var parts = line.Split(',', 3);
-            if (parts.Length == 3)
+            var parts = line.Split(',', 2);
+            if (parts.Length == 2)
             {
-                var varName = parts[0];
-                result[varName] = (parts[1], parts[2].Trim().ToLower() == "true");
+                result[parts[0]] = parts[1];
             }
         }
 

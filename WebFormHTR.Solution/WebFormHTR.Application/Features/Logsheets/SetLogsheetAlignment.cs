@@ -15,7 +15,13 @@ public static class SetLogsheetAlignmentHandler
     public static async Task<Result<LogsheetDetailDto>> Handle(SetLogsheetAlignmentCommand command,
         IAppDbContext dbContext, IMapper mapper, CancellationToken ct)
     {
-        var logsheet = await dbContext.Logsheets.FirstOrDefaultAsync(ls => ls.Id == command.LogsheetId, ct);
+        var logsheet = await dbContext.Logsheets
+            .Include(l => l.Template)
+            .ThenInclude(t => t.Rois)
+            .Include(l => l.ExtractedValues)
+            .ThenInclude(e => e.Roi)
+            .FirstOrDefaultAsync(ls => ls.Id == command.LogsheetId, ct);
+
         if (logsheet is null)
         {
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("Logsheet not found"));

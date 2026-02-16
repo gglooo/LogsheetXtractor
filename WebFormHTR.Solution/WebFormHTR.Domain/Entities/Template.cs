@@ -13,6 +13,7 @@ public class Template : BaseEntity
     public virtual Template? Parent { get; set; }
     public Guid? BacksideTemplateId { get; private set; }
     public virtual Template? BacksideTemplate { get; private set; }
+    public bool IsBackside { get; set; } = false;
     public Guid FileId { get; set; }
     public virtual File File { get; set; }
 
@@ -44,6 +45,7 @@ public class Template : BaseEntity
 
         BacksideTemplate = backsideTemplate;
         BacksideTemplateId = backsideTemplate.Id;
+        backsideTemplate.IsBackside = true;
     }
 
     public void ForceSetBacksideTemplate(Template? backsideTemplate)
@@ -57,5 +59,6 @@ public class Template : BaseEntity
 
         BacksideTemplate = backsideTemplate;
         BacksideTemplateId = backsideTemplate.Id;
+        backsideTemplate.IsBackside = true;
     }
 }

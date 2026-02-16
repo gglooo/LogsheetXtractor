@@ -88,7 +88,7 @@ export const useResetProofreadingMutation = () => {
                 throw new Error("Failed to reset proofreading");
             }
 
-            return await logsheetSchema.parseAsync(await response.json());
+            return;
         },
         onSuccess: (_data, logsheetId) => {
             queryClient.invalidateQueries({

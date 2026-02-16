@@ -18,6 +18,12 @@ public class LogsheetExportService(IAppDbContext dbContext, IHtrScriptEngine scr
             .Include(l => l.ExtractedValues)
             .Include(l => l.Template)
             .ThenInclude(t => t.Rois)
+            .Include(l => l.Template)
+            .ThenInclude(t => t.BacksideTemplate)
+            .ThenInclude(t => t.Rois)
+            .Include(l => l.Template)
+            .ThenInclude(t => t.BacksideTemplate)
+            .ThenInclude(t => t.File)
             .FirstOrDefaultAsync(ls => ls.Id == logsheetId, ct);
 
         if (logsheet is null)
@@ -29,7 +35,8 @@ public class LogsheetExportService(IAppDbContext dbContext, IHtrScriptEngine scr
         exportData.AddRange(logsheet.ExtractedValues.Select(extractedValue => new ExportLogsheetDataDto
         {
             VariableName = extractedValue.Roi.VariableName, Value = extractedValue.Value,
-            Coordinates = mapper.Map<ExportCoordinateDto>(extractedValue.Roi.Coordinates)
+            Coordinates = mapper.Map<ExportCoordinateDto>(extractedValue.Roi.Coordinates),
+            Page = extractedValue.IsBackside ? 1 : 0
         }));
 
 

@@ -95,7 +95,7 @@ export const TemplateListItem = ({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{template.name}</CardTitle>
+                <CardTitle className="hyphens-auto">{template.name}</CardTitle>
                 <CardDescription>
                     {format(new Date(template.createdAt), "PPP p")}
                 </CardDescription>

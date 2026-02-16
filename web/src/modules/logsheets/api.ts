@@ -216,11 +216,17 @@ export const useAutomaticAlignLogsheetMutation = () => {
     });
 };
 
-export const useLogsheetImage = (logsheetId?: string | null) =>
+export const useLogsheetImage = (
+    logsheetId?: string | null,
+    isBackSide?: boolean,
+) =>
     useQuery({
-        queryKey: ["logsheets", logsheetId, "image"],
+        queryKey: ["logsheets", logsheetId, "image", isBackSide],
         refetchOnWindowFocus: false,
-        queryFn: async () => fileQueryFn(`/api/logsheets/${logsheetId}/image`),
+        queryFn: async () =>
+            fileQueryFn(
+                `/api/logsheets/${logsheetId}/image${isBackSide ? "?backside=true" : ""}`,
+            ),
         enabled: !!logsheetId,
     });
 

@@ -17,26 +17,31 @@ public static class GetLogsheetImageHandler
     public static async Task<Result<GetFileDto>> Handle(
         GetLogsheetImageQuery query,
         IAppDbContext dbContext,
-        ICoordinateTransformerService coordinateTransformerService,
         IPdfCropperService pdfCropperService,
         IFileService fileService,
         CancellationToken cancellationToken)
     {
         var logsheet = await dbContext.Logsheets
+            .AsNoTracking()
             .Include(l => l.Template)
-            .ThenInclude(t => t.BacksideTemplate)
             .FirstOrDefaultAsync(l => l.Id == query.LogsheetId, cancellationToken);
         if (logsheet is null)
         {
             return Result.Fail<GetFileDto>(new NotFoundError("Logsheet not found"));
         }
 
+        var backsideTemplate = !query.IsFrontside
+            ? await dbContext.Templates
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == logsheet.Template.BacksideTemplateId, cancellationToken)
+            : null;
+
         var alignmentData = query.IsFrontside
             ? logsheet.AlignmentDataModelConfig.Frontside
             : logsheet.AlignmentDataModelConfig.Backside;
         var template = query.IsFrontside
             ? logsheet.Template
-            : logsheet.Template.BacksideTemplate;
+            : backsideTemplate;
 
         if (template is null)
         {
@@ -57,8 +62,10 @@ public static class GetLogsheetImageHandler
 
         var outputScale = 2;
         var dstPoints = GetTemplateCorners(template, outputScale);
+        var page = query.IsFrontside ? 0 : 1;
 
-        var warpedStream = pdfCropperService.GetWarpedSection(pdfStream.ToByteArray(), 0, srcPoints, dstPoints,
+        var warpedStream = pdfCropperService.GetWarpedSection(pdfStream.ToByteArray(), page, srcPoints,
+            dstPoints,
             template.Width * outputScale ?? 0, template.Height * outputScale ?? 0,
             template.Width ?? 0, template.Height ?? 0, cancellationToken);
 

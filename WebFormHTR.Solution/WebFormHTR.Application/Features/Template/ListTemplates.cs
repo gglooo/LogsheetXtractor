@@ -22,9 +22,11 @@ public static class ListTemplatesHandler
         }
 
         var templates = query
+            .Where(t => !t.IsBackside)
             .Include(t => t.Parent)
             .Include(t => t.File)
             .Include(t => t.Rois)
+            .OrderByDescending(t => t.CreatedAt)
             .AsNoTracking().ToList();
 
         return Task.FromResult(Result.Ok(mapper.Map<IEnumerable<TemplateListDto>>(templates)));

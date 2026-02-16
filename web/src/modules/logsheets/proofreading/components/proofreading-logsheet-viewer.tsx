@@ -14,12 +14,14 @@ import React, { useCallback, useRef } from "react";
 
 export const ProofreadingLogsheetViewer = ({
     logsheet,
+    backside,
     template,
     onRoiClick,
     shouldRenderRoiFn: customShouldRenderRoiFn,
 }: {
     logsheet: LogsheetType;
     template: TemplateType;
+    backside?: boolean;
     onRoiClick?: (roiId: string) => void;
     shouldRenderRoiFn?: (roi: RoiType) => boolean;
 }) => {
@@ -29,7 +31,7 @@ export const ProofreadingLogsheetViewer = ({
 
     const { rois } = useTemplateEditor();
 
-    const logsheetImageQuery = useLogsheetImage(logsheet.id);
+    const logsheetImageQuery = useLogsheetImage(logsheet.id, backside);
 
     const referenceScale = getScaleFromReferenceScale(
         width,

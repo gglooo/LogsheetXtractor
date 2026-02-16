@@ -9,6 +9,7 @@ public class ExportLogsheetDataDto
 
     [JsonPropertyName("varname")] public string VariableName { get; set; } = string.Empty;
     [JsonPropertyName("content")] public string Value { get; set; } = string.Empty;
+    [JsonPropertyName("page")] public int Page { get; set; } = 0;
 }
 
 public class ExportCoordinateDto

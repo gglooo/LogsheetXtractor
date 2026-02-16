@@ -153,8 +153,11 @@ public class PythonHtrAdapter(
         var configPath = await fileStorageService.SaveTemporaryFileAsync(configBytes, configName, ct);
 
         var outputFilePath = fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_exported_logsheet.csv");
+
+        var backsideArgs = await inputPreparer.CreateBacksideArgumentAsync(logsheet, ct);
+
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ExportLogsheet,
-            $"--pdf_logsheet {filePath} --pdf_template {templatePath} --config_file {configPath} --output_file {outputFilePath} {alignmentArgument}",
+            $"--pdf_logsheet {filePath} --pdf_template {templatePath} --config_file {configPath} --output_file {outputFilePath} {alignmentArgument} {backsideArgs}",
             ct);
 
         var fileStream = fileStorageService.GetTemporaryFile(outputFilePath);
