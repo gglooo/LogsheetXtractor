@@ -179,6 +179,10 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.align",
                         defaultMessage: "Align",
                     })}
+                    disabled={
+                        logsheet.status === "Completed" ||
+                        logsheet.status === "NeedsReview"
+                    }
                     onClick={() =>
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/align`,
@@ -194,27 +198,28 @@ export const LogsheetTableActions = ({
 
                 <ActionsInDialog logsheet={logsheet} />
 
-                {!logsheet.processedAt && (
-                    <Button
-                        variant="outline"
-                        disabled={processLogsheetMutation.isPending}
-                        onClick={handleProcess}
-                        title={intl.formatMessage({
-                            id: "logsheets.actions.process",
-                            defaultMessage: "Process",
-                        })}
-                        tooltip={intl.formatMessage({
-                            id: "logsheets.actions.process",
-                            defaultMessage: "Process",
-                        })}
-                    >
-                        {processLogsheetMutation.isPending ? (
-                            <Spinner />
-                        ) : (
-                            <FileCog className="h-4 w-4" />
-                        )}
-                    </Button>
-                )}
+                {logsheet.status !== "Completed" &&
+                    logsheet.status !== "NeedsReview" && (
+                        <Button
+                            variant="outline"
+                            disabled={processLogsheetMutation.isPending}
+                            onClick={handleProcess}
+                            title={intl.formatMessage({
+                                id: "logsheets.actions.process",
+                                defaultMessage: "Process",
+                            })}
+                            tooltip={intl.formatMessage({
+                                id: "logsheets.actions.process",
+                                defaultMessage: "Process",
+                            })}
+                        >
+                            {processLogsheetMutation.isPending ? (
+                                <Spinner />
+                            ) : (
+                                <FileCog className="h-4 w-4" />
+                            )}
+                        </Button>
+                    )}
             </div>
             <Dialog open={processLogsheetMutation.isPending}>
                 <DialogContent>

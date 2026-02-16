@@ -8,7 +8,8 @@ public record LogsheetListDto(
     Guid TemplateId,
     FileDto File,
     ELogSheetStatus Status,
-    bool IsAligned,
+    bool IsFrontAligned,
+    bool IsBackAligned,
     DateTime? ProcessedAt,
     DateTime CreatedAt,
     DateTime? UpdatedAt

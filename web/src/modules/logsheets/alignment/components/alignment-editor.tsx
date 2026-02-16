@@ -39,6 +39,9 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
 
     const [activeSide, setActiveSide] = useState<"front" | "back">("front");
 
+    const [isFrontDirty, setIsFrontDirty] = useState(false);
+    const [isBackDirty, setIsBackDirty] = useState(false);
+
     const [frontCoordinates, setFrontCoordinates] = useState<Position[]>(
         logsheet.alignmentData?.frontside ??
             getDefaultCoords(logsheet.template.width, logsheet.template.height),
@@ -70,12 +73,16 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
 
     const handleSave = async () => {
         try {
+            const shouldSendFrontside =
+                !!logsheet.alignmentData?.frontside || isFrontDirty;
+            const shouldSendBackside =
+                template?.backsideTemplate &&
+                (!!logsheet.alignmentData?.backside || isBackDirty);
+
             await alignMutation.mutateAsync({
                 logsheetId: logsheet.id,
-                frontside: frontCoordinates,
-                backside: template?.backsideTemplate
-                    ? backCoordinates
-                    : undefined,
+                frontside: shouldSendFrontside ? frontCoordinates : undefined,
+                backside: shouldSendBackside ? backCoordinates : undefined,
             });
             toast.success(
                 intl.formatMessage({
@@ -199,7 +206,10 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                     </Button>
                     <Button
                         onClick={handleSave}
-                        disabled={alignMutation.isPending}
+                        disabled={
+                            alignMutation.isPending ||
+                            (!isFrontDirty && !isBackDirty)
+                        }
                     >
                         {intl.formatMessage({
                             id: "alignment.save",
@@ -244,8 +254,14 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                             }
                             onChange={
                                 activeSide === "front"
-                                    ? setFrontCoordinates
-                                    : setBackCoordinates
+                                    ? (coords) => {
+                                          setFrontCoordinates(coords);
+                                          setIsFrontDirty(true);
+                                      }
+                                    : (coords) => {
+                                          setBackCoordinates(coords);
+                                          setIsBackDirty(true);
+                                      }
                             }
                             templateWidth={templateWidth}
                         />

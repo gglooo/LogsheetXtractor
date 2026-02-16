@@ -75,7 +75,8 @@ public class MappingConfig : IRegister
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
-            .Map(dest => dest.IsAligned, src => src.AlignmentData != null);
+            .Map(dest => dest.IsFrontAligned, src => src.AlignmentDataModelConfig.Frontside != null)
+            .Map(dest => dest.IsBackAligned, src => src.AlignmentDataModelConfig.Backside != null);
 
         config.NewConfig<CreateRoiDto, Roi>()
             .Map(dest => dest.Type, src => src.Type)

@@ -72,21 +72,39 @@ export const useLogsheetsColumns = () => {
             }),
             cell: (info) => <ProcessedBadge processedAt={info.getValue()} />,
         }),
-        columnHelper.accessor("isAligned", {
+        columnHelper.accessor("isFrontAligned", {
+            id: "alignment",
             header: intl.formatMessage({
                 id: "logsheets.table.columns.alignmentStatus",
                 defaultMessage: "Aligned",
             }),
-            cell: (info) =>
-                info.getValue()
-                    ? intl.formatMessage({
-                          id: "logsheets.table.columns.alignmentStatus.yes",
-                          defaultMessage: "Yes",
-                      })
-                    : intl.formatMessage({
-                          id: "logsheets.table.columns.alignmentStatus.no",
-                          defaultMessage: "No",
-                      }),
+            cell: (info) => {
+                const isFront = info.row.original.isFrontAligned;
+                const isBack = info.row.original.isBackAligned;
+
+                if (isFront && isBack) {
+                    return intl.formatMessage({
+                        id: "logsheets.table.columns.alignmentStatus.both",
+                        defaultMessage: "Both sides",
+                    });
+                }
+                if (isFront) {
+                    return intl.formatMessage({
+                        id: "logsheets.table.columns.alignmentStatus.front",
+                        defaultMessage: "Front",
+                    });
+                }
+                if (isBack) {
+                    return intl.formatMessage({
+                        id: "logsheets.table.columns.alignmentStatus.back",
+                        defaultMessage: "Back",
+                    });
+                }
+                return intl.formatMessage({
+                    id: "logsheets.table.columns.alignmentStatus.no",
+                    defaultMessage: "No",
+                });
+            },
         }),
         columnHelper.display({
             id: "actions",

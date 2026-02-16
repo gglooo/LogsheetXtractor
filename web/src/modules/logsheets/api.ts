@@ -160,7 +160,7 @@ export const useAlignLogsheetMutation = () => {
             backside,
         }: {
             logsheetId: string;
-            frontside: Position[];
+            frontside?: Position[];
             backside?: Position[];
         }) => {
             const response = await fetch(
@@ -172,7 +172,7 @@ export const useAlignLogsheetMutation = () => {
                     },
                     body: JSON.stringify({
                         alignment: {
-                            frontside: frontside.map((p) => ({
+                            frontside: frontside?.map((p) => ({
                                 x: Math.round(p.x),
                                 y: Math.round(p.y),
                             })),

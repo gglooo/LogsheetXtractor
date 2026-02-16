@@ -5,6 +5,7 @@ using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.ValueObjects;
+using WebFormHTR.Domain.Enums;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
@@ -25,6 +26,11 @@ public static class SetLogsheetAlignmentHandler
         if (logsheet is null)
         {
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("Logsheet not found"));
+        }
+
+        if (logsheet.Status == ELogSheetStatus.Completed || logsheet.Status == ELogSheetStatus.NeedsReview)
+        {
+            return Result.Fail<LogsheetDetailDto>(new ValidationError("Logsheet is already processed and cannot be re-aligned."));
         }
 
         logsheet.AlignmentDataModelConfig = mapper.Map<AlignmentContainer>(command.AlignmentData);

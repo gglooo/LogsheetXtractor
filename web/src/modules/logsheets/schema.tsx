@@ -63,7 +63,8 @@ export const logsheetListSchema = baseSchema.extend({
     file: fileSchema,
     status: logsheetStatusSchema,
     processedAt: dateSchema.nullable(),
-    isAligned: z.boolean(),
+    isFrontAligned: z.boolean(),
+    isBackAligned: z.boolean(),
 });
 
 export type LogsheetListType = z.infer<typeof logsheetListSchema>;
