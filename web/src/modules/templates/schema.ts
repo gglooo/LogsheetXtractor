@@ -37,8 +37,17 @@ const baseTemplateDetailSchema = baseSchema.extend({
     residuals: z.array(residualSchema),
 });
 
+const templateReferenceSchema = z.object({
+    id: z.guid(),
+    name: z.string(),
+    width: z.number(),
+    height: z.number(),
+    fileId: z.guid(),
+});
+
 export const templateSchema = baseTemplateDetailSchema.extend({
-    backsideTemplate: baseTemplateDetailSchema.nullish(),
+    frontsideTemplate: templateReferenceSchema.nullish(),
+    backsideTemplate: templateReferenceSchema.nullish(),
 });
 
 export const baseCreateTemplateSchema = z.object({

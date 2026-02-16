@@ -11,11 +11,11 @@ public record TemplateDetailDto(
     int Width,
     int Height,
     TemplateWithoutParentDto? Parent,
-    TemplateDetailDto? BacksideTemplate,
+    TemplateReferenceDto? BacksideTemplate,
+    TemplateReferenceDto? FrontsideTemplate,
     FileDto? File,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
     IEnumerable<RoiDto> Rois,
     IEnumerable<ResidualDto> Residuals
-// TODO: add logsheets, etc
 );

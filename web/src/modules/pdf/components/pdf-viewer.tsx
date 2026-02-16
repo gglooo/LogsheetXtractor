@@ -26,11 +26,12 @@ export const PdfViewer = ({
     pageNumber?: number;
 }) => {
     const file = useFile(fileId);
+    const fileBytes = file.data?.bytes;
     const fileData = useMemo(() => {
-        return file.data?.bytes
-            ? { data: new Uint8Array(file.data.bytes.slice(0)) }
+        return fileBytes
+            ? { data: new Uint8Array(fileBytes.slice(0)) }
             : undefined;
-    }, [file.data]);
+    }, [fileBytes]);
 
     const { scale, width } = useSvgZoom();
 

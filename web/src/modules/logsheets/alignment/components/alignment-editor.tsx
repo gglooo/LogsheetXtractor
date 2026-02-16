@@ -55,7 +55,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     );
 
     const frontFile = usePdfFileImage(logsheet.template.fileId);
-    const backFile = usePdfFileImage(template?.backsideTemplate?.file?.id);
+    const backFile = usePdfFileImage(template?.backsideTemplate?.fileId);
 
     const templateWidth =
         activeSide === "front"

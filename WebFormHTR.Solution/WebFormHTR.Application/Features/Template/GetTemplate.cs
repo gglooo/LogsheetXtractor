@@ -17,7 +17,8 @@ public static class GetTemplateHandler
             .AsNoTracking()
             .Include(t => t.Rois)
             .Include(t => t.BacksideTemplate)
-            .ThenInclude(t => t!.Rois)
+            .Include(t => t.FrontsideTemplate)
+            .Include(t => t.File)
             .FirstOrDefault(t => t.Id == request.Id);
 
         var result = template is null ? null : mapper.Map<TemplateDetailDto>(template);

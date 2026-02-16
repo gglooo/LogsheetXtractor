@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useSetRoisMutation } from "@/modules/rois/api";
 import { CancelDialog } from "@/modules/template-editor/components/cancel-dialog";
+import { TemplateSideToggle } from "@/modules/template-editor/components/template-side-toggle";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
@@ -34,7 +35,7 @@ export const EditorNavbar = () => {
                     id: "template-editor.navbar.save-rois.duplicate-roi-message",
                     defaultMessage:
                         "There are duplicate ROI variable names, please name then uniquely.",
-                })
+                }),
             );
             return;
         }
@@ -81,6 +82,7 @@ export const EditorNavbar = () => {
                 <div className="text-lg font-bold">Template Editor</div>
             </div>
             <div className="flex items-center gap-2 p-4">
+                <TemplateSideToggle />
                 <Button size="sm" variant="outline" onClick={handleCancel}>
                     Cancel
                 </Button>
