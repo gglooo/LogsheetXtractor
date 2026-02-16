@@ -11,6 +11,9 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TemplateEditButton } from "@/modules/dashboard/components/template-edit-button";
@@ -64,9 +67,9 @@ export const TemplateListItem = ({
         }
     };
 
-    const handleExportConfig = async () => {
+    const handleExportConfig = async (id: string) => {
         try {
-            await exportConfigMutation.mutateAsync({ templateId: template.id });
+            await exportConfigMutation.mutateAsync({ templateId: id });
             toast.success(
                 intl.formatMessage({
                     id: "templates.actions.export.success",
@@ -112,13 +115,53 @@ export const TemplateListItem = ({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <CloneTemplateAction templateId={template.id} />
-                            <DropdownMenuItem onClick={handleExportConfig}>
-                                <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
-                                {intl.formatMessage({
-                                    id: "templates.actions.export",
-                                    defaultMessage: "Export config",
-                                })}
-                            </DropdownMenuItem>
+                            {template.backsideTemplateId ? (
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
+                                        {intl.formatMessage({
+                                            id: "templates.actions.export",
+                                            defaultMessage: "Export config",
+                                        })}
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                handleExportConfig(template.id)
+                                            }
+                                        >
+                                            {intl.formatMessage({
+                                                id: "templates.actions.export.frontside",
+                                                defaultMessage: "Frontside",
+                                            })}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                handleExportConfig(
+                                                    template.backsideTemplateId!,
+                                                )
+                                            }
+                                        >
+                                            {intl.formatMessage({
+                                                id: "templates.actions.export.backside",
+                                                defaultMessage: "Backside",
+                                            })}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                            ) : (
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleExportConfig(template.id)
+                                    }
+                                >
+                                    <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
+                                    {intl.formatMessage({
+                                        id: "templates.actions.export",
+                                        defaultMessage: "Export config",
+                                    })}
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                                 className="text-destructive"
                                 onClick={handleDeleteTemplate}
