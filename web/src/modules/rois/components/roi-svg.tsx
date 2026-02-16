@@ -48,11 +48,12 @@ export const RoiSvg = React.memo(
         const stroke = isSelected
             ? SELECTED_ROI_COLOR
             : isDuplicate
-            ? DUPLICATE_ROI_COLOR
-            : DEFAULT_ROI_COLOR;
+              ? DUPLICATE_ROI_COLOR
+              : DEFAULT_ROI_COLOR;
 
         return (
             <g
+                id={`roi-${roi.id}`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 onMouseDown={(e: React.MouseEvent) => {
@@ -169,5 +170,5 @@ export const RoiSvg = React.memo(
                 ) : null}
             </g>
         );
-    }
+    },
 );

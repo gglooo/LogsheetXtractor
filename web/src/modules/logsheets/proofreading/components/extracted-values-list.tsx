@@ -8,6 +8,7 @@ import { ExtractedValueCard } from "./extracted-value-card";
 type ExtractedValuesListProps = {
     extractedValues: ExtractedValueType[];
     className?: string;
+    onRoiClick?: (roiId: string) => void;
 };
 
 export type ExtractedValuesListHandle = {
@@ -17,14 +18,14 @@ export type ExtractedValuesListHandle = {
 export const ExtractedValuesList = forwardRef<
     ExtractedValuesListHandle,
     ExtractedValuesListProps
->(({ extractedValues, className }, ref) => {
+>(({ extractedValues, className, onRoiClick }, ref) => {
     const virtuosoRef = useRef<VirtuosoHandle>(null);
     const { setSelectedRoiIds, selectedRoiIds } = useSelectedRois();
 
     useImperativeHandle(ref, () => ({
         scrollToRoi: (roiId: string) => {
             const index = extractedValues.findIndex(
-                (val) => val.roiId === roiId
+                (val) => val.roiId === roiId,
             );
 
             if (index !== -1 && virtuosoRef.current) {
@@ -40,8 +41,9 @@ export const ExtractedValuesList = forwardRef<
     const handleSelect = useCallback(
         (roiId: string) => {
             setSelectedRoiIds([roiId]);
+            onRoiClick?.(roiId);
         },
-        [setSelectedRoiIds]
+        [setSelectedRoiIds, onRoiClick],
     );
 
     if (extractedValues.length === 0) {
@@ -49,7 +51,7 @@ export const ExtractedValuesList = forwardRef<
             <div
                 className={cn(
                     "flex items-center justify-center h-full p-4",
-                    className
+                    className,
                 )}
             >
                 No extracted values to process

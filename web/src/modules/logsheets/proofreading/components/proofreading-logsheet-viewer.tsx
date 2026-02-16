@@ -7,7 +7,6 @@ import type { LogsheetType } from "@/modules/logsheets/schema";
 import { RoiSvg } from "@/modules/rois/components/roi-svg";
 import type { RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
-import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { getScaleFromReferenceScale } from "@/modules/template-editor/utils/coordinates";
 import type { TemplateType } from "@/modules/templates/schema";
 import React, { useCallback, useRef } from "react";
@@ -16,20 +15,20 @@ export const ProofreadingLogsheetViewer = ({
     logsheet,
     backside,
     template,
+    rois,
     onRoiClick,
     shouldRenderRoiFn: customShouldRenderRoiFn,
 }: {
     logsheet: LogsheetType;
     template: TemplateType;
     backside?: boolean;
+    rois: RoiType[];
     onRoiClick?: (roiId: string) => void;
     shouldRenderRoiFn?: (roi: RoiType) => boolean;
 }) => {
     const { scale, width } = useSvgZoom();
 
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
-
-    const { rois } = useTemplateEditor();
 
     const logsheetImageQuery = useLogsheetImage(logsheet.id, backside);
 
@@ -90,11 +89,7 @@ export const ProofreadingLogsheetViewer = ({
                     alt="Logsheet"
                 />
             )}
-            <SvgCanvas
-                width={template.width}
-                rois={rois ?? []}
-                render={renderRoi}
-            />
+            <SvgCanvas width={template.width} rois={rois} render={renderRoi} />
         </div>
     );
 };

@@ -40,8 +40,23 @@ export const ProofreadingPage = () => {
         templateId!,
     );
 
+    const { data: backsideTemplate, isLoading: isBackTemplateLoading } =
+        useTemplate(template?.backsideTemplate?.id ?? "");
+
     const handleRoiClick = (roiId: string) => {
         unverifiedListRef.current?.scrollToRoi(roiId);
+
+        const element = document.getElementById(`roi-${roiId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    };
+
+    const handleListRoiClick = (roiId: string) => {
+        const element = document.getElementById(`roi-${roiId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
     };
 
     const shouldRenderRoiFn = useCallback(
@@ -51,7 +66,15 @@ export const ProofreadingPage = () => {
         [unverifiedExtractedValuesMap],
     );
 
-    if (isLogsheetLoading || isTemplateLoading || !logsheet || !template) {
+    if (
+        isLogsheetLoading ||
+        isTemplateLoading ||
+        !logsheet ||
+        !template ||
+        (template.backsideTemplate &&
+            isBackTemplateLoading &&
+            !backsideTemplate)
+    ) {
         return (
             <div className="h-screen w-screen flex items-center justify-center">
                 <Spinner />
@@ -72,14 +95,29 @@ export const ProofreadingPage = () => {
                             <ResizablePanel defaultSize={75} minSize={30}>
                                 <div className="h-full border-r border-border relative overflow-scroll p-4 bg-muted/30">
                                     <SvgWrapper includeHistoryControls={false}>
-                                        <ProofreadingLogsheetViewer
-                                            logsheet={logsheet}
-                                            template={template}
-                                            onRoiClick={handleRoiClick}
-                                            shouldRenderRoiFn={
-                                                shouldRenderRoiFn
-                                            }
-                                        />
+                                        <div className="flex flex-col gap-8">
+                                            <ProofreadingLogsheetViewer
+                                                logsheet={logsheet}
+                                                template={template}
+                                                rois={template.rois}
+                                                onRoiClick={handleRoiClick}
+                                                shouldRenderRoiFn={
+                                                    shouldRenderRoiFn
+                                                }
+                                            />
+                                            {backsideTemplate ? (
+                                                <ProofreadingLogsheetViewer
+                                                    logsheet={logsheet}
+                                                    template={backsideTemplate}
+                                                    rois={backsideTemplate.rois}
+                                                    backside={true}
+                                                    onRoiClick={handleRoiClick}
+                                                    shouldRenderRoiFn={
+                                                        shouldRenderRoiFn
+                                                    }
+                                                />
+                                            ) : null}
+                                        </div>
                                     </SvgWrapper>
                                 </div>
                             </ResizablePanel>
@@ -141,6 +179,9 @@ export const ProofreadingPage = () => {
                                                     extractedValues={
                                                         unverifiedExtractedValues
                                                     }
+                                                    onRoiClick={
+                                                        handleListRoiClick
+                                                    }
                                                 />
                                             </TabsContent>
                                             <TabsContent
@@ -151,6 +192,9 @@ export const ProofreadingPage = () => {
                                                     className="h-full"
                                                     extractedValues={
                                                         verifiedExtractedValues
+                                                    }
+                                                    onRoiClick={
+                                                        handleListRoiClick
                                                     }
                                                 />
                                             </TabsContent>
