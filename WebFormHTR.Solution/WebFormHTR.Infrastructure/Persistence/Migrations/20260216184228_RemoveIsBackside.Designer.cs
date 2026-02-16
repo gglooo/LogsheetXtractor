@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebFormHTR.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using WebFormHTR.Infrastructure.Persistence;
 namespace WebFormHTR.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260216184228_RemoveIsBackside")]
+    partial class RemoveIsBackside
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
@@ -129,6 +132,9 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TemplateId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("TemplateId1")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
@@ -138,6 +144,8 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.HasIndex("TemplateId");
+
+                    b.HasIndex("TemplateId1");
 
                     b.ToTable("Logsheets");
                 });
@@ -289,6 +297,10 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("WebFormHTR.Domain.Entities.Template", null)
+                        .WithMany("BacksideLogsheets")
+                        .HasForeignKey("TemplateId1");
+
                     b.Navigation("File");
 
                     b.Navigation("Template");
@@ -404,6 +416,8 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Template", b =>
                 {
+                    b.Navigation("BacksideLogsheets");
+
                     b.Navigation("Children");
 
                     b.Navigation("FrontsideTemplate");

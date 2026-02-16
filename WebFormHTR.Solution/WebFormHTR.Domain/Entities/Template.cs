@@ -13,7 +13,7 @@ public class Template : BaseEntity
     public virtual Template? Parent { get; set; }
     public Guid? BacksideTemplateId { get; private set; }
     public virtual Template? BacksideTemplate { get; private set; }
-    public bool IsBackside { get; set; } = false;
+    public virtual Template? FrontsideTemplate { get; set; }
     public Guid FileId { get; set; }
     public virtual File File { get; set; }
 
@@ -21,7 +21,6 @@ public class Template : BaseEntity
     public virtual ICollection<Residual> Residuals { get; set; } = new List<Residual>();
     public virtual ICollection<Roi> Rois { get; set; } = new List<Roi>();
     public virtual ICollection<Logsheet> Logsheets { get; set; } = new List<Logsheet>();
-    public virtual ICollection<Logsheet> BacksideLogsheets { get; set; } = new List<Logsheet>();
 
     public void SetBacksideTemplate(Template? backsideTemplate)
     {
@@ -45,7 +44,6 @@ public class Template : BaseEntity
 
         BacksideTemplate = backsideTemplate;
         BacksideTemplateId = backsideTemplate.Id;
-        backsideTemplate.IsBackside = true;
     }
 
     public void ForceSetBacksideTemplate(Template? backsideTemplate)
@@ -59,6 +57,5 @@ public class Template : BaseEntity
 
         BacksideTemplate = backsideTemplate;
         BacksideTemplateId = backsideTemplate.Id;
-        backsideTemplate.IsBackside = true;
     }
 }

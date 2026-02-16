@@ -46,7 +46,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Template>()
             .HasQueryFilter(e => e.DeletedAt == null)
             .HasOne<Template>(t => t.BacksideTemplate)
-            .WithOne()
+            .WithOne(t => t.FrontsideTemplate)
             .HasForeignKey<Template>(t => t.BacksideTemplateId)
             .OnDelete(DeleteBehavior.SetNull);
         modelBuilder.Entity<Template>()
