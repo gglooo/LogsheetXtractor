@@ -1,3 +1,4 @@
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -21,15 +22,16 @@ export function Navbar() {
                     <a href="/" className="flex items-center space-x-2">
                         <span className="font-bold text-lg">
                             {intl.formatMessage({
-                                id: "navbar.logo",
-                                defaultMessage: "LOGO",
+                                id: "navbar.title",
+                                defaultMessage: "webFormHTR",
                             })}
                         </span>
                     </a>
                 </div>
 
-                <div className="hidden md:flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-4">
                     <CreateTemplateAction />
+                    <ModeToggle />
                 </div>
 
                 <div className="md:hidden">

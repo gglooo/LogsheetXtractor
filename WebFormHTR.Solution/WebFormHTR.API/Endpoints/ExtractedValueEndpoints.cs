@@ -38,4 +38,15 @@ public static class ExtractedValueEndpoints
 
         return result.ToHttpResult();
     }
+    [WolverinePost("/api/extracted-values/batch/verify")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ExtractedValueDto>))]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
+    public static async Task<IResult> BatchVerifyExtractedValues(BatchVerifyExtractedValuesCommand command, IMessageBus bus,
+        CancellationToken ct)
+    {
+        var result = await bus.InvokeAsync<Result<IEnumerable<ExtractedValueDto>>>(command, ct);
+
+        return result.ToHttpResult();
+    }
 }

@@ -7,6 +7,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SvgWrapper } from "@/modules/canvas/svg-wrapper";
+import { VerifyAllExtractedValuesAction } from "@/modules/logsheets/proofreading/actions/verify-all-extracted-values-action";
 import {
     ExtractedValuesList,
     type ExtractedValuesListHandle,
@@ -171,18 +172,26 @@ export const ProofreadingPage = () => {
                                         <div className="flex-1 overflow-hidden min-h-0 bg-background relative">
                                             <TabsContent
                                                 value="unverified"
-                                                className="absolute inset-0 m-0 data-[state=inactive]:hidden"
+                                                className="absolute inset-0 m-0 data-[state=inactive]:hidden flex flex-col"
                                             >
-                                                <ExtractedValuesList
-                                                    ref={unverifiedListRef}
-                                                    className="h-full"
-                                                    extractedValues={
+                                                <VerifyAllExtractedValuesAction
+                                                    logsheetId={id!}
+                                                    unverifiedExtractedValues={
                                                         unverifiedExtractedValues
                                                     }
-                                                    onRoiClick={
-                                                        handleListRoiClick
-                                                    }
                                                 />
+                                                <div className="flex-1 overflow-hidden">
+                                                    <ExtractedValuesList
+                                                        ref={unverifiedListRef}
+                                                        className="h-full"
+                                                        extractedValues={
+                                                            unverifiedExtractedValues
+                                                        }
+                                                        onRoiClick={
+                                                            handleListRoiClick
+                                                        }
+                                                    />
+                                                </div>
                                             </TabsContent>
                                             <TabsContent
                                                 value="verified"

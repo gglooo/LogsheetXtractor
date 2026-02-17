@@ -1,10 +1,10 @@
 using FluentResults;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Enums;
-
 using Microsoft.Extensions.Logging;
 
 namespace WebFormHTR.Application.Features.Logsheets;
@@ -24,7 +24,10 @@ public static class CompleteLogsheetProofreadingHandler
     {
         logger.LogInformation("Completing proofreading for Logsheet {LogsheetId}", request.LogsheetId);
 
-        var logsheet = dbContext.Logsheets.FirstOrDefault(l => l.Id == request.LogsheetId);
+        var logsheet = dbContext.Logsheets
+            .Include(l => l.ExtractedValues)
+            .ThenInclude(eV => eV.Roi)
+            .FirstOrDefault(l => l.Id == request.LogsheetId);
         if (logsheet is null)
         {
             logger.LogWarning("Logsheet {LogsheetId} not found", request.LogsheetId);
@@ -37,7 +40,9 @@ public static class CompleteLogsheetProofreadingHandler
 
         if (logsheet.Status != ELogSheetStatus.NeedsReview || !areAllValuesVerified)
         {
-            logger.LogWarning("Proofreading completion failed validation for Logsheet {LogsheetId}. Status: {Status}, AllValuesVerified: {Verified}", request.LogsheetId, logsheet.Status, areAllValuesVerified);
+            logger.LogWarning(
+                "Proofreading completion failed validation for Logsheet {LogsheetId}. Status: {Status}, AllValuesVerified: {Verified}",
+                request.LogsheetId, logsheet.Status, areAllValuesVerified);
             return Result.Fail(
                 new InvalidStateError("Logsheet is not in a state that allows completing proofreading."));
         }

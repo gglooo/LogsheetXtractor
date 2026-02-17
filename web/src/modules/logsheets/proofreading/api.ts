@@ -46,6 +46,42 @@ export const useVerifyExtractedValueMutation = (logsheetId: string) => {
     });
 };
 
+export const useVerifyExtractedValuesMutation = (logsheetId: string) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({
+            extractedValueIds,
+            correctedValue,
+        }: {
+            extractedValueIds: string[];
+            correctedValue?: string;
+        }) => {
+            const response = await fetch(`/api/extracted-values/batch/verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ids: extractedValueIds,
+                    correctedValue,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to verify extracted values");
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["logsheets", logsheetId],
+            });
+        },
+    });
+};
+
 export const useCompleteProofreadingMutation = (logsheetId: string) => {
     const queryClient = useQueryClient();
 
