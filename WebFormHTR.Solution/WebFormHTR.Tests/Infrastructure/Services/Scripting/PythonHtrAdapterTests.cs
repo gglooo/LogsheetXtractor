@@ -94,7 +94,7 @@ public class PythonHtrAdapterTests
                     "TestROI",
                     template.Id,
                     ERoiType.Handwritten,
-                    new Coordinates { X = 10, Y = 20, Width = 100, Height = 50 },
+                    new Coordinates(10, 20, 100, 50),
                     DateTime.UtcNow,
                     null
                 )
@@ -106,7 +106,7 @@ public class PythonHtrAdapterTests
                     Guid.NewGuid(),
                     template.Id,
                     "Ignored Content",
-                    new Coordinates { X = 200, Y = 200, Width = 50, Height = 50 },
+                    new Coordinates(200, 200, 50, 50),
                     DateTime.UtcNow,
                     null
                 )

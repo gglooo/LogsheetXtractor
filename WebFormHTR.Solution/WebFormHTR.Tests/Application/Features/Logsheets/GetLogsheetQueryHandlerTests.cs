@@ -94,7 +94,7 @@ public class GetLogsheetQueryHandlerTests : IDisposable
             Template = template,
             VariableName = "TestVariable",
             Type = Domain.Enums.ERoiType.Handwritten,
-            Coordinates = new Domain.ValueObjects.Coordinates { X = 1, Y = 1, Width = 10, Height = 10 }
+            Coordinates = new Domain.ValueObjects.Coordinates(1, 1, 10, 10)
         };
 
         var file = new Domain.Entities.File

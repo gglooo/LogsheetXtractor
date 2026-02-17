@@ -41,7 +41,7 @@ public class ListResidualsForTemplateQueryHandlerTests : IDisposable
             Id = Guid.NewGuid(),
             TemplateId = templateId,
             Content = "Content 1",
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 },
+            Coordinates = new Coordinates(0, 0, 10, 10),
             Template = null!
         };
         var residual2 = new Residual
@@ -49,7 +49,7 @@ public class ListResidualsForTemplateQueryHandlerTests : IDisposable
             Id = Guid.NewGuid(),
             TemplateId = templateId,
             Content = "Content 2",
-            Coordinates = new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 },
+            Coordinates = new Coordinates(10, 10, 20, 20),
             Template = null!
         };
         var otherResidual = new Residual
@@ -57,7 +57,7 @@ public class ListResidualsForTemplateQueryHandlerTests : IDisposable
             Id = Guid.NewGuid(),
             TemplateId = otherTemplateId,
             Content = "Other Content",
-            Coordinates = new Coordinates { X = 20, Y = 20, Width = 30, Height = 30 },
+            Coordinates = new Coordinates(20, 20, 30, 30),
             Template = null!
         };
 

@@ -38,8 +38,8 @@ public class ResidualServiceTests : IDisposable
         var templateId = Guid.NewGuid();
         var updateResiduals = new List<SetResidualDto>
         {
-            new(null, "Content 1", new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }),
-            new(Guid.Empty, "Content 2", new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
+            new(null, "Content 1", new Coordinates(0, 0, 10, 10)),
+            new(Guid.Empty, "Content 2", new Coordinates(10, 10, 20, 20))
         };
 
         _mapperMock.Setup(m => m.Map<Residual>(It.IsAny<SetResidualDto>()))
@@ -74,7 +74,7 @@ public class ResidualServiceTests : IDisposable
             Id = Guid.NewGuid(),
             TemplateId = templateId,
             Content = "Old Content",
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 },
+            Coordinates = new Coordinates(0, 0, 10, 10),
             Template = null!
         };
         await Context.Residuals.AddAsync(existingResidual);
@@ -82,7 +82,7 @@ public class ResidualServiceTests : IDisposable
 
         var updateResiduals = new List<SetResidualDto>
         {
-            new(existingResidual.Id, "New Content", new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 })
+            new(existingResidual.Id, "New Content", new Coordinates(0, 0, 10, 10))
         };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetResidualDto>(), It.IsAny<Residual>()))
@@ -113,7 +113,7 @@ public class ResidualServiceTests : IDisposable
             Id = Guid.NewGuid(),
             TemplateId = templateId,
             Content = "To Delete",
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 },
+            Coordinates = new Coordinates(0, 0, 10, 10),
             Template = null!
         };
         var residualToKeep = new Residual
@@ -121,7 +121,7 @@ public class ResidualServiceTests : IDisposable
             Id = Guid.NewGuid(),
             TemplateId = templateId,
             Content = "To Keep",
-            Coordinates = new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 },
+            Coordinates = new Coordinates(10, 10, 20, 20),
             Template = null!
         };
         await Context.Residuals.AddRangeAsync(residualToDelete, residualToKeep);
@@ -129,7 +129,7 @@ public class ResidualServiceTests : IDisposable
 
         var updateResiduals = new List<SetResidualDto>
         {
-            new(residualToKeep.Id, "To Keep", new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
+            new(residualToKeep.Id, "To Keep", new Coordinates(10, 10, 20, 20))
         };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetResidualDto>(), It.IsAny<Residual>()))

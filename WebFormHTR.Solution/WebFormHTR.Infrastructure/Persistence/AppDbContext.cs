@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
+using WebFormHTR.Domain.ValueObjects;
 using File = WebFormHTR.Domain.Entities.File;
 
 namespace WebFormHTR.Infrastructure.Persistence;
@@ -79,6 +81,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(t => t.Logsheets)
             .HasForeignKey(l => l.TemplateId)
             .OnDelete(DeleteBehavior.Cascade);
+            
+        modelBuilder.Entity<Logsheet>()
+            .Property(l => l.AlignmentData)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = false }),
+                v => JsonSerializer.Deserialize<AlignmentContainer>(v, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new AlignmentContainer(null, null)
+            );
 
         modelBuilder.Entity<ExtractedValue>()
             .HasQueryFilter(e => e.DeletedAt == null)

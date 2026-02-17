@@ -24,14 +24,14 @@ public class CoordinateTransformerServiceLoggingTests
     public void TransformCoordinates_ShouldLogDebug_WhenAlignmentPointsAreValid()
     {
         // Arrange
-        var destinationCoordinates = new Coordinates { X = 0, Y = 0, Width = 100, Height = 100 };
-        var sourceCoordinates = new Coordinates { X = 0, Y = 0, Width = 50, Height = 50 };
+        var destinationCoordinates = new Coordinates(0, 0, 100, 100);
+        var sourceCoordinates = new Coordinates(0, 0, 50, 50);
         var alignmentPoints = new List<PointCoordinate>
         {
-            new() { X = 0, Y = 0 },
-            new() { X = 50, Y = 0 },
-            new() { X = 50, Y = 50 },
-            new() { X = 0, Y = 50 }
+            new(0, 0),
+            new(50, 0),
+            new(50, 50),
+            new(0, 50)
         };
 
         _perspectiveMatrixComputerMock.Setup(x => x.ComputePerspectiveMatrix(It.IsAny<SKPoint[]>(), It.IsAny<SKPoint[]>()))
@@ -55,8 +55,8 @@ public class CoordinateTransformerServiceLoggingTests
     public void TransformCoordinates_ShouldLogWarning_WhenAlignmentPointsAreInvalid()
     {
         // Arrange
-        var destinationCoordinates = new Coordinates { X = 0, Y = 0, Width = 100, Height = 100 };
-        var sourceCoordinates = new Coordinates { X = 0, Y = 0, Width = 50, Height = 50 };
+        var destinationCoordinates = new Coordinates(0, 0, 100, 100);
+        var sourceCoordinates = new Coordinates(0, 0, 50, 50);
         var alignmentPoints = new List<PointCoordinate>(); // Invalid count
 
         // Act

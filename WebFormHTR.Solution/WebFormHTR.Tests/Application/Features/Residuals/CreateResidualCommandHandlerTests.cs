@@ -38,8 +38,8 @@ public class CreateResidualCommandHandlerTests : IDisposable
 
         var residualsDto = new List<CreateResidualDto>
         {
-            new("Content 1", new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }),
-            new("Content 2", new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
+            new("Content 1", new Coordinates(0, 0, 10, 10)),
+            new("Content 2", new Coordinates(10, 10, 20, 20))
         };
 
         var command = new CreateResidualCommand(templateId, residualsDto);

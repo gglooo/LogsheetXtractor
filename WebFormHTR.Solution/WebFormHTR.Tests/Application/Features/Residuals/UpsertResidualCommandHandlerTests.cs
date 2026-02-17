@@ -35,10 +35,10 @@ public class UpsertResidualCommandHandlerTests : IDisposable
         await Context.SaveChangesAsync();
 
         var residualDto =
-            new UpsertResidualDto(null, "Content 1", new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 });
+            new UpsertResidualDto(null, "Content 1", new Coordinates(0, 0, 10, 10));
 
         var expectedResult = new ResidualDto(Guid.NewGuid(), templateId, "Content 1",
-            new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }, DateTime.UtcNow, null);
+            new Coordinates(0, 0, 10, 10), DateTime.UtcNow, null);
 
         _residualServiceMock
             .Setup(s => s.UpsertResidualForTemplateAsync(templateId, residualDto, CancellationToken.None))
@@ -60,7 +60,7 @@ public class UpsertResidualCommandHandlerTests : IDisposable
     {
         var templateId = Guid.NewGuid();
         var residualDto =
-            new UpsertResidualDto(null, "Content 1", new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 });
+            new UpsertResidualDto(null, "Content 1", new Coordinates(0, 0, 10, 10));
         var command = new UpsertResidualCommand(templateId, residualDto);
 
         var result =

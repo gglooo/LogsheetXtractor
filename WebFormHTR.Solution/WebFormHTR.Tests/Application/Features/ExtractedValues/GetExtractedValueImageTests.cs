@@ -30,7 +30,7 @@ public class GetExtractedValueImageTests : IDisposable
         var roi = new Roi 
         { 
             Id = Guid.NewGuid(),
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }
+            Coordinates = new Coordinates(0, 0, 10, 10)
         };
         var extractedValue = new ExtractedValue 
         { 

@@ -37,8 +37,8 @@ public static class GetLogsheetImageHandler
             : null;
 
         var alignmentData = query.IsFrontside
-            ? logsheet.AlignmentDataModelConfig.Frontside
-            : logsheet.AlignmentDataModelConfig.Backside;
+            ? logsheet.AlignmentData.Frontside
+            : logsheet.AlignmentData.Backside;
         var template = query.IsFrontside
             ? logsheet.Template
             : backsideTemplate;
@@ -81,10 +81,10 @@ public static class GetLogsheetImageHandler
     {
         return
         [
-            new PointCoordinate { X = 0, Y = 0 },
-            new PointCoordinate { X = template.Width * scale ?? 0, Y = 0 },
-            new PointCoordinate { X = template.Width * scale ?? 0, Y = template.Height * scale ?? 0 },
-            new PointCoordinate { X = 0, Y = template.Height * scale ?? 0 }
+            new PointCoordinate(0, 0),
+            new PointCoordinate(template.Width * scale ?? 0, 0),
+            new PointCoordinate(template.Width * scale ?? 0, template.Height * scale ?? 0),
+            new PointCoordinate(0, template.Height * scale ?? 0)
         ];
     }
 }

@@ -32,13 +32,12 @@ public class ExtractedValuesService(
         // TODO: support backside as well
         var alignedRoiCoordinates =
             coordinateTransformer.TransformCoordinates(extractedValue.Roi.Coordinates,
-                new Domain.ValueObjects.Coordinates
-                {
-                    X = 0,
-                    Y = 0,
-                    Width = extractedValue.Logsheet.Template.Width ?? 0,
-                    Height = extractedValue.Logsheet.Template.Height ?? 0
-                }, extractedValue.Logsheet.AlignmentDataModelConfig.Frontside);
+                new Domain.ValueObjects.Coordinates(
+                    0,
+                    0,
+                    extractedValue.Logsheet.Template.Width ?? 0,
+                    extractedValue.Logsheet.Template.Height ?? 0
+                ), extractedValue.Logsheet.AlignmentData.Frontside);
 
         var logsheetPdfStream = pdfCropperService.GetCroppedSection(pdfStream.ToByteArray(), 0,
             alignedRoiCoordinates.X, alignedRoiCoordinates.Y,

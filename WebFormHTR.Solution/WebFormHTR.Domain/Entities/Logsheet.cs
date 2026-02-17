@@ -15,14 +15,7 @@ public class Logsheet : BaseEntity
 
     public ELogSheetStatus Status { get; set; }
     public DateTime? CompletedAt { get; set; }
-    public string? AlignmentData { get; set; }
-
-    [NotMapped]
-    public AlignmentContainer AlignmentDataModelConfig
-    {
-        get => AlignmentContainer.FromJson(AlignmentData);
-        set => AlignmentData = value.ToJson();
-    }
+    public AlignmentContainer AlignmentData { get; set; } = new(null, null);
 
     public string? ErrorMessage { get; set; }
     public DateTime? ProcessedAt { get; set; }

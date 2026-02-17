@@ -76,7 +76,7 @@ public class PythonHtrAdapter(
                 : ""),
             ct);
 
-        input.Logsheet.AlignmentData = stdOut;
+        input.Logsheet.AlignmentData = JsonSerializer.Deserialize<WebFormHTR.Domain.ValueObjects.AlignmentContainer>(stdOut, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
 
         logger.LogInformation("Automatic alignment completed for Logsheet: {LogsheetId}", input.Logsheet.Id);
 

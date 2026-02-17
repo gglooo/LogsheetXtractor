@@ -11,13 +11,12 @@ public static class PythonMapper
 {
     private static Domain.ValueObjects.Coordinates MapCoordinates(IList<int> coords)
     {
-        return new Domain.ValueObjects.Coordinates
-        {
-            X = coords[0],
-            Y = coords[1],
-            Width = coords[2] - coords[0],
-            Height = coords[3] - coords[1]
-        };
+        return new Domain.ValueObjects.Coordinates(
+            coords[0],
+            coords[1],
+            coords[2] - coords[0],
+            coords[3] - coords[1]
+        );
     }
 
     public static SelectRoisOutputDto ToSelectRoisOutputDtoList(this PythonSelectRoisOutputDto outputDto,

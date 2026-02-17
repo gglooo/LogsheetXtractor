@@ -41,7 +41,7 @@ public class SetLogsheetAlignmentTests : IDisposable
             new List<PointCoordinateDto>(),
             new List<PointCoordinateDto> { new() { X = 1, Y = 1 } }
         );
-        var alignmentContainer = new AlignmentContainer();
+        var alignmentContainer = new AlignmentContainer(null, null);
 
         var command = new SetLogsheetAlignmentCommand(logsheet.Id, alignmentDataDto);
 
@@ -71,7 +71,7 @@ public class SetLogsheetAlignmentTests : IDisposable
         result.Value.Should().Be(expectedDto);
 
         var dbLogsheet = await _dbContext.Logsheets.FindAsync(logsheet.Id);
-        dbLogsheet!.AlignmentDataModelConfig.Should().BeEquivalentTo(alignmentContainer);
+        dbLogsheet!.AlignmentData.Should().BeEquivalentTo(alignmentContainer);
     }
 
     [Fact]

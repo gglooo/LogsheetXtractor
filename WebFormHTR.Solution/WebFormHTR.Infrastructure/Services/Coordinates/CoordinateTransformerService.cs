@@ -21,13 +21,12 @@ public class CoordinateTransformerService(
             logger.LogWarning(
                 "Adjustment points invalid or missing. Returning scaled original coordinates. Count: {Count}",
                 alignmentPoints?.Count);
-            return new Domain.ValueObjects.Coordinates
-            {
-                X = (int)(destinationCoordinates.X * renderScaleFactor),
-                Y = (int)(destinationCoordinates.Y * renderScaleFactor),
-                Width = (int)(destinationCoordinates.Width * renderScaleFactor),
-                Height = (int)(destinationCoordinates.Height * renderScaleFactor)
-            };
+            return new Domain.ValueObjects.Coordinates(
+                (int)(destinationCoordinates.X * renderScaleFactor),
+                (int)(destinationCoordinates.Y * renderScaleFactor),
+                (int)(destinationCoordinates.Width * renderScaleFactor),
+                (int)(destinationCoordinates.Height * renderScaleFactor)
+            );
         }
 
         logger.LogDebug("Transforming coordinates with perspective matrix.");
@@ -89,12 +88,11 @@ public class CoordinateTransformerService(
         var finalMaxX = (int)Math.Ceiling(maxX * renderScaleFactor);
         var finalMaxY = (int)Math.Ceiling(maxY * renderScaleFactor);
 
-        return new Domain.ValueObjects.Coordinates
-        {
-            X = finalX,
-            Y = finalY,
-            Width = finalMaxX - finalX,
-            Height = finalMaxY - finalY
-        };
+        return new Domain.ValueObjects.Coordinates(
+            finalX,
+            finalY,
+            finalMaxX - finalX,
+            finalMaxY - finalY
+        );
     }
 }

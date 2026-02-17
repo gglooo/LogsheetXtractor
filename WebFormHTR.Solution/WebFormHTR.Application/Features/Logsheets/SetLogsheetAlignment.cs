@@ -40,7 +40,7 @@ public static class SetLogsheetAlignmentHandler
                 new InvalidStateError("Logsheet is already processed and cannot be re-aligned."));
         }
 
-        logsheet.AlignmentDataModelConfig = mapper.Map<AlignmentContainer>(command.AlignmentData);
+        logsheet.AlignmentData = mapper.Map<AlignmentContainer>(command.AlignmentData);
 
         await dbContext.SaveChangesAsync(ct);
 

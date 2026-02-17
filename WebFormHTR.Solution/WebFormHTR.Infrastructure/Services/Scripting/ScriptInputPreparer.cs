@@ -19,18 +19,34 @@ public class ScriptInputPreparer(
 
     public async Task<string> CreateAlignmentArgumentAsync(Logsheet logsheet, CancellationToken ct)
     {
-        var frontsidePoints = logsheet.AlignmentDataModelConfig.Frontside;
-        var backsidePoints = logsheet.AlignmentDataModelConfig.Backside;
+        var frontsidePoints = logsheet.AlignmentData.Frontside;
+        var backsidePoints = logsheet.AlignmentData.Backside;
+
+        var hasFrontsidePoints = frontsidePoints != null && frontsidePoints.Count > 0;
+        var hasBacksidePoints = backsidePoints != null && backsidePoints.Count > 0;
+        var anyPoints = hasFrontsidePoints || hasBacksidePoints;
+
+        if (!anyPoints)
+        {
+            return BuildAlignedArgument();
+        }
+
+        // If one side is aligned strategies are mutually exclusive (manual points vs --aligned)
+        // so we must provide points for the other side too (Identity points)
+        if (!hasFrontsidePoints)
+        {
+            frontsidePoints = GetIdentityPoints(logsheet.Template);
+        }
+        
+        if (logsheet.Template.BacksideTemplate is not null && !hasBacksidePoints)
+        {
+            backsidePoints = GetIdentityPoints(logsheet.Template.BacksideTemplate);
+        }
 
         var frontsideAlignmentConfigPath = await GetTemplateConfigPath(logsheet.Template, frontsidePoints);
         var backsideAlignmentConfigPath = logsheet.Template.BacksideTemplate is not null
             ? await GetTemplateConfigPath(logsheet.Template.BacksideTemplate, backsidePoints)
             : null;
-
-        if (frontsideAlignmentConfigPath is null && backsideAlignmentConfigPath is null)
-        {
-            return BuildAlignedArgument();
-        }
 
         var alignmentArgs = new List<string>();
         if (frontsideAlignmentConfigPath is not null)
@@ -102,10 +118,10 @@ public class ScriptInputPreparer(
 
         var templateCorners = new List<PointCoordinate>
         {
-            new() { X = 0, Y = 0 },
-            new() { X = w, Y = 0 },
-            new() { X = w, Y = h },
-            new() { X = 0, Y = h }
+            new(0, 0),
+            new(w, 0),
+            new(w, h),
+            new(0, h)
         };
 
         var alignmentConfig = new PythonAlignmentConfig(templateCorners, alignmentPoints);
@@ -119,6 +135,19 @@ public class ScriptInputPreparer(
 
     private bool DoPointsNeedAlignment(List<PointCoordinate>? points)
     {
-        return points is { Count: >= 0 };
+        return points != null && points.Count > 0;
+    }
+
+    private static List<PointCoordinate> GetIdentityPoints(Template template)
+    {
+        var w = template.Width ?? 0;
+        var h = template.Height ?? 0;
+        return new List<PointCoordinate>
+        {
+            new(0, 0),
+            new(w, 0),
+            new(w, h),
+            new(0, h)
+        };
     }
 }

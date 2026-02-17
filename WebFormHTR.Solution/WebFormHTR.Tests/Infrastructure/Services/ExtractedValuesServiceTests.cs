@@ -37,10 +37,9 @@ public class ExtractedValuesServiceTests
         {
             FileId = Guid.NewGuid(),
             Template = template,
-            AlignmentDataModelConfig = new AlignmentContainer
-                { Frontside = new List<PointCoordinate> { new() { X = 0, Y = 0 } } }
+            AlignmentData = new AlignmentContainer(new List<PointCoordinate> { new(0, 0) }, null)
         };
-        var roi = new Roi { Coordinates = new Coordinates { X = 10, Y = 10, Width = 10, Height = 10 } };
+        var roi = new Roi { Coordinates = new Coordinates(10, 10, 10, 10) };
         var extractedValue = new ExtractedValue { Id = Guid.NewGuid(), Logsheet = logsheet, Roi = roi };
 
         var fileStream = new MemoryStream();

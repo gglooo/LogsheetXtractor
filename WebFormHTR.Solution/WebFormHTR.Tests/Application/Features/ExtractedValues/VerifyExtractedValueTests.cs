@@ -30,7 +30,7 @@ public class VerifyExtractedValueTests : IDisposable
             Id = Guid.NewGuid(), 
             VariableName = "Var",
             Type = ERoiType.Handwritten,
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 },
+            Coordinates = new Coordinates(0, 0, 10, 10),
             Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"} } 
         };
         var extractedValue = new ExtractedValue 
@@ -86,7 +86,7 @@ public class VerifyExtractedValueTests : IDisposable
             Id = Guid.NewGuid(),
             VariableName = "Var",
             Type = ERoiType.Handwritten,
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 },
+            Coordinates = new Coordinates(0, 0, 10, 10),
             Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"} } 
         };
         var extractedValue = new ExtractedValue 
@@ -133,7 +133,7 @@ public class VerifyExtractedValueTests : IDisposable
         var roi = new Roi 
         { 
             Id = Guid.NewGuid(),
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 },
+            Coordinates = new Coordinates(0, 0, 10, 10),
             Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"} } 
         };
         var extractedValue = new ExtractedValue 

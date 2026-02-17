@@ -29,8 +29,8 @@ public class CreateRoisCommandHandlerTests : IDisposable
 
         var roiDtos = new List<CreateRoiDto>
         {
-            new("ROI 1", ERoiType.Handwritten, new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }),
-            new("ROI 2", ERoiType.Handwritten, new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 })
+            new("ROI 1", ERoiType.Handwritten, new Coordinates(0, 0, 10, 10)),
+            new("ROI 2", ERoiType.Handwritten, new Coordinates(10, 10, 20, 20))
         };
 
         var command = new CreateRoisCommand(template.Id, roiDtos);
@@ -40,12 +40,12 @@ public class CreateRoisCommandHandlerTests : IDisposable
                 new Roi
                 {
                     VariableName = "ROI 1", Type = ERoiType.Handwritten,
-                    Coordinates = new Coordinates { X = 0, Y = 0, Width = 10, Height = 10 }, Template = null!
+                    Coordinates = new Coordinates(0, 0, 10, 10), Template = null!
                 },
                 new Roi
                 {
                     VariableName = "ROI 2", Type = ERoiType.Handwritten,
-                    Coordinates = new Coordinates { X = 10, Y = 10, Width = 20, Height = 20 }, Template = null!
+                    Coordinates = new Coordinates(10, 10, 20, 20), Template = null!
                 }
             ]);
 

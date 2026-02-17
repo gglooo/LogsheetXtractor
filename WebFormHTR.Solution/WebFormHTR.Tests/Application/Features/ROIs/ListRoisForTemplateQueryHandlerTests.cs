@@ -35,12 +35,12 @@ public class ListRoisForTemplateQueryHandlerTests : IDisposable
         var roi1 = new Roi
         {
             Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "ROI 1", Template = template,
-            Coordinates = new Coordinates()
+            Coordinates = new Coordinates(0, 0, 0, 0)
         };
         var roi2 = new Roi
         {
             Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "ROI 2", Template = template,
-            Coordinates = new Coordinates()
+            Coordinates = new Coordinates(0, 0, 0, 0)
         };
 
         template.Rois.Add(roi1);
@@ -52,8 +52,8 @@ public class ListRoisForTemplateQueryHandlerTests : IDisposable
         var query = new ListRoisForTemplateQuery(templateId);
         var expectedDtos = new List<RoiDto>
         {
-            new(roi1.Id, "ROI 1", templateId, ERoiType.Handwritten, new Coordinates(), roi1.CreatedAt, roi1.UpdatedAt),
-            new(roi2.Id, "ROI 2", templateId, ERoiType.Handwritten, new Coordinates(), roi2.CreatedAt, roi2.UpdatedAt)
+            new(roi1.Id, "ROI 1", templateId, ERoiType.Handwritten, new Coordinates(0, 0, 0, 0), roi1.CreatedAt, roi1.UpdatedAt),
+            new(roi2.Id, "ROI 2", templateId, ERoiType.Handwritten, new Coordinates(0, 0, 0, 0), roi2.CreatedAt, roi2.UpdatedAt)
         };
 
         _mapperMock.Setup(x => x.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))

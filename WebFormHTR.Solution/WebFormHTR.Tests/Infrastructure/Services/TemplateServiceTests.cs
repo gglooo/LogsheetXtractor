@@ -118,12 +118,12 @@ public class TemplateServiceTests
         var roi = new Roi
         {
             TemplateId = parentId, VariableName = "ROI 1",
-            Coordinates = new Coordinates { Height = 2, Width = 3, X = 4, Y = 5 }, Template = parentTemplate
+            Coordinates = new Coordinates(4, 5, 3, 2), Template = parentTemplate
         };
         var residual = new Residual
         {
             TemplateId = parentId, Template = parentTemplate, Content = "Residual 1",
-            Coordinates = new Coordinates { Height = 2, Width = 3, X = 4, Y = 5 }
+            Coordinates = new Coordinates(4, 5, 3, 2)
         };
         _dbContext.Rois.Add(roi);
         _dbContext.Residuals.Add(residual);

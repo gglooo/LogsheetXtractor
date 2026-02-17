@@ -53,8 +53,8 @@ public class BatchVerifyExtractedValuesTests : IDisposable
         var verifiedEv1 = await _dbContext.ExtractedValues.FindAsync(ev1.Id);
         var verifiedEv2 = await _dbContext.ExtractedValues.FindAsync(ev2.Id);
 
-        verifiedEv1.Status.Should().Be(WebFormHTR.Domain.Enums.EVerificationStatus.Verified);
-        verifiedEv2.Status.Should().Be(WebFormHTR.Domain.Enums.EVerificationStatus.Verified);
+        verifiedEv1!.Status.Should().Be(WebFormHTR.Domain.Enums.EVerificationStatus.Verified);
+        verifiedEv2!.Status.Should().Be(WebFormHTR.Domain.Enums.EVerificationStatus.Verified);
     }
     
     [Fact]

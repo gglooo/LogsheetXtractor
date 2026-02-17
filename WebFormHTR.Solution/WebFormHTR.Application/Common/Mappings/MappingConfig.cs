@@ -53,7 +53,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.File, src => src.File)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
-            .Map(dest => dest.AlignmentData, src => src.AlignmentDataModelConfig)
+            .Map(dest => dest.AlignmentData, src => src.AlignmentData)
             .Map(dest => dest.ExtractedValues, src => src.ExtractedValues);
 
         config.NewConfig<AlignmentContainer, AlignmentDataDto>();
@@ -65,7 +65,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.FileId, src => src.FileId)
             .Ignore(dest => dest.ExtractedValues)
-            .Ignore(dest => dest.AlignmentDataModelConfig)
+            .Ignore(dest => dest.AlignmentData)
             .Ignore(dest => dest.Status)
             .IgnoreNullValues(true);
 
@@ -75,8 +75,8 @@ public class MappingConfig : IRegister
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Status, src => src.Status)
             .Map(dest => dest.ProcessedAt, src => src.ProcessedAt)
-            .Map(dest => dest.IsFrontAligned, src => src.AlignmentDataModelConfig.Frontside != null)
-            .Map(dest => dest.IsBackAligned, src => src.AlignmentDataModelConfig.Backside != null);
+            .Map(dest => dest.IsFrontAligned, src => src.AlignmentData.Frontside != null)
+            .Map(dest => dest.IsBackAligned, src => src.AlignmentData.Backside != null);
 
         config.NewConfig<CreateRoiDto, Roi>()
             .Map(dest => dest.Type, src => src.Type)

@@ -37,7 +37,7 @@ public class RoiServiceTests : IDisposable
     {
         var templateId = Guid.NewGuid();
         var newRoiDto = new SetRoiDto(null, "New ROI", ERoiType.Handwritten,
-            new Coordinates { X = 10, Y = 10, Width = 100, Height = 100 });
+            new Coordinates(10, 10, 100, 100));
         var updateRois = new List<SetRoiDto> { newRoiDto };
 
         _mapperMock.Setup(m => m.Map<Roi>(It.IsAny<SetRoiDto>()))
@@ -77,14 +77,14 @@ public class RoiServiceTests : IDisposable
             TemplateId = templateId,
             VariableName = "Old Name",
             Type = ERoiType.Handwritten,
-            Coordinates = new Coordinates { X = 0, Y = 0, Width = 50, Height = 50 },
+            Coordinates = new Coordinates(0, 0, 50, 50),
             Template = null!
         };
         _dbContext.Rois.Add(existingRoi);
         await _dbContext.SaveChangesAsync();
 
         var updateDto = new SetRoiDto(existingRoiId.ToString(), "Updated Name", ERoiType.Handwritten,
-            new Coordinates { X = 20, Y = 20, Width = 60, Height = 60 });
+            new Coordinates(20, 20, 60, 60));
         var updateRois = new List<SetRoiDto> { updateDto };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
@@ -118,18 +118,18 @@ public class RoiServiceTests : IDisposable
         var roiToDelete = new Roi
         {
             Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "To Delete", Template = null!,
-            Coordinates = new Coordinates()
+            Coordinates = new Coordinates(0, 0, 0, 0)
         };
         var roiToKeep = new Roi
         {
             Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "To Keep", Template = null!,
-            Coordinates = new Coordinates()
+            Coordinates = new Coordinates(0, 0, 0, 0)
         };
 
         _dbContext.Rois.AddRange(roiToDelete, roiToKeep);
         await _dbContext.SaveChangesAsync();
 
-        var updateDto = new SetRoiDto(roiToKeep.Id.ToString(), "To Keep", ERoiType.Handwritten, new Coordinates());
+        var updateDto = new SetRoiDto(roiToKeep.Id.ToString(), "To Keep", ERoiType.Handwritten, new Coordinates(0, 0, 0, 0));
         var updateRois = new List<SetRoiDto> { updateDto };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
@@ -158,7 +158,7 @@ public class RoiServiceTests : IDisposable
         var existingRoi = new Roi
         {
             Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing", Template = null!,
-            Coordinates = new Coordinates()
+            Coordinates = new Coordinates(0, 0, 0, 0)
         };
         _dbContext.Rois.Add(existingRoi);
         await _dbContext.SaveChangesAsync();
@@ -182,8 +182,8 @@ public class RoiServiceTests : IDisposable
         var templateId = Guid.NewGuid();
         var newRois = new List<SetRoiDto>
         {
-            new(null, "ROI 1", ERoiType.Handwritten, new Coordinates()),
-            new(null, "ROI 2", ERoiType.Checkbox, new Coordinates())
+            new(null, "ROI 1", ERoiType.Handwritten, new Coordinates(0, 0, 0, 0)),
+            new(null, "ROI 2", ERoiType.Checkbox, new Coordinates(0, 0, 0, 0))
         };
 
         _mapperMock.Setup(m => m.Map<Roi>(It.IsAny<SetRoiDto>()))
@@ -216,12 +216,12 @@ public class RoiServiceTests : IDisposable
             new()
             {
                 Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing 1", Template = null!,
-                Coordinates = new Coordinates()
+                Coordinates = new Coordinates(0, 0, 0, 0)
             },
             new()
             {
                 Id = Guid.NewGuid(), TemplateId = templateId, VariableName = "Existing 2", Template = null!,
-                Coordinates = new Coordinates()
+                Coordinates = new Coordinates(0, 0, 0, 0)
             }
         };
         _dbContext.Rois.AddRange(existingRois);
@@ -238,8 +238,8 @@ public class RoiServiceTests : IDisposable
 
         var updateRois = new List<SetRoiDto>
         {
-            new(existingRois[0].Id.ToString(), "Updated Existing 1", ERoiType.Handwritten, new Coordinates()),
-            new(null, "New ROI", ERoiType.Checkbox, new Coordinates())
+            new(existingRois[0].Id.ToString(), "Updated Existing 1", ERoiType.Handwritten, new Coordinates(0, 0, 0, 0)),
+            new(null, "New ROI", ERoiType.Checkbox, new Coordinates(0, 0, 0, 0))
         };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))

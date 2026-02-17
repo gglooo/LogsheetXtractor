@@ -25,7 +25,7 @@ public class UpsertRoiCommandHandlerTests : IDisposable
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 
-        var upsertRoiDto = new UpsertRoiDto(null, "New ROI", ERoiType.Handwritten, new Coordinates { X = 10, Y = 10, Width = 100, Height = 50 });
+        var upsertRoiDto = new UpsertRoiDto(null, "New ROI", ERoiType.Handwritten, new Coordinates(10, 10, 100, 50));
         var command = new UpsertRoiCommand(template.Id, upsertRoiDto);
 
         var expectedDto = new RoiDto(Guid.NewGuid(), "New ROI", template.Id, ERoiType.Handwritten, upsertRoiDto.Coordinates, DateTime.UtcNow, null);
@@ -44,7 +44,7 @@ public class UpsertRoiCommandHandlerTests : IDisposable
     [Fact]
     public async Task Handle_ShouldFail_WhenTemplateNotFound()
     {
-        var upsertRoiDto = new UpsertRoiDto(null, "New ROI", ERoiType.Handwritten, new Coordinates());
+        var upsertRoiDto = new UpsertRoiDto(null, "New ROI", ERoiType.Handwritten, new Coordinates(0, 0, 0, 0));
         var command = new UpsertRoiCommand(Guid.NewGuid(), upsertRoiDto);
 
         var result = await UpsertRoiHandler.Handle(command, _dbContext, _roiServiceMock.Object, CancellationToken.None);
@@ -61,7 +61,7 @@ public class UpsertRoiCommandHandlerTests : IDisposable
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 
-        var upsertRoiDto = new UpsertRoiDto(null, "New ROI", ERoiType.Handwritten, new Coordinates());
+        var upsertRoiDto = new UpsertRoiDto(null, "New ROI", ERoiType.Handwritten, new Coordinates(0, 0, 0, 0));
         var command = new UpsertRoiCommand(template.Id, upsertRoiDto);
         var errorMessage = "Service failure";
 

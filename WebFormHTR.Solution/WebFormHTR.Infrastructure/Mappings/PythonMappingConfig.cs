@@ -33,24 +33,22 @@ public class PythonMappingConfig : IRegister
         config.NewConfig<PythonResidualDto, Residual>()
             .Map(dest => dest.Id, src => Guid.NewGuid())
             .Map(dest => dest.Content, src => src.Content ?? string.Empty)
-            .Map(dest => dest.Coordinates, src => new Coordinates
-            {
-                X = src.Coords[0],
-                Y = src.Coords[1],
-                Width = src.Coords[2] - src.Coords[0],
-                Height = src.Coords[3] - src.Coords[1]
-            });
+            .Map(dest => dest.Coordinates, src => new Coordinates(
+                src.Coords[0],
+                src.Coords[1],
+                src.Coords[2] - src.Coords[0],
+                src.Coords[3] - src.Coords[1]
+            ));
 
         config.NewConfig<PythonRoiDto, Roi>()
             .Map(dest => dest.Id, src => Guid.NewGuid())
             .Map(dest => dest.Type, src => Enum.Parse<ERoiType>(src.Type, true))
-            .Map(dest => dest.Coordinates, src => new Coordinates
-            {
-                X = src.Coords[0],
-                Y = src.Coords[1],
-                Width = src.Coords[2] - src.Coords[0],
-                Height = src.Coords[3] - src.Coords[1]
-            })
+            .Map(dest => dest.Coordinates, src => new Coordinates(
+                src.Coords[0],
+                src.Coords[1],
+                src.Coords[2] - src.Coords[0],
+                src.Coords[3] - src.Coords[1]
+            ))
             .Map(dest => dest.VariableName, src => src.VarName);
 
 
