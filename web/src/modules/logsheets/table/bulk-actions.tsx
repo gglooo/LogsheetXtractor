@@ -4,9 +4,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import {
     useDeleteLogsheetsMutation,
+    useExportLogsheetsMutation,
     useProcessLogsheetsMutation,
 } from "@/modules/logsheets/api";
-import { FileCog, TrashIcon } from "lucide-react";
+import { DownloadIcon, FileCog, TrashIcon } from "lucide-react";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ export const LogsheetTableBulkActions = ({
 
     const deleteLogsheetsMutation = useDeleteLogsheetsMutation();
     const processLogsheetsMutation = useProcessLogsheetsMutation();
+    const exportLogsheetsMutation = useExportLogsheetsMutation();
 
     if (selectedLogsheetIds.length === 0) {
         return null;
@@ -35,7 +37,7 @@ export const LogsheetTableBulkActions = ({
                 intl.formatMessage({
                     id: "logsheets.bulk.delete.success",
                     defaultMessage: "Logsheets deleted successfully",
-                })
+                }),
             );
             onClearSelection();
         } catch (error) {
@@ -44,7 +46,7 @@ export const LogsheetTableBulkActions = ({
                 intl.formatMessage({
                     id: "logsheets.bulk.delete.error",
                     defaultMessage: "Failed to delete logsheets",
-                })
+                }),
             );
         }
     };
@@ -56,7 +58,7 @@ export const LogsheetTableBulkActions = ({
                 intl.formatMessage({
                     id: "logsheets.bulk.process.success",
                     defaultMessage: "Logsheets were processed",
-                })
+                }),
             );
             onClearSelection();
         } catch (error) {
@@ -65,7 +67,28 @@ export const LogsheetTableBulkActions = ({
                 intl.formatMessage({
                     id: "logsheets.bulk.process.error",
                     defaultMessage: "Failed to process logsheets",
-                })
+                }),
+            );
+        }
+    };
+
+    const handleExport = async () => {
+        try {
+            await exportLogsheetsMutation.mutateAsync(selectedLogsheetIds);
+            toast.success(
+                intl.formatMessage({
+                    id: "logsheets.bulk.export.success",
+                    defaultMessage: "Logsheets exported successfully",
+                }),
+            );
+            onClearSelection();
+        } catch (error) {
+            console.error("Error exporting logsheets:", error);
+            toast.error(
+                intl.formatMessage({
+                    id: "logsheets.bulk.export.error",
+                    defaultMessage: "Failed to export logsheets",
+                }),
             );
         }
     };
@@ -74,7 +97,7 @@ export const LogsheetTableBulkActions = ({
         <div
             className={cn(
                 "flex items-center justify-between gap-4 p-4 bg-muted/50 border rounded-md",
-                className
+                className,
             )}
         >
             <p className="text-sm font-medium">
@@ -83,7 +106,7 @@ export const LogsheetTableBulkActions = ({
                         id: "logsheets.table.bulkActions.selectedCount",
                         defaultMessage: "{count} logsheet(s) selected",
                     },
-                    { count: selectedLogsheetIds.length }
+                    { count: selectedLogsheetIds.length },
                 )}
             </p>
             <div className="flex gap-2">
@@ -101,6 +124,22 @@ export const LogsheetTableBulkActions = ({
                     {intl.formatMessage({
                         id: "logsheets.bulk.delete",
                         defaultMessage: "Delete",
+                    })}
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleExport}
+                    disabled={exportLogsheetsMutation.isPending}
+                >
+                    {exportLogsheetsMutation.isPending ? (
+                        <Spinner className="mr-2 h-4 w-4" />
+                    ) : (
+                        <DownloadIcon className="mr-2 h-4 w-4" />
+                    )}
+                    {intl.formatMessage({
+                        id: "logsheets.bulk.export",
+                        defaultMessage: "Export",
                     })}
                 </Button>
                 <Button
@@ -127,6 +166,20 @@ export const LogsheetTableBulkActions = ({
                         {intl.formatMessage({
                             id: "logsheets.actions.processing",
                             defaultMessage: "Processing logsheets",
+                        })}
+                    </DialogTitle>
+                    <div className="flex justify-center p-4">
+                        <Spinner />
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={exportLogsheetsMutation.isPending}>
+                <DialogContent>
+                    <DialogTitle>
+                        {intl.formatMessage({
+                            id: "logsheets.actions.exporting",
+                            defaultMessage: "Exporting logsheets",
                         })}
                     </DialogTitle>
                     <div className="flex justify-center p-4">

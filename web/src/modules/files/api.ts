@@ -16,8 +16,8 @@ export const useUploadFileMutation = () =>
         },
     });
 
-export const fileQueryFn = async (url: string, method: string = "GET") => {
-    const response = await fetch(url, { method });
+export const fileQueryFn = async (url: string, init?: RequestInit) => {
+    const response = await fetch(url, init);
 
     const blob = await response.blob();
 
@@ -71,7 +71,7 @@ export const useFileDownloadMutation = () => {
     return useMutation({
         mutationFn: async ({ fileId }: { fileId: string }) => {
             const { bytes, fileName, contentType } = await fileQueryFn(
-                `/api/files/${fileId}`
+                `/api/files/${fileId}`,
             );
 
             const blob = new Blob([bytes], { type: contentType || undefined });

@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using FluentResults;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +51,58 @@ public class LogsheetExportService(IAppDbContext dbContext, IHtrScriptEngine scr
         catch (Exception ex)
         {
             return Result.Fail(new Error($"Failed to export logsheet data: {ex.Message}"));
+        }
+    }
+
+    public async Task<Result<GetFileDto>> ExportBatchLogsheetDataAsync(IEnumerable<Guid> logsheetIds, CancellationToken ct)
+    {
+        var tempZipPath = Path.GetTempFileName();
+        
+        try
+        {
+            await using (var fileStream = new FileStream(tempZipPath, FileMode.Create))
+            {
+                using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
+                {
+                    foreach (var logsheetId in logsheetIds)
+                    {
+                        var result = await ExportLogsheetDataAsync(logsheetId, ct);
+                        if (result.IsFailed)
+                        {
+                            return Result.Fail<GetFileDto>($"Failed to export logsheet {logsheetId}: {result.Errors.First().Message}");
+                        }
+                        
+                        var fileDto = result.Value;
+                        var entry = archive.CreateEntry(fileDto.FileName);
+                        await using var entryStream = entry.Open();
+                        await fileDto.Stream.CopyToAsync(entryStream, ct);
+                    }
+                }
+            }
+
+            var memoryStream = new MemoryStream();
+            await using (var fileStream = new FileStream(tempZipPath, FileMode.Open))
+            {
+                await fileStream.CopyToAsync(memoryStream, ct);
+            }
+            memoryStream.Position = 0;
+            
+            System.IO.File.Delete(tempZipPath);
+
+            return new GetFileDto
+            {
+                FileName = $"batch_export_{Guid.NewGuid()}.zip",
+                ContentType = "application/zip",
+                Stream = memoryStream
+            };
+        }
+        catch (Exception ex)
+        {
+            if (System.IO.File.Exists(tempZipPath))
+            {
+                System.IO.File.Delete(tempZipPath);
+            }
+            return Result.Fail<GetFileDto>($"Failed to create batch export: {ex.Message}");
         }
     }
 }

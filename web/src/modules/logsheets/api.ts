@@ -235,7 +235,26 @@ export const useExportLogsheetMutation = () =>
         mutationFn: async ({ logsheetId }: { logsheetId: string }) => {
             const { bytes, fileName, contentType } = await fileQueryFn(
                 `/api/logsheets/${logsheetId}/export`,
-                "POST",
+                { method: "POST" },
+            );
+
+            const blob = new Blob([bytes], { type: contentType ?? undefined });
+            await downloadFile(blob, fileName);
+        },
+    });
+
+export const useExportLogsheetsMutation = () =>
+    useMutation({
+        mutationFn: async (logsheetIds: string[]) => {
+            const { bytes, fileName, contentType } = await fileQueryFn(
+                `/api/logsheets/batch/export`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({ logsheetIds }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                },
             );
 
             const blob = new Blob([bytes], { type: contentType ?? undefined });

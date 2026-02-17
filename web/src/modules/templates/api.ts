@@ -136,7 +136,7 @@ export const useExportConfigMutation = () => {
         mutationFn: async ({ templateId }: { templateId: string }) => {
             const { bytes, fileName, contentType } = await fileQueryFn(
                 `api/templates/${templateId}/export-config`,
-                "POST",
+                { method: "POST" },
             );
 
             const blob = new Blob([bytes], { type: contentType || undefined });

@@ -234,4 +234,17 @@ public static class LogsheetEndpoints
 
         return result.ToHttpResult();
     }
+    [WolverinePost("/api/logsheets/batch/export")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> ExportBatchLogsheetData(
+        BatchExportLogsheetDataCommand command,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var result = await bus.InvokeAsync<Result<GetFileDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
 }
