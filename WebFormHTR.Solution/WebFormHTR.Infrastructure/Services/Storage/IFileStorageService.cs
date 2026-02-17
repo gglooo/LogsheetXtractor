@@ -7,7 +7,7 @@ public interface IFileStorageService
     Task<byte[]> ReadFileAsync(string filePath);
     string GetResolvedPath(string filePath);
     bool DeleteFile(string filePath);
-    string ReadAllText(string filePath);
+    Task<string> ReadAllTextAsync(string filePath, CancellationToken ct = default);
     string GetTemporaryFilePath(string fileName);
     Task<string> SaveTemporaryFileAsync(byte[] fileData, string fileName, CancellationToken ct);
     FileStream GetTemporaryFile(string filePath);

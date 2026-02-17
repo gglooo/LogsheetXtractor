@@ -47,7 +47,7 @@ public class PythonHtrAdapter(
             $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials} --headless",
             ct);
 
-        var rois = outputParser.ParseSelectRoisJson(outputFilePath, input.Template.Id);
+        var rois = await outputParser.ParseSelectRoisJsonAsync(outputFilePath, input.Template.Id, ct);
         logger.LogInformation("ROI selection completed. Found {Count} ROIs.", rois.Rois.Count());
 
         return rois;
@@ -112,7 +112,7 @@ public class PythonHtrAdapter(
             $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} {credentialsString} {alignmentArgument} {backsideArgument} --store_csv",
             ct);
 
-        var parsedData = outputParser.ParseProcessLogsheetCsv(outputFilePath);
+        var parsedData = await outputParser.ParseProcessLogsheetCsvAsync(outputFilePath, ct);
 
         return new ProcessLogsheetOutputDto(parsedData);
     }

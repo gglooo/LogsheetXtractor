@@ -115,7 +115,7 @@ public class FileStorageServiceTests : IDisposable
         var fileName = "text.txt";
         var storedFileName = await _fileStorageService.SaveFileAsync(content, fileName);
 
-        var readString = _fileStorageService.ReadAllText(storedFileName);
+        var readString = await _fileStorageService.ReadAllTextAsync(storedFileName);
 
         readString.Should().Be(contentString);
     }

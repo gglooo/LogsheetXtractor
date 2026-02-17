@@ -19,14 +19,14 @@ public class ScriptOutputParserTests
     }
 
     [Fact]
-    public void ParseProcessLogsheetCsv_ShouldReturnDictionary_WhenCsvIsValid()
+    public async Task ParseProcessLogsheetCsv_ShouldReturnDictionary_WhenCsvIsValid()
     {
         var filePath = "test.csv";
         var csvContent = "Variable,Value\nVar1,Val1\nVar2,Val2";
         
-        _fileStorageServiceMock.Setup(x => x.ReadAllText(filePath)).Returns(csvContent);
+        _fileStorageServiceMock.Setup(x => x.ReadAllTextAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(csvContent);
 
-        var result = _parser.ParseProcessLogsheetCsv(filePath);
+        var result = await _parser.ParseProcessLogsheetCsvAsync(filePath);
 
         result.Should().HaveCount(2);
         result["Var1"].Should().Be("Val1");
@@ -34,7 +34,7 @@ public class ScriptOutputParserTests
     }
 
     [Fact]
-    public void ParseSelectRoisJson_ShouldReturnDto_WhenJsonIsValid()
+    public async Task ParseSelectRoisJson_ShouldReturnDto_WhenJsonIsValid()
     {
         var filePath = "test.json";
         var templateId = Guid.NewGuid();
@@ -48,23 +48,23 @@ public class ScriptOutputParserTests
         };
         var jsonContent = JsonSerializer.Serialize(pythonDto);
 
-        _fileStorageServiceMock.Setup(x => x.ReadAllText(filePath)).Returns(jsonContent);
+        _fileStorageServiceMock.Setup(x => x.ReadAllTextAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(jsonContent);
 
-        var result = _parser.ParseSelectRoisJson(filePath, templateId);
+        var result = await _parser.ParseSelectRoisJsonAsync(filePath, templateId);
 
         result.Rois.Should().HaveCount(1);
         result.Rois.First().VariableName.Should().Be("roi1");
     }
 
     [Fact]
-    public void ParseSelectRoisJson_ShouldReturnEmpty_WhenJsonIsInvalidOrEmpty()
+    public async Task ParseSelectRoisJson_ShouldReturnEmpty_WhenJsonIsInvalidOrEmpty()
     {
         var filePath = "test.json";
         var jsonContent = "{}"; 
 
-        _fileStorageServiceMock.Setup(x => x.ReadAllText(filePath)).Returns(jsonContent);
+        _fileStorageServiceMock.Setup(x => x.ReadAllTextAsync(filePath, It.IsAny<CancellationToken>())).ReturnsAsync(jsonContent);
 
-        var result = _parser.ParseSelectRoisJson(filePath, Guid.NewGuid());
+        var result = await _parser.ParseSelectRoisJsonAsync(filePath, Guid.NewGuid());
         
         result.Should().NotBeNull();
         result.Rois.Should().BeEmpty();

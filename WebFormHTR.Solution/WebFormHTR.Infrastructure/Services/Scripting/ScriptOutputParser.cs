@@ -7,9 +7,9 @@ namespace WebFormHTR.Infrastructure.Services.Scripting;
 
 public class ScriptOutputParser(IFileStorageService fileStorageService) : IScriptOutputParser
 {
-    public Dictionary<string, string> ParseProcessLogsheetCsv(string filePath)
+    public async Task<Dictionary<string, string>> ParseProcessLogsheetCsvAsync(string filePath, CancellationToken ct = default)
     {
-        var csvContent = fileStorageService.ReadAllText(filePath);
+        var csvContent = await fileStorageService.ReadAllTextAsync(filePath, ct);
         var result = new Dictionary<string, string>();
 
         var lines = csvContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1);
@@ -25,9 +25,9 @@ public class ScriptOutputParser(IFileStorageService fileStorageService) : IScrip
         return result;
     }
 
-    public SelectRoisOutputDto ParseSelectRoisJson(string filePath, Guid templateId)
+    public async Task<SelectRoisOutputDto> ParseSelectRoisJsonAsync(string filePath, Guid templateId, CancellationToken ct = default)
     {
-        var jsonContent = fileStorageService.ReadAllText(filePath);
+        var jsonContent = await fileStorageService.ReadAllTextAsync(filePath, ct);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var rois = JsonSerializer.Deserialize<PythonSelectRoisOutputDto>(jsonContent, options);
 

@@ -113,8 +113,8 @@ public class PythonHtrAdapterTests
             }
         );
 
-        _outputParserMock.Setup(x => x.ParseSelectRoisJson(resolvedOutputPath, template.Id))
-            .Returns(expectedOutput);
+        _outputParserMock.Setup(x => x.ParseSelectRoisJsonAsync(resolvedOutputPath, template.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedOutput);
 
         var result = await _adapter.SelectRoisAsync(input, ct);
 

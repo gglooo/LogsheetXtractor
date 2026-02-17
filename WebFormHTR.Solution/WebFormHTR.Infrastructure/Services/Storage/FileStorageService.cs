@@ -73,7 +73,7 @@ public class FileStorageService(IConfiguration config) : IFileStorageService
         return true;
     }
 
-    public string ReadAllText(string filePath)
+    public async Task<string> ReadAllTextAsync(string filePath, CancellationToken ct = default)
     {
         var fullPath = GetResolvedPath(filePath);
         if (!File.Exists(fullPath))
@@ -81,7 +81,7 @@ public class FileStorageService(IConfiguration config) : IFileStorageService
             throw new FileNotFoundException("File not found", fullPath);
         }
 
-        return File.ReadAllText(fullPath);
+        return await File.ReadAllTextAsync(fullPath, ct);
     }
 
     public string GetTemporaryFilePath(string fileName)
