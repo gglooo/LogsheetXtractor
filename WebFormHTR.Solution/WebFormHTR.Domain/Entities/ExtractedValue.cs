@@ -18,6 +18,8 @@ public class ExtractedValue : BaseEntity
     // public float Confidence { get; set; }
 
     public EVerificationStatus Status { get; set; } = EVerificationStatus.Unverified;
+
     public bool IsCorrected => !string.IsNullOrEmpty(CorrectedValue);
-    public bool IsBackside => Logsheet.Template.BacksideTemplate?.Rois.Any(r => r.Id == RoiId) ?? false;
+
+    public bool IsBackside => Logsheet?.Template?.BacksideTemplate?.Rois?.Any(r => r.Id == RoiId) ?? false;
 }

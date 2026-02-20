@@ -29,7 +29,6 @@ public class ExtractedValuesService(
             return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 
-        // TODO: support backside as well
         var alignedRoiCoordinates =
             coordinateTransformer.TransformCoordinates(extractedValue.Roi.Coordinates,
                 new Domain.ValueObjects.Coordinates(

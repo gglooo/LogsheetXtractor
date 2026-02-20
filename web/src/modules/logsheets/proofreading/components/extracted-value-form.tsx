@@ -1,8 +1,9 @@
 import { FormInput } from "@/components/form/form-input";
-import { FormShadcnSelect } from "@/components/form/form-shadcn-select";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useVerifyExtractedValueMutation } from "@/modules/logsheets/proofreading/api";
+import { ExtractedValueCorrectedField } from "@/modules/logsheets/proofreading/components/extracted-value-corrected-field";
+import { getExtractedValueDefaultFormValue } from "@/modules/logsheets/proofreading/utils";
 import {
     createExtractedValueFormSchema,
     type ExtractedValueFormValues,
@@ -55,61 +56,6 @@ const FormContent = ({
         handleSubmit(onSubmitCallback)();
     };
 
-    const renderFormField = () => {
-        switch (extractedValue.roiType) {
-            case "Number":
-                return (
-                    <FormInput
-                        name="correctedValue"
-                        type="number"
-                        label={intl.formatMessage({
-                            id: "proofreading.extractedValue.correctedValue.label",
-                            defaultMessage: "Corrected Value",
-                        })}
-                    />
-                );
-            case "Checkbox":
-                return (
-                    <FormShadcnSelect
-                        name="correctedValue"
-                        label={intl.formatMessage({
-                            id: "proofreading.extractedValue.correctedValue.label",
-                            defaultMessage: "Corrected Value",
-                        })}
-                        options={[
-                            {
-                                label: intl.formatMessage({
-                                    id: "common.true",
-                                    defaultMessage: "True",
-                                }),
-                                value: "True",
-                            },
-                            {
-                                label: intl.formatMessage({
-                                    id: "common.false",
-                                    defaultMessage: "False",
-                                }),
-                                value: "False",
-                            },
-                        ]}
-                    />
-                );
-            case "Handwritten":
-            case "Barcode":
-            default:
-                return (
-                    <FormInput
-                        name="correctedValue"
-                        type="text"
-                        label={intl.formatMessage({
-                            id: "proofreading.extractedValue.correctedValue.label",
-                            defaultMessage: "Corrected",
-                        })}
-                    />
-                );
-        }
-    };
-
     return (
         <div className="flex gap-2">
             <div className="flex-1 flex gap-2">
@@ -125,7 +71,11 @@ const FormContent = ({
                         className="h-9 text-sm"
                     />
                 </div>
-                <div className="flex-1">{renderFormField()}</div>
+                <div className="flex-1">
+                    <ExtractedValueCorrectedField
+                        roiType={extractedValue.roiType}
+                    />
+                </div>
             </div>
             <div className="flex items-end">
                 <SubmitButton onSubmit={onSubmit} />
@@ -137,7 +87,7 @@ const FormContent = ({
 export const ExtractedValueForm = ({ extractedValue }: Props) => {
     const intl = useIntl();
     const verifyMutation = useVerifyExtractedValueMutation(
-        extractedValue.logsheetId
+        extractedValue.logsheetId,
     );
 
     const formSchema = createExtractedValueFormSchema(extractedValue.roiType);
@@ -152,36 +102,15 @@ export const ExtractedValueForm = ({ extractedValue }: Props) => {
                 intl.formatMessage({
                     id: "proofreading.extractedValue.verify.success",
                     defaultMessage: "Value verified successfully",
-                })
+                }),
             );
         } catch {
             toast.error(
                 intl.formatMessage({
                     id: "proofreading.extractedValue.verify.error",
                     defaultMessage: "Failed to verify value",
-                })
+                }),
             );
-        }
-    };
-
-    const getDefaultValue = () => {
-        const rawValue = extractedValue.correctedValue ?? extractedValue.value;
-
-        if (!rawValue) {
-            return null;
-        }
-
-        switch (extractedValue.roiType) {
-            case "Number": {
-                const numValue = parseFloat(rawValue);
-                return isNaN(numValue) ? null : numValue;
-            }
-            case "Checkbox":
-                return rawValue === "True" || rawValue === "true"
-                    ? "True"
-                    : "False";
-            default:
-                return rawValue;
         }
     };
 
@@ -190,7 +119,8 @@ export const ExtractedValueForm = ({ extractedValue }: Props) => {
             schema={formSchema}
             defaultValues={{
                 ...extractedValue,
-                correctedValue: getDefaultValue(),
+                correctedValue:
+                    getExtractedValueDefaultFormValue(extractedValue),
             }}
         >
             <FormContent

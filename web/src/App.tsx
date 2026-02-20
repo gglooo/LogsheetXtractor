@@ -1,4 +1,5 @@
 import { baseDashboardPath, DashboardRoutes } from "@/modules/dashboard/routes";
+import { GamifiedProofreadingPage } from "@/modules/logsheets/proofreading/gamified-proofreading-page";
 import { baseLogsheetsPath, LogsheetsRoutes } from "@/modules/logsheets/routes";
 import {
     baseTemplateEditorPath,
@@ -26,6 +27,10 @@ function App() {
                 <Route
                     path={`${baseTemplateEditorPath}/*`}
                     element={<TemplateEditorRoutes />}
+                />
+                <Route
+                    path={`${baseLogsheetsPath}/gamified-proofread`}
+                    element={<GamifiedProofreadingPage />}
                 />
                 <Route
                     path={`/templates/:templateId${baseLogsheetsPath}/*`}

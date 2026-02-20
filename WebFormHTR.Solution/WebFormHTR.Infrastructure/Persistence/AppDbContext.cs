@@ -94,7 +94,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Roi>(ev => ev.Roi)
             .WithMany()
             .HasForeignKey(ev => ev.RoiId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         base.OnModelCreating(modelBuilder);
     }

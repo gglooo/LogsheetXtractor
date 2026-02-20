@@ -1,5 +1,8 @@
 import { fileQueryFn } from "@/modules/files/api";
-import { logsheetSchema } from "@/modules/logsheets/schema";
+import {
+    extractedValueSchema,
+    logsheetSchema,
+} from "@/modules/logsheets/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useExtractedValueImage = (extractedValueId: string) =>
@@ -133,3 +136,49 @@ export const useResetProofreadingMutation = () => {
         },
     });
 };
+
+export const useRandomUnverifiedExtractedValue = (enabled?: boolean) =>
+    useQuery({
+        queryKey: ["extracted-values", "unverified", "random"],
+        refetchOnWindowFocus: false,
+        enabled,
+        queryFn: async () => {
+            const response = await fetch(
+                "/api/extracted-values/unverified/random",
+            );
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch random unverified value");
+            }
+
+            return extractedValueSchema.parseAsync(await response.json());
+        },
+    });
+
+export const useNextLogsheetUnverifiedExtractedValues = (enabled: boolean) =>
+    useQuery({
+        queryKey: ["extracted-values", "unverified", "next-logsheet"],
+        refetchOnWindowFocus: false,
+        enabled,
+        queryFn: async () => {
+            const response = await fetch(
+                "/api/extracted-values/unverified/next-logsheet",
+            );
+
+            if (response.status === 204) {
+                return null;
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to fetch next logsheet unverified value",
+                );
+            }
+
+            return extractedValueSchema.parseAsync(await response.json());
+        },
+    });

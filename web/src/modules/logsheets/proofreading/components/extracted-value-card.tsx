@@ -1,53 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Spinner } from "@/components/ui/spinner";
-import { cn, getUrlFromBytes } from "@/lib/utils";
-import { useExtractedValueImage } from "@/modules/logsheets/proofreading/api";
+import { cn } from "@/lib/utils";
 import { ExtractedValueForm } from "@/modules/logsheets/proofreading/components/extracted-value-form";
+import { ExtractedValueImage } from "@/modules/logsheets/proofreading/components/extracted-value-image";
 import type { ExtractedValueType } from "@/modules/logsheets/schema";
-import { memo, useState } from "react";
+import { memo } from "react";
 
 type ExtractedValueCardProps = {
     extractedValue: ExtractedValueType;
     isSelected: boolean;
     onSelect: (roiId: string) => void;
-};
-
-const ExtractedValueImage = ({ id }: { id: string }) => {
-    const { data, isLoading, isError } = useExtractedValueImage(id);
-    const [open, setOpen] = useState(false);
-
-    if (isLoading) {
-        return <Spinner />;
-    }
-
-    if (isError || !data) {
-        return <div>Error loading image</div>;
-    }
-
-    const Img = (
-        <img
-            src={getUrlFromBytes(data.bytes)}
-            alt="Extracted Value"
-            className="max-w-full max-h-full object-contain"
-        />
-    );
-
-    return (
-        <>
-            <div
-                className="w-25 h-25 cursor-pointer bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs"
-                onClick={() => setOpen(true)}
-            >
-                {Img}
-            </div>
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="flex items-center justify-center">
-                    {Img}
-                </DialogContent>
-            </Dialog>
-        </>
-    );
 };
 
 export const ExtractedValueCard = memo(
