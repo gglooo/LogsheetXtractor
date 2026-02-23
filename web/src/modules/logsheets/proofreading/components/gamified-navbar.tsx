@@ -31,7 +31,7 @@ export const GamifiedNavbar = ({
                     <span className="text-base sm:text-lg font-bold truncate">
                         {intl.formatMessage({
                             id: "gamified.navbar.title",
-                            defaultMessage: "Gamified proofreading",
+                            defaultMessage: "Quick review",
                         })}
                     </span>
                 </div>
