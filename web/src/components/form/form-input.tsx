@@ -6,6 +6,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
 
 type Props = {
@@ -15,7 +16,7 @@ type Props = {
 } & React.ComponentProps<"input">;
 
 export const FormInput = forwardRef<HTMLInputElement, Props>(
-    ({ name, label, labelClassname, ...props }, ref) => {
+    ({ name, label, labelClassname, readOnly, className, ...props }, ref) => {
         return (
             <FormField
                 name={name}
@@ -25,12 +26,21 @@ export const FormInput = forwardRef<HTMLInputElement, Props>(
                             {label}
                         </FormLabel>
                         <FormControl>
-                            <Input {...props} {...field} ref={ref} />
+                            <Input
+                                className={cn(
+                                    className,
+                                    readOnly && "cursor-not-allowed opacity-70",
+                                )}
+                                {...props}
+                                {...field}
+                                ref={ref}
+                                readOnly={readOnly}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                 )}
             />
         );
-    }
+    },
 );

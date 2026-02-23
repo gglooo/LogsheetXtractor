@@ -8,8 +8,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { baseLogsheetsPath } from "@/modules/logsheets/routes";
 import { CreateTemplateAction } from "@/modules/templates/actions/create-template-action/create-template-action";
-import { Menu, PlusIcon, Settings } from "lucide-react";
+import { ListChecks, Menu, PlusIcon, Settings } from "lucide-react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 
@@ -31,6 +32,15 @@ export function Navbar() {
                 </div>
 
                 <div className="hidden md:flex items-center gap-4">
+                    <Button variant="outline" asChild>
+                        <Link to={`${baseLogsheetsPath}/gamified-proofread`}>
+                            <ListChecks className="mr-2 h-4 w-4" />
+                            {intl.formatMessage({
+                                id: "navbar.proofreading.quick",
+                                defaultMessage: "Quick review",
+                            })}
+                        </Link>
+                    </Button>
                     <CreateTemplateAction />
                     <Button variant="outline" size="icon" asChild>
                         <Link
@@ -83,6 +93,18 @@ export function Navbar() {
                                     id: "navbar.newTemplate",
                                     defaultMessage: "New template",
                                 })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    to={`${baseLogsheetsPath}/gamified-proofread`}
+                                    className="w-full cursor-pointer"
+                                >
+                                    <ListChecks className="mr-2 h-4 w-4" />
+                                    {intl.formatMessage({
+                                        id: "navbar.proofreading.quick",
+                                        defaultMessage: "Quick review",
+                                    })}
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                                 <Link

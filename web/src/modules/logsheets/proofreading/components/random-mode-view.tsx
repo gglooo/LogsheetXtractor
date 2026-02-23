@@ -2,6 +2,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRandomUnverifiedExtractedValue } from "@/modules/logsheets/proofreading/api";
 import { GamifiedCard } from "@/modules/logsheets/proofreading/components/gamified-card";
 import { GamifiedComplete } from "@/modules/logsheets/proofreading/components/gamified-complete";
+import { LogsheetBanner } from "@/modules/logsheets/proofreading/components/logsheet-banner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useIntl } from "react-intl";
@@ -58,13 +59,16 @@ export const RandomModeView = ({
     }
 
     return (
-        <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto p-6">
-            <GamifiedCard
-                extractedValue={data}
-                isFetching={isFetching}
-                onNext={handleNext}
-                onSkip={handleSkip}
-            />
+        <div className="flex flex-col flex-1 overflow-y-auto p-6 items-center justify-center">
+            <div className="w-full">
+                <LogsheetBanner logsheetId={data.logsheetId} />
+                <GamifiedCard
+                    extractedValue={data}
+                    isFetching={isFetching}
+                    onNext={handleNext}
+                    onSkip={handleSkip}
+                />
+            </div>
         </div>
     );
 };
