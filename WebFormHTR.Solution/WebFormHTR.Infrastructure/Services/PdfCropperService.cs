@@ -18,6 +18,13 @@ public class PdfCropperService(
 {
     private const double RenderScale = 2.0;
 
+    public int GetPageCount(byte[] bytes, CancellationToken ct)
+    {
+        using var docReader = docLib.GetDocReader(bytes, new PageDimensions(1.0));
+        ct.ThrowIfCancellationRequested();
+        return docReader.GetPageCount();
+    }
+
     public PdfDimensionsDto GetPageDimensions(byte[] bytes, int pageNumber, CancellationToken ct)
     {
         using var docReader = docLib.GetDocReader(bytes, new PageDimensions(2.0));

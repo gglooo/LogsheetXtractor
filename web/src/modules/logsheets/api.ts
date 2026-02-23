@@ -227,6 +227,8 @@ export const useLogsheetImage = (
             fileQueryFn(
                 `/api/logsheets/${logsheetId}/image${isBackSide ? "?backside=true" : ""}`,
             ),
+        retry: (_, error) =>
+            !(error instanceof Error && error.message.includes("Not Found")),
         enabled: !!logsheetId,
     });
 

@@ -56,4 +56,15 @@ public class PdfCropperServiceTests
 
         act.Should().Throw<DocnetException>();
     }
+
+    [Fact]
+    public void GetPageCount_ShouldReturnPageCount()
+    {
+        int expectedCount = 5;
+        _docReaderMock.Setup(x => x.GetPageCount()).Returns(expectedCount);
+
+        var result = _service.GetPageCount(new byte[0], CancellationToken.None);
+
+        result.Should().Be(expectedCount);
+    }
 }

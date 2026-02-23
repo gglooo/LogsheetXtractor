@@ -8,6 +8,8 @@ using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Infrastructure.Services.Scripting;
 using WebFormHTR.Infrastructure.Services.Storage;
 using WebFormHTR.Infrastructure.Services.Credentials;
+using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Features.PdfCropper;
 
 namespace WebFormHTR.Tests.Infrastructure.Services.Scripting;
 
@@ -24,6 +26,8 @@ public class PythonHtrAdapterTests
     private readonly Mock<IConfiguration> _configMock;
     private readonly Mock<IScriptInputPreparer> _inputPreparerMock;
     private readonly Mock<IScriptOutputParser> _outputParserMock;
+    private readonly Mock<IPdfCropperService> _pdfCropperServiceMock;
+    private readonly Mock<IFileService> _fileServiceMock;
     private readonly Mock<Microsoft.Extensions.Logging.ILogger<PythonHtrAdapter>> _loggerMock;
     private readonly PythonHtrAdapter _adapter;
     private readonly IMapper _mapper;
@@ -36,6 +40,8 @@ public class PythonHtrAdapterTests
         _configMock = new Mock<IConfiguration>();
         _inputPreparerMock = new Mock<IScriptInputPreparer>();
         _outputParserMock = new Mock<IScriptOutputParser>();
+        _pdfCropperServiceMock = new Mock<IPdfCropperService>();
+        _fileServiceMock = new Mock<IFileService>();
         _loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<PythonHtrAdapter>>();
         _mapper = new Mock<IMapper>().Object;
 
@@ -46,6 +52,8 @@ public class PythonHtrAdapterTests
             _mapper,
             _inputPreparerMock.Object,
             _outputParserMock.Object,
+            _pdfCropperServiceMock.Object,
+            _fileServiceMock.Object,
             _loggerMock.Object);
     }
 

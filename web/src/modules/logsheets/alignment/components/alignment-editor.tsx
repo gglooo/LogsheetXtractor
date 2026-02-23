@@ -38,6 +38,9 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     const template = templateQuery.data;
 
     const [activeSide, setActiveSide] = useState<"front" | "back">("front");
+    const [logsheetNumPages, setLogsheetNumPages] = useState<number | null>(
+        null,
+    );
 
     const [isFrontDirty, setIsFrontDirty] = useState(false);
     const [isBackDirty, setIsBackDirty] = useState(false);
@@ -77,6 +80,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                 !!logsheet.alignmentData?.frontside || isFrontDirty;
             const shouldSendBackside =
                 template?.backsideTemplate &&
+                logsheetNumPages !== 1 &&
                 (!!logsheet.alignmentData?.backside || isBackDirty);
 
             await alignMutation.mutateAsync({
@@ -134,6 +138,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     };
 
     const hasBackside = !!template?.backsideTemplate;
+    const isLogsheetBacksideMissing = logsheetNumPages === 1;
 
     return (
         <div className="flex flex-col h-full">
@@ -208,7 +213,10 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                         onClick={handleSave}
                         disabled={
                             alignMutation.isPending ||
-                            (!isFrontDirty && !isBackDirty)
+                            (!isFrontDirty && !isBackDirty) ||
+                            (activeSide === "back" &&
+                                isLogsheetBacksideMissing &&
+                                !isFrontDirty)
                         }
                     >
                         {intl.formatMessage({
@@ -228,9 +236,12 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                         <PdfViewer
                             fileId={logsheet.file.id}
                             pageNumber={activeSide === "front" ? 1 : 2}
+                            onNumPagesLoaded={setLogsheetNumPages}
                         />
                         {(activeSide === "front" && frontFile.data) ||
-                        (activeSide === "back" && backFile.data) ? (
+                        (activeSide === "back" &&
+                            backFile.data &&
+                            !isLogsheetBacksideMissing) ? (
                             <WarpedTemplateOverlay
                                 points={
                                     activeSide === "front"
@@ -246,25 +257,28 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                                 height={templateHeight}
                             />
                         ) : null}
-                        <AlignmentOverlay
-                            coordinates={
-                                activeSide === "front"
-                                    ? frontCoordinates
-                                    : backCoordinates
-                            }
-                            onChange={
-                                activeSide === "front"
-                                    ? (coords) => {
-                                          setFrontCoordinates(coords);
-                                          setIsFrontDirty(true);
-                                      }
-                                    : (coords) => {
-                                          setBackCoordinates(coords);
-                                          setIsBackDirty(true);
-                                      }
-                            }
-                            templateWidth={templateWidth}
-                        />
+                        {(!isLogsheetBacksideMissing ||
+                            activeSide === "front") && (
+                            <AlignmentOverlay
+                                coordinates={
+                                    activeSide === "front"
+                                        ? frontCoordinates
+                                        : backCoordinates
+                                }
+                                onChange={
+                                    activeSide === "front"
+                                        ? (coords) => {
+                                              setFrontCoordinates(coords);
+                                              setIsFrontDirty(true);
+                                          }
+                                        : (coords) => {
+                                              setBackCoordinates(coords);
+                                              setIsBackDirty(true);
+                                          }
+                                }
+                                templateWidth={templateWidth}
+                            />
+                        )}
                     </div>
                 </SvgWrapper>
             </div>

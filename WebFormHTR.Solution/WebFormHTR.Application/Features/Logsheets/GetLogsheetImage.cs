@@ -54,6 +54,17 @@ public static class GetLogsheetImageHandler
             return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 
+        var pdfBytes = pdfStream.ToByteArray();
+
+        if (!query.IsFrontside)
+        {
+            var pageCount = pdfCropperService.GetPageCount(pdfBytes, cancellationToken);
+            if (pageCount < 2)
+            {
+                return Result.Fail(new NotFoundError("Logsheet does not have a backside page"));
+            }
+        }
+
         var srcPoints = alignmentData;
         if (srcPoints?.Count != 4)
         {
@@ -64,7 +75,7 @@ public static class GetLogsheetImageHandler
         var dstPoints = GetTemplateCorners(template, outputScale);
         var page = query.IsFrontside ? 0 : 1;
 
-        var warpedStream = pdfCropperService.GetWarpedSection(pdfStream.ToByteArray(), page, srcPoints,
+        var warpedStream = pdfCropperService.GetWarpedSection(pdfBytes, page, srcPoints,
             dstPoints,
             template.Width * outputScale ?? 0, template.Height * outputScale ?? 0,
             template.Width ?? 0, template.Height ?? 0, cancellationToken);

@@ -19,6 +19,10 @@ export const useUploadFileMutation = () =>
 export const fileQueryFn = async (url: string, init?: RequestInit) => {
     const response = await fetch(url, init);
 
+    if (!response.ok) {
+        throw new Error(response.statusText);
+    }
+
     const blob = await response.blob();
 
     const contentType = response.headers.get("Content-Type");
@@ -53,6 +57,8 @@ export const usePdfFileImage = (fileId: string | undefined | null) =>
         queryKey: ["file-image", fileId],
         refetchOnWindowFocus: false,
         queryFn: () => fileQueryFn(`/api/files/${fileId}/image`),
+        retry: (_, error) =>
+            !(error instanceof Error && error.message.includes("Not Found")),
         enabled: !!fileId,
     });
 

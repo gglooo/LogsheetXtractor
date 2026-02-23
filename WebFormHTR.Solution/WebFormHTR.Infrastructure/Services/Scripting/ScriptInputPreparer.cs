@@ -16,7 +16,7 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
         return await GenerateConfigFileAsync(template, ct);
     }
 
-    public async Task<IEnumerable<string>> CreateAlignmentArgumentAsync(Logsheet logsheet, CancellationToken ct)
+    public async Task<IEnumerable<string>> CreateAlignmentArgumentAsync(Logsheet logsheet, bool hasBacksidePage, CancellationToken ct)
     {
         var frontsidePoints = logsheet.AlignmentData.Frontside;
         var backsidePoints = logsheet.AlignmentData.Backside;
@@ -35,7 +35,7 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
             frontsidePoints = GetIdentityPoints(logsheet.Template);
         }
 
-        if (logsheet.Template.BacksideTemplate is not null && !hasBacksidePoints)
+        if (hasBacksidePage && logsheet.Template.BacksideTemplate is not null && !hasBacksidePoints)
         {
             backsidePoints = GetIdentityPoints(logsheet.Template.BacksideTemplate);
         }
@@ -44,7 +44,7 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
             logsheet.Template,
             frontsidePoints
         );
-        var backsideAlignmentConfigPath = logsheet.Template.BacksideTemplate is not null
+        var backsideAlignmentConfigPath = hasBacksidePage && logsheet.Template.BacksideTemplate is not null
             ? await GetTemplateConfigPath(logsheet.Template.BacksideTemplate, backsidePoints)
             : null;
 
@@ -64,8 +64,13 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
         return alignmentArgs;
     }
 
-    public async Task<IEnumerable<string>> CreateBacksideArgumentAsync(Logsheet logsheet, CancellationToken ct)
+    public async Task<IEnumerable<string>> CreateBacksideArgumentAsync(Logsheet logsheet, bool hasBacksidePage, CancellationToken ct)
     {
+        if (!hasBacksidePage)
+        {
+            return Array.Empty<string>();
+        }
+
         var backTemplate = logsheet.Template.BacksideTemplate;
         if (backTemplate is null)
         {

@@ -81,7 +81,8 @@ export const ProofreadingLogsheetViewer = ({
                 <div className="w-full h-full flex items-center justify-center">
                     <Spinner />
                 </div>
-            ) : logsheetImageQuery.isError ? (
+            ) : logsheetImageQuery.isError &&
+              backside ? null : logsheetImageQuery.isError ? (
                 <p className="text-red-500">Error loading image</p>
             ) : (
                 <img

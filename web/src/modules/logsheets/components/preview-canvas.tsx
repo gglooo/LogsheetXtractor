@@ -71,11 +71,18 @@ export const LogsheetPreviewCanvas = ({
                         <Spinner />
                     </div>
                 ) : logsheetImageQuery.isError ? (
-                    <div className="p-4">
-                        {intl.formatMessage({
-                            id: "logsheets.preview.error",
-                            defaultMessage: "Failed to load logsheet preview.",
-                        })}
+                    <div className="flex h-64 w-full items-center justify-center p-4 text-center text-muted-foreground">
+                        {isBackside
+                            ? intl.formatMessage({
+                                  id: "logsheets.preview.backsideMissing",
+                                  defaultMessage:
+                                      "This logsheet does not have a backside page.",
+                              })
+                            : intl.formatMessage({
+                                  id: "logsheets.preview.error",
+                                  defaultMessage:
+                                      "Failed to load logsheet preview.",
+                              })}
                     </div>
                 ) : null}
                 <div className="w-full relative">

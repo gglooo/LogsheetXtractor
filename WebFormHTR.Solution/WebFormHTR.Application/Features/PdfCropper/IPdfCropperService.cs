@@ -10,6 +10,8 @@ public interface IPdfCropperService
     Stream GetCroppedSection(byte[] bytes, int pageNumber, int x, int y, int width, int height, int refTotalWidth,
         int refTotalHeight, CancellationToken ct);
 
+    int GetPageCount(byte[] bytes, CancellationToken ct);
+
     Stream GetWarpedSection(byte[] bytes, int pageNumber, IEnumerable<PointCoordinate> srcPoints, IEnumerable<PointCoordinate> dstPoints, int width,
         int height, int referenceWidth, int referenceHeight, CancellationToken ct);
 }

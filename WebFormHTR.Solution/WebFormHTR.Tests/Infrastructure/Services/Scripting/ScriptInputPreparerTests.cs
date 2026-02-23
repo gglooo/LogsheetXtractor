@@ -59,7 +59,7 @@ public class ScriptInputPreparerTests
             AlignmentData = new AlignmentContainer(new List<PointCoordinate>(), null) 
         };
 
-        var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
+        var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, true, CancellationToken.None);
 
         result.Should().BeEquivalentTo(new[] { "--aligned" });
     }
@@ -77,7 +77,7 @@ public class ScriptInputPreparerTests
         _fileStorageServiceMock.Setup(x => x.SaveTemporaryFileAsync(It.IsAny<byte[]>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedPath);
 
-        var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
+        var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, true, CancellationToken.None);
 
         result.Should().BeEquivalentTo(new[] { "--alignment_config", expectedPath });
         _fileStorageServiceMock.Verify(x => x.SaveTemporaryFileAsync(
@@ -95,7 +95,7 @@ public class ScriptInputPreparerTests
             AlignmentData = new AlignmentContainer(new List<PointCoordinate> { new(1, 1) }, null)
         };
 
-        Func<Task> act = async () => await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
+        Func<Task> act = async () => await _preparer.CreateAlignmentArgumentAsync(logsheet, true, CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Template dimensions are required for alignment configuration.");
@@ -124,7 +124,7 @@ public class ScriptInputPreparerTests
             .ReturnsAsync(expectedFrontPath)
             .ReturnsAsync(expectedBackPath);
 
-        var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
+        var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, true, CancellationToken.None);
 
         result.Should().ContainInOrder("--alignment_config", expectedFrontPath);
         result.Should().ContainInOrder("--backside_alignment_config", expectedBackPath);

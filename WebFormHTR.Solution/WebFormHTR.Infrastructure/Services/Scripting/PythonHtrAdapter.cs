@@ -13,6 +13,9 @@ using WebFormHTR.Infrastructure.Services.Credentials;
 using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 using WebFormHTR.Infrastructure.Services.Storage;
 using File = WebFormHTR.Domain.Entities.File;
+using WebFormHTR.Application.Features.PdfCropper;
+using WebFormHTR.Application.Extensions;
+using WebFormHTR.Application.Features.File.Interfaces;
 
 namespace WebFormHTR.Infrastructure.Services.Scripting;
 
@@ -23,6 +26,8 @@ public class PythonHtrAdapter(
     IMapper mapper,
     IScriptInputPreparer inputPreparer,
     IScriptOutputParser outputParser,
+    IPdfCropperService pdfCropperService,
+    IFileService fileService,
     ILogger<PythonHtrAdapter> logger) : IHtrScriptEngine
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
@@ -71,6 +76,15 @@ public class PythonHtrAdapter(
     {
         logger.LogInformation("Starting automatic alignment for Logsheet: {LogsheetId}", input.Logsheet.Id);
         var logsheetPath = fileStorageService.GetResolvedPath(input.Logsheet.File.StoragePath);
+        var pdfStream = (await fileService.GetFileAsync(input.Logsheet.FileId))?.Stream;
+        if (pdfStream is null)
+        {
+            logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", input.Logsheet.Id);
+            throw new InvalidOperationException("Logsheet file not found");
+        }
+        var pdfBytes = pdfStream.ToByteArray();
+        var hasBacksidePage = pdfCropperService.GetPageCount(pdfBytes, ct) > 1;
+
         var templatePath = fileStorageService.GetResolvedPath(input.Logsheet.Template.File.StoragePath);
 
         var backsideTemplate = input.Logsheet.Template.BacksideTemplate;
@@ -84,7 +98,7 @@ public class PythonHtrAdapter(
             "--pdf_template", templatePath
         };
 
-        if (backsideTemplatePath is not null)
+        if (hasBacksidePage && backsideTemplatePath is not null)
         {
             argsList.Add("--backside_template");
             argsList.Add(backsideTemplatePath);
@@ -116,6 +130,15 @@ public class PythonHtrAdapter(
 
         var logsheet = input.Logsheet;
         var logsheetPath = fileStorageService.GetResolvedPath(logsheet.File.StoragePath);
+        var pdfStream = (await fileService.GetFileAsync(logsheet.FileId))?.Stream;
+        if (pdfStream is null)
+        {
+            logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", logsheet.Id);
+            throw new InvalidOperationException("Logsheet file not found");
+        }
+        var pdfBytes = pdfStream.ToByteArray();
+        var hasBacksidePage = pdfCropperService.GetPageCount(pdfBytes, ct) > 1;
+
         var templatePath = fileStorageService.GetResolvedPath(logsheet.Template.File.StoragePath);
 
         var outputFilePath = fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_processed_logsheet.csv");
@@ -124,8 +147,8 @@ public class PythonHtrAdapter(
 
         var credentialsArgs = credentials.SelectMany(c => new[] { $"--{c.Item1.ToString().ToLower()}", c.Item2 });
 
-        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, ct);
-        var backsideArgument = await inputPreparer.CreateBacksideArgumentAsync(logsheet, ct);
+        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, hasBacksidePage, ct);
+        var backsideArgument = await inputPreparer.CreateBacksideArgumentAsync(logsheet, hasBacksidePage, ct);
 
         var argsList = new List<string>
         {
@@ -165,9 +188,18 @@ public class PythonHtrAdapter(
     {
         logger.LogInformation("Exporting data for Logsheet {LogsheetId}", logsheet.Id);
         var filePath = fileStorageService.GetResolvedPath(logsheetFile.StoragePath);
+        var pdfStream = (await fileService.GetFileAsync(logsheet.FileId))?.Stream;
+        if (pdfStream is null)
+        {
+            logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", logsheet.Id);
+            throw new InvalidOperationException("Logsheet file not found");
+        }
+        var pdfBytes = pdfStream.ToByteArray();
+        var hasBacksidePage = pdfCropperService.GetPageCount(pdfBytes, ct) > 1;
+
         var templatePath = fileStorageService.GetResolvedPath(templateFile.StoragePath);
 
-        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, ct);
+        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, hasBacksidePage, ct);
 
         var payload = new ExportLogsheetPayloadDto
         {
@@ -184,7 +216,7 @@ public class PythonHtrAdapter(
 
         var outputFilePath = fileStorageService.GetTemporaryFilePath($"{Guid.NewGuid()}_exported_logsheet.csv");
 
-        var backsideArgs = await inputPreparer.CreateBacksideArgumentAsync(logsheet, ct);
+        var backsideArgs = await inputPreparer.CreateBacksideArgumentAsync(logsheet, hasBacksidePage, ct);
 
         var argsList = new List<string>
         {
