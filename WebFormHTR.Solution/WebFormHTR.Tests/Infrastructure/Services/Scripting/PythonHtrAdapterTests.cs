@@ -1,26 +1,25 @@
-using System.Text.Json;
 using FluentAssertions;
 using MapsterMapper;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using WebFormHTR.Application.Features.Credentials;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
-using WebFormHTR.Infrastructure.Services.Credentials;
 using WebFormHTR.Infrastructure.Services.Scripting;
-using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 using WebFormHTR.Infrastructure.Services.Storage;
+using WebFormHTR.Infrastructure.Services.Credentials;
 
 namespace WebFormHTR.Tests.Infrastructure.Services.Scripting;
 
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Residuals.DTOs;
-using WebFormHTR.Domain.Enums;
-using WebFormHTR.Domain.ValueObjects;
+using Domain.Enums;
+using Domain.ValueObjects;
 
 public class PythonHtrAdapterTests
 {
     private readonly Mock<IScriptExecutor> _scriptExecutorMock;
-    private readonly Mock<ICredentialService> _credentialServiceMock;
+    private readonly Mock<ICredentialContextProvider> _credentialContextProviderMock;
     private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly Mock<IConfiguration> _configMock;
     private readonly Mock<IScriptInputPreparer> _inputPreparerMock;
@@ -32,7 +31,7 @@ public class PythonHtrAdapterTests
     public PythonHtrAdapterTests()
     {
         _scriptExecutorMock = new Mock<IScriptExecutor>();
-        _credentialServiceMock = new Mock<ICredentialService>();
+        _credentialContextProviderMock = new Mock<ICredentialContextProvider>();
         _fileStorageServiceMock = new Mock<IFileStorageService>();
         _configMock = new Mock<IConfiguration>();
         _inputPreparerMock = new Mock<IScriptInputPreparer>();
@@ -42,7 +41,7 @@ public class PythonHtrAdapterTests
 
         _adapter = new PythonHtrAdapter(
             _scriptExecutorMock.Object,
-            _credentialServiceMock.Object,
+            _credentialContextProviderMock.Object,
             _fileStorageServiceMock.Object,
             _mapper,
             _inputPreparerMock.Object,
@@ -64,11 +63,12 @@ public class PythonHtrAdapterTests
         var resolvedInputPath = "/resolved/input.pdf";
         var resolvedOutputPath = "/resolved/selected_rois.json";
 
-        _credentialServiceMock.Setup(x => x.GetAvailableCredentialsPath())
-            .Returns(new List<(ECredentialType, string)>
-            {
-                (ECredentialType.Google, credentialsPath)
-            });
+        var contextMock = new Mock<ICredentialContext>();
+        contextMock.Setup(c => c.CredentialPaths)
+            .Returns(new List<(ECredentialType, string)> { (ECredentialType.Google, credentialsPath) });
+            
+        _credentialContextProviderMock.Setup(x => x.GetCredentialContextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contextMock.Object);
 
         _fileStorageServiceMock.Setup(x => x.GetResolvedPath(template.File.StoragePath))
             .Returns(resolvedInputPath);
@@ -77,19 +77,18 @@ public class PythonHtrAdapterTests
 
         _scriptExecutorMock.Setup(x => x.ExecuteScriptAsync(
                 "select_rois.py",
-                It.Is<string>(args =>
-                    args.Contains($"--pdf_file {resolvedInputPath}") &&
-                    args.Contains($"--output_file {resolvedOutputPath}") &&
+                It.Is<IEnumerable<string>>(args =>
+                    args.Contains("--pdf_file") && args.Contains(resolvedInputPath) &&
+                    args.Contains("--output_file") && args.Contains(resolvedOutputPath) &&
                     args.Contains("--autodetect") &&
-                    args.Contains($"--credentials {credentialsPath}")),
+                    args.Contains("--credentials") && args.Contains(credentialsPath)),
                 ct))
             .ReturnsAsync("Script output");
 
         var expectedOutput = new SelectRoisOutputDto(
             new List<RoiDto>
             {
-                new RoiDto
-                (
+                new(
                     Guid.NewGuid(),
                     "TestROI",
                     template.Id,
@@ -101,8 +100,7 @@ public class PythonHtrAdapterTests
             },
             new List<ResidualDto>
             {
-                new ResidualDto
-                (
+                new(
                     Guid.NewGuid(),
                     template.Id,
                     "Ignored Content",
@@ -113,7 +111,8 @@ public class PythonHtrAdapterTests
             }
         );
 
-        _outputParserMock.Setup(x => x.ParseSelectRoisJsonAsync(resolvedOutputPath, template.Id, It.IsAny<CancellationToken>()))
+        _outputParserMock.Setup(x =>
+                x.ParseSelectRoisJsonAsync(resolvedOutputPath, template.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedOutput);
 
         var result = await _adapter.SelectRoisAsync(input, ct);
@@ -142,8 +141,12 @@ public class PythonHtrAdapterTests
         var template = new Domain.Entities.Template { File = new Domain.Entities.File { StoragePath = "input.pdf" } };
         var input = new SelectRoisInputDto(template);
 
-        _credentialServiceMock.Setup(x => x.GetAvailableCredentialsPath())
-            .Returns([]);
+        var contextMock = new Mock<ICredentialContext>();
+        contextMock.Setup(c => c.CredentialPaths)
+            .Returns(new List<(ECredentialType, string)>());
+            
+        _credentialContextProviderMock.Setup(x => x.GetCredentialContextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(contextMock.Object);
 
         var act = async () => await _adapter.SelectRoisAsync(input, CancellationToken.None);
 

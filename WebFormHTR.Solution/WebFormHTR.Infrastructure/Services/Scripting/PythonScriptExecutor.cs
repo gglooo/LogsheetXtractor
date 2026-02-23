@@ -10,23 +10,29 @@ public class PythonScriptExecutor(IConfiguration config, ILogger<PythonScriptExe
     private readonly string _pythonInterpreterPath = config["Python:InterpreterPath"] ?? "python3";
     private readonly string _scriptsBasePath = config["Python:ScriptsFolder"] ?? "../../formHTR";
 
-    public virtual async Task<string> ExecuteScriptAsync(string scriptName, string args,
+    public virtual async Task<string> ExecuteScriptAsync(string scriptName, IEnumerable<string> enumerableArgs,
         CancellationToken cancellationToken)
     {
         var scriptPath = Path.Combine(_scriptsBasePath, scriptName);
-        var formattedArgs = $"\"{scriptPath}\" {args.Replace("\"", "\\\"")}";
 
-        logger.LogDebug("Executing Python script: {Interpreter} {Args}", _pythonInterpreterPath, formattedArgs);
+        var args = enumerableArgs as string[] ?? enumerableArgs.ToArray();
+        logger.LogDebug("Executing Python script: {Interpreter} {ScriptPath} {Args}", _pythonInterpreterPath,
+            scriptPath, string.Join(" ", args));
 
         ProcessStartInfo startInfo = new()
         {
             FileName = _pythonInterpreterPath,
-            Arguments = formattedArgs,
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
+
+        startInfo.ArgumentList.Add(scriptPath);
+        foreach (var arg in args)
+        {
+            startInfo.ArgumentList.Add(arg);
+        }
 
         var pythonEnvBinPath = Path.GetDirectoryName(_pythonInterpreterPath);
 
@@ -62,7 +68,9 @@ public class PythonScriptExecutor(IConfiguration config, ILogger<PythonScriptExe
 
         if (process.ExitCode != 0)
         {
-            logger.LogError("Python script execution failed. Script: {ScriptName}, ExitCode: {ExitCode}, Error: {Error}", scriptName, process.ExitCode, error);
+            logger.LogError(
+                "Python script execution failed. Script: {ScriptName}, ExitCode: {ExitCode}, Error: {Error}",
+                scriptName, process.ExitCode, error);
             throw new InvalidOperationException(
                 $"Python script execution failed with exit code {process.ExitCode}: {error}");
         }
@@ -70,12 +78,12 @@ public class PythonScriptExecutor(IConfiguration config, ILogger<PythonScriptExe
         return result;
     }
 
-    public async Task<T> ExecuteScriptWithJsonOutputAsync<T>(string scriptName, string args,
+    public async Task<T> ExecuteScriptWithJsonOutputAsync<T>(string scriptName, IEnumerable<string> args,
         CancellationToken cancellationToken)
     {
         var stdout = await ExecuteScriptAsync(scriptName, args, cancellationToken);
         var result = System.Text.Json.JsonSerializer.Deserialize<T>(stdout);
-        
+
         if (result == null)
         {
             logger.LogError("Failed to deserialize JSON output from Python script. Script: {ScriptName}", scriptName);

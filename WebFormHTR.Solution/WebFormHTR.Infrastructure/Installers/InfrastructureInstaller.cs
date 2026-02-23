@@ -48,7 +48,9 @@ public static class InfrastructureInstaller
         services.AddScoped<IRoiService, RoiService>();
         services.AddScoped<IHtrScriptEngine, PythonHtrAdapter>();
         services.AddScoped<IScriptExecutor, PythonScriptExecutor>();
+        services.AddScoped<IOcrCredentialService, OcrCredentialService>();
         services.AddScoped<ICredentialService, CredentialService>();
+        services.AddScoped<ICredentialContextProvider, CredentialContextProvider>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IResidualService, ResidualService>();
         services.AddScoped<ILogsheetService, LogsheetService>();

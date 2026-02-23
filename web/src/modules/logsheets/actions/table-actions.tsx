@@ -14,6 +14,7 @@ import {
     useProcessLogsheetMutation,
 } from "@/modules/logsheets/api";
 import type { LogsheetListType } from "@/modules/logsheets/schema";
+import { useCredentialsStatus } from "@/modules/settings/api";
 import {
     ArrowRightFromLineIcon,
     DownloadIcon,
@@ -126,6 +127,14 @@ export const LogsheetTableActions = ({
     const { templateId } = useParams<{ templateId: string }>();
 
     const processLogsheetMutation = useProcessLogsheetMutation();
+    const { data: credentialsStatus } = useCredentialsStatus();
+    const isCredentialsMissing = credentialsStatus?.available === false;
+
+    const noCredentialsTooltip = intl.formatMessage({
+        id: "settings.credentials.missing.tooltip",
+        defaultMessage:
+            "OCR Credentials required. Please configure them in Settings.",
+    });
 
     const handleProcess = async () => {
         try {
@@ -160,16 +169,23 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.proofread",
                         defaultMessage: "Proofread",
                     })}
-                    disabled={logsheet.status !== "NeedsReview"}
+                    disabled={
+                        logsheet.status !== "NeedsReview" ||
+                        isCredentialsMissing
+                    }
                     onClick={() =>
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/proofread`,
                         )
                     }
-                    tooltip={intl.formatMessage({
-                        id: "logsheets.actions.proofread",
-                        defaultMessage: "Proofread",
-                    })}
+                    tooltip={
+                        isCredentialsMissing
+                            ? noCredentialsTooltip
+                            : intl.formatMessage({
+                                  id: "logsheets.actions.proofread",
+                                  defaultMessage: "Proofread",
+                              })
+                    }
                 >
                     <FileSignature className="h-4 w-4" />
                 </Button>
@@ -181,17 +197,22 @@ export const LogsheetTableActions = ({
                     })}
                     disabled={
                         logsheet.status === "Completed" ||
-                        logsheet.status === "NeedsReview"
+                        logsheet.status === "NeedsReview" ||
+                        isCredentialsMissing
                     }
                     onClick={() =>
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/align`,
                         )
                     }
-                    tooltip={intl.formatMessage({
-                        id: "logsheets.actions.align",
-                        defaultMessage: "Align",
-                    })}
+                    tooltip={
+                        isCredentialsMissing
+                            ? noCredentialsTooltip
+                            : intl.formatMessage({
+                                  id: "logsheets.actions.align",
+                                  defaultMessage: "Align",
+                              })
+                    }
                 >
                     <ScanLine className="h-4 w-4" />
                 </Button>
@@ -202,16 +223,23 @@ export const LogsheetTableActions = ({
                     logsheet.status !== "NeedsReview" && (
                         <Button
                             variant="outline"
-                            disabled={processLogsheetMutation.isPending}
+                            disabled={
+                                processLogsheetMutation.isPending ||
+                                isCredentialsMissing
+                            }
                             onClick={handleProcess}
                             title={intl.formatMessage({
                                 id: "logsheets.actions.process",
                                 defaultMessage: "Process",
                             })}
-                            tooltip={intl.formatMessage({
-                                id: "logsheets.actions.process",
-                                defaultMessage: "Process",
-                            })}
+                            tooltip={
+                                isCredentialsMissing
+                                    ? noCredentialsTooltip
+                                    : intl.formatMessage({
+                                          id: "logsheets.actions.process",
+                                          defaultMessage: "Process",
+                                      })
+                            }
                         >
                             {processLogsheetMutation.isPending ? (
                                 <Spinner />

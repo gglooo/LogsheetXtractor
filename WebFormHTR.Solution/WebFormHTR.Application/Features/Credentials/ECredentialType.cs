@@ -1,4 +1,4 @@
-namespace WebFormHTR.Infrastructure.Services.Credentials;
+namespace WebFormHTR.Application.Features.Credentials;
 
 public enum ECredentialType
 {

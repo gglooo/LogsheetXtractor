@@ -72,7 +72,6 @@ public class ResetLogsheetProofreadingTests : IDisposable
 
         result.IsSuccess.Should().BeTrue();
         result.IsSuccess.Should().BeTrue();
-        // result is Result, no Value
 
         var dbLogsheet = await _dbContext.Logsheets.FindAsync(logsheet.Id);
         dbLogsheet!.Status.Should().Be(ELogSheetStatus.Pending);

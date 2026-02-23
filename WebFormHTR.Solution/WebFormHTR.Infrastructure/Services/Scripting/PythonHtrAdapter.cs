@@ -18,7 +18,7 @@ namespace WebFormHTR.Infrastructure.Services.Scripting;
 
 public class PythonHtrAdapter(
     IScriptExecutor scriptExecutor,
-    ICredentialService credentialService,
+    ICredentialContextProvider credentialContextProvider,
     IFileStorageService fileStorageService,
     IMapper mapper,
     IScriptInputPreparer inputPreparer,
@@ -30,7 +30,9 @@ public class PythonHtrAdapter(
     public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
         logger.LogInformation("Starting ROI selection for Template: {TemplateId}", input.Template.Id);
-        var credentials = credentialService.GetAvailableCredentialsPath().ToList();
+        
+        await using var context = await credentialContextProvider.GetCredentialContextAsync(ct);
+        var credentials = context.CredentialPaths.ToList();
         if (credentials.Count == 0)
         {
             logger.LogError("No credentials available for ROI selection.");
@@ -43,9 +45,16 @@ public class PythonHtrAdapter(
         var outputFilePath = fileStorageService.GetTemporaryFilePath(uniqueStoragePath);
 
         var usedCredentials = credentials[0].Item2;
-        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois,
-            $"--pdf_file {inputFilePath} --output_file {outputFilePath} --autodetect --detect_residuals --credentials {usedCredentials} --headless",
-            ct);
+        var args = new List<string>
+        {
+            "--pdf_file", inputFilePath,
+            "--output_file", outputFilePath,
+            "--autodetect",
+            "--detect_residuals",
+            "--credentials", usedCredentials,
+            "--headless"
+        };
+        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois, args, ct);
 
         var rois = await outputParser.ParseSelectRoisJsonAsync(outputFilePath, input.Template.Id, ct);
         logger.LogInformation("ROI selection completed. Found {Count} ROIs.", rois.Rois.Count());
@@ -69,14 +78,22 @@ public class PythonHtrAdapter(
             ? fileStorageService.GetResolvedPath(backsideTemplate.File.StoragePath)
             : null;
 
-        var stdOut = await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.AutomaticAlignment,
-            $"--pdf_logsheet {logsheetPath} --pdf_template {templatePath}" +
-            (backsideTemplatePath is not null
-                ? $" --backside_template {backsideTemplatePath}"
-                : ""),
-            ct);
+        var argsList = new List<string>
+        {
+            "--pdf_logsheet", logsheetPath,
+            "--pdf_template", templatePath
+        };
 
-        input.Logsheet.AlignmentData = JsonSerializer.Deserialize<WebFormHTR.Domain.ValueObjects.AlignmentContainer>(stdOut, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        if (backsideTemplatePath is not null)
+        {
+            argsList.Add("--backside_template");
+            argsList.Add(backsideTemplatePath);
+        }
+
+        var stdOut = await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.AutomaticAlignment, argsList, ct);
+
+        input.Logsheet.AlignmentData = JsonSerializer.Deserialize<Domain.ValueObjects.AlignmentContainer>(stdOut,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
 
         logger.LogInformation("Automatic alignment completed for Logsheet: {LogsheetId}", input.Logsheet.Id);
 
@@ -87,7 +104,10 @@ public class PythonHtrAdapter(
         CancellationToken ct)
     {
         logger.LogInformation("Processing logsheet: {LogsheetId}", input.Logsheet.Id);
-        var credentials = credentialService.GetAvailableCredentialsPath().ToList();
+        
+        await using var context = await credentialContextProvider.GetCredentialContextAsync(ct);
+        var credentials = context.CredentialPaths.ToList();
+        
         if (credentials.Count == 0)
         {
             logger.LogError("No credentials available for ProcessLogsheet.");
@@ -102,15 +122,24 @@ public class PythonHtrAdapter(
 
         var configPath = await inputPreparer.CreateTemplateConfigAsync(logsheet.Template, ct);
 
-        var credentialsString =
-            string.Join(" ", credentials.Select(c => $"--{c.Item1.ToString().ToLower()} {c.Item2}"));
+        var credentialsArgs = credentials.SelectMany(c => new[] { $"--{c.Item1.ToString().ToLower()}", c.Item2 });
 
         var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(logsheet, ct);
         var backsideArgument = await inputPreparer.CreateBacksideArgumentAsync(logsheet, ct);
 
-        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet,
-            $"--output_file {outputFilePath} --pdf_template {templatePath} --pdf_logsheet {logsheetPath} --config_file {configPath} {credentialsString} {alignmentArgument} {backsideArgument} --store_csv",
-            ct);
+        var argsList = new List<string>
+        {
+            "--output_file", outputFilePath,
+            "--pdf_template", templatePath,
+            "--pdf_logsheet", logsheetPath,
+            "--config_file", configPath
+        };
+        argsList.AddRange(credentialsArgs);
+        argsList.AddRange(alignmentArgument);
+        argsList.AddRange(backsideArgument);
+        argsList.Add("--store_csv");
+
+        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet, argsList, ct);
 
         var parsedData = await outputParser.ParseProcessLogsheetCsvAsync(outputFilePath, ct);
 
@@ -123,7 +152,7 @@ public class PythonHtrAdapter(
 
         var dimensions = await scriptExecutor.ExecuteScriptWithJsonOutputAsync<PdfDimensionsDto>(
             PythonScriptTypes.PdfDimensions,
-            $"--pdf_file {filePath}", ct);
+            new[] { "--pdf_file", filePath }, ct);
 
         return dimensions;
     }
@@ -157,11 +186,19 @@ public class PythonHtrAdapter(
 
         var backsideArgs = await inputPreparer.CreateBacksideArgumentAsync(logsheet, ct);
 
+        var argsList = new List<string>
+        {
+            "--pdf_logsheet", filePath,
+            "--pdf_template", templatePath,
+            "--config_file", configPath,
+            "--output_file", outputFilePath
+        };
+        argsList.AddRange(alignmentArgument);
+        argsList.AddRange(backsideArgs);
+
         logger.LogInformation("Executing export script for Logsheet {LogsheetId}", logsheet.Id);
-        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ExportLogsheet,
-            $"--pdf_logsheet {filePath} --pdf_template {templatePath} --config_file {configPath} --output_file {outputFilePath} {alignmentArgument} {backsideArgs}",
-            ct);
-        
+        await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ExportLogsheet, argsList, ct);
+
         logger.LogInformation("Export script completed successfully for Logsheet {LogsheetId}", logsheet.Id);
 
         var fileStream = fileStorageService.GetTemporaryFile(outputFilePath);

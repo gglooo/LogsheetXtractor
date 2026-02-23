@@ -25,7 +25,7 @@ public class PythonScriptExecutorTests
     public async Task ExecuteScriptWithJsonOutputAsync_ShouldEnsureDeserialization_WhenOutputIsValid()
     {
         var scriptName = "test_script.py";
-        var args = "--test";
+        var args = new[] { "--test" };
         var expectedResult = new TestDto { Message = "Success" };
         var jsonOutput = JsonSerializer.Serialize(expectedResult);
 
@@ -42,7 +42,7 @@ public class PythonScriptExecutorTests
     public async Task ExecuteScriptWithJsonOutputAsync_ShouldThrow_WhenOutputIsInvalidJson()
     {
         var scriptName = "test_script.py";
-        var args = "--test";
+        var args = new[] { "--test" };
         var invalidJson = "Not JSON";
 
         _serviceMock.Setup(x => x.ExecuteScriptAsync(scriptName, args, It.IsAny<CancellationToken>()))

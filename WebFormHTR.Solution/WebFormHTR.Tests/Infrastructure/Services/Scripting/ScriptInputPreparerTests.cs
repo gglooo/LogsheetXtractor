@@ -61,7 +61,7 @@ public class ScriptInputPreparerTests
 
         var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
 
-        result.Should().Be("--aligned");
+        result.Should().BeEquivalentTo(new[] { "--aligned" });
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class ScriptInputPreparerTests
 
         var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
 
-        result.Should().Be($"--alignment_config {expectedPath}");
+        result.Should().BeEquivalentTo(new[] { "--alignment_config", expectedPath });
         _fileStorageServiceMock.Verify(x => x.SaveTemporaryFileAsync(
             It.IsAny<byte[]>(), 
             It.Is<string>(s => s.Contains("alignment_config.json")), 
@@ -126,8 +126,8 @@ public class ScriptInputPreparerTests
 
         var result = await _preparer.CreateAlignmentArgumentAsync(logsheet, CancellationToken.None);
 
-        result.Should().Contain($"--alignment_config {expectedFrontPath}");
-        result.Should().Contain($"--backside_alignment_config {expectedBackPath}");
+        result.Should().ContainInOrder("--alignment_config", expectedFrontPath);
+        result.Should().ContainInOrder("--backside_alignment_config", expectedBackPath);
         
         _fileStorageServiceMock.Verify(x => x.SaveTemporaryFileAsync(
             It.IsAny<byte[]>(),

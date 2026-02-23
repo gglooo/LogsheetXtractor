@@ -7,14 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentResults" Version="4.0.0" />
-      <PackageReference Include="Mapster" Version="7.4.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
-      <PackageReference Include="WolverineFx" Version="5.2.0" />
+        <PackageReference Include="FluentResults" Version="4.0.0"/>
+        <PackageReference Include="FluentValidation" Version="12.1.1"/>
+        <PackageReference Include="Mapster" Version="7.4.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0"/>
+        <PackageReference Include="WolverineFx" Version="5.2.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\WebFormHTR.Domain\WebFormHTR.Domain.csproj" />
+        <ProjectReference Include="..\WebFormHTR.Domain\WebFormHTR.Domain.csproj"/>
     </ItemGroup>
 
 </Project>

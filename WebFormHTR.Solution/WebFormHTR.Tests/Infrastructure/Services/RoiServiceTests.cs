@@ -133,7 +133,7 @@ public class RoiServiceTests : IDisposable
         var updateRois = new List<SetRoiDto> { updateDto };
 
         _mapperMock.Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
-            .Callback<SetRoiDto, Roi>((dto, entity) => { }); // No changes needed for this test
+            .Callback<SetRoiDto, Roi>((dto, entity) => { });
 
         _mapperMock.Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
             .Returns((IEnumerable<Roi> rois) =>

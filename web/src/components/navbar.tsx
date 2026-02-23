@@ -9,8 +9,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CreateTemplateAction } from "@/modules/templates/actions/create-template-action/create-template-action";
-import { Menu, PlusIcon } from "lucide-react";
+import { Menu, PlusIcon, Settings } from "lucide-react";
 import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 
 export function Navbar() {
     const intl = useIntl();
@@ -31,6 +32,17 @@ export function Navbar() {
 
                 <div className="hidden md:flex items-center gap-4">
                     <CreateTemplateAction />
+                    <Button variant="outline" size="icon" asChild>
+                        <Link
+                            to="/settings"
+                            title={intl.formatMessage({
+                                id: "navbar.settings",
+                                defaultMessage: "Settings",
+                            })}
+                        >
+                            <Settings className="h-5 w-5" />
+                        </Link>
+                    </Button>
                     <ModeToggle />
                 </div>
 
@@ -71,6 +83,18 @@ export function Navbar() {
                                     id: "navbar.newTemplate",
                                     defaultMessage: "New template",
                                 })}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    to="/settings"
+                                    className="w-full cursor-pointer"
+                                >
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    {intl.formatMessage({
+                                        id: "navbar.settings",
+                                        defaultMessage: "Settings",
+                                    })}
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

@@ -1,17 +1,18 @@
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using WebFormHTR.Application.Features.Credentials;
 using WebFormHTR.Infrastructure.Services.Credentials;
 using Xunit;
 
 namespace WebFormHTR.Tests.Infrastructure.Services.Credentials;
 
-public class CredentialServiceTests
+public class OcrCredentialServiceTests
 {
     [Fact]
     public void GetCredentialFilePath_ShouldReturnPath_WhenFileExists()
     {
         var tempFile = Path.GetTempFileName();
-        try 
+        try
         {
             var configData = new Dictionary<string, string?>
             {
@@ -21,7 +22,7 @@ public class CredentialServiceTests
                 .AddInMemoryCollection(configData)
                 .Build();
 
-            var service = new CredentialService(config);
+            var service = new OcrCredentialService(config);
 
             var result = service.GetCredentialFilePath(ECredentialType.Google);
 
@@ -49,7 +50,7 @@ public class CredentialServiceTests
             .AddInMemoryCollection(configData)
             .Build();
 
-        var service = new CredentialService(config);
+        var service = new OcrCredentialService(config);
 
         var result = service.GetCredentialFilePath(ECredentialType.Google);
 
@@ -60,7 +61,7 @@ public class CredentialServiceTests
     public void GetCredentialFilePath_ShouldReturnNull_WhenConfigIsMissing()
     {
         IConfiguration config = new ConfigurationBuilder().Build();
-        var service = new CredentialService(config);
+        var service = new OcrCredentialService(config);
 
         var result = service.GetCredentialFilePath(ECredentialType.Google);
         result.Should().BeNull();

@@ -38,7 +38,7 @@ public class UpsertRoiCommandHandlerTests : IDisposable
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
         _roiServiceMock.Verify(x => x.UpsertRoiForTemplateAsync(command.TemplateId, command.Roi, It.IsAny<CancellationToken>()), Times.Once);
-        _dbContext.ChangeTracker.HasChanges().Should().BeFalse(); // Handler saves changes
+        _dbContext.ChangeTracker.HasChanges().Should().BeFalse();
     }
 
     [Fact]

@@ -1,39 +1,27 @@
-using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
+using WebFormHTR.Application.Features.Credentials;
+using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Infrastructure.Services.Credentials;
 
-public class CredentialService(IConfiguration config) : ICredentialService
+public class CredentialService(IOcrCredentialService ocrCredentialService, IHttpContextAccessor httpContextAccessor)
+    : ICredentialService
 {
-    private readonly string _googleCredentialsPath = config["Credentials:GoogleApiKeyPath"] ?? string.Empty;
-    private readonly string _azureCredentialsPath = config["Credentials:AzureApiKeyPath"] ?? string.Empty;
-    private readonly string _amazonCredentialsPath = config["Credentials:AmazonApiKeyPath"] ?? string.Empty;
-
-    private Dictionary<ECredentialType, string> CredentialPaths => new()
+    public Task<IEnumerable<ECredentialType>> GetAvailableCredentialTypesAsync(CancellationToken cancellationToken)
     {
-        { ECredentialType.Google, _googleCredentialsPath },
-        { ECredentialType.Azure, _azureCredentialsPath },
-        { ECredentialType.Amazon, _amazonCredentialsPath }
-    };
-
-    public (ECredentialType, string)? GetCredentialFilePath(ECredentialType credentialType)
-    {
-        if (!CredentialPaths.TryGetValue(credentialType, out var path) || string.IsNullOrEmpty(path))
+        var cookie = httpContextAccessor.HttpContext?.Request.Cookies[CredentialsConstants.CookieName];
+        var keys = CredentialCookieParser.ParseCredentials(cookie);
+        
+        if (keys != null)
         {
-            return null;
+            return Task.FromResult(keys.Select(k => k.Key));
         }
 
-        var fullPath = Path.GetFullPath(path);
-        return Path.Exists(path) ? (credentialType, path) : null;
-    }
+        // Fallback to server-side credentials if no valid cookie is found
+        var availableCredentials = ocrCredentialService.GetAvailableCredentialsPath()
+            .Select(kvp => kvp.Item1);
 
-    public IEnumerable<(ECredentialType, string)> GetAvailableCredentialsPath()
-    {
-        foreach (var kvp in CredentialPaths)
-        {
-            if (GetCredentialFilePath(kvp.Key) is not null)
-            {
-                yield return (kvp.Key, kvp.Value);
-            }
-        }
+        return Task.FromResult(availableCredentials);
     }
 }
