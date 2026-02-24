@@ -17,10 +17,14 @@ execSync(
 const enPath = path.join(i18nDir, "en.json");
 const csPath = path.join(i18nDir, "cs.json");
 const dePath = path.join(i18nDir, "de.json");
+const frPath = path.join(i18nDir, "fr.json");
+const esPath = path.join(i18nDir, "es.json");
+const itPath = path.join(i18nDir, "it.json");
+const ptPath = path.join(i18nDir, "pt.json");
 
 const enData = JSON.parse(fs.readFileSync(enPath, "utf-8"));
 
-[csPath, dePath].forEach((filePath) => {
+[csPath, dePath, frPath, esPath, itPath, ptPath].forEach((filePath) => {
     let existingData = {};
     if (fs.existsSync(filePath)) {
         try {

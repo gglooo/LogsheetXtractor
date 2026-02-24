@@ -1,4 +1,7 @@
-import type { Language } from "@/components/language-context";
+import {
+    supportedLanguages,
+    type Language,
+} from "@/components/language-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -188,17 +191,23 @@ export const SettingsPage = () => {
                         <div className="w-full max-w-xs">
                             <Select
                                 value={locale}
-                                onValueChange={(value) =>
-                                    setLocale(value as Language)
-                                }
+                                onValueChange={(value) => {
+                                    console.log("Selected language:", value);
+                                    return setLocale(value as Language);
+                                }}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select language" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="en">English</SelectItem>
-                                    <SelectItem value="cs">Čeština</SelectItem>
-                                    <SelectItem value="de">Deutsch</SelectItem>
+                                    {supportedLanguages.map((lang) => (
+                                        <SelectItem
+                                            key={lang.code}
+                                            value={lang.code}
+                                        >
+                                            {lang.label}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
