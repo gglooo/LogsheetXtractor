@@ -6,9 +6,9 @@ public static class TemplateRules
 {
     public static Expression<Func<Template, bool>> IsEditable =>
         template => !template.Logsheets.Any(ls =>
-            ls.Status == ELogSheetStatus.NeedsReview) &&
-            (template.FrontsideTemplate == null ||
-             (!template.FrontsideTemplate.Logsheets.Any(ls =>
-                  ls.Status == ELogSheetStatus.Completed ||
-                  ls.Status == ELogSheetStatus.NeedsReview)));
+                        ls.Status == ELogSheetStatus.NeedsReview || ls.Status == ELogSheetStatus.Completed) &&
+                    (template.FrontsideTemplate == null ||
+                     !template.FrontsideTemplate.Logsheets.Any(ls =>
+                         ls.Status == ELogSheetStatus.Completed ||
+                         ls.Status == ELogSheetStatus.NeedsReview));
 }
