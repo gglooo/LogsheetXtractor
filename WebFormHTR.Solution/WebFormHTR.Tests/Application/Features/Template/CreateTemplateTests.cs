@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Template;
+using WebFormHTR.Application.Features.Template.CreateTemplate;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Features.Template.Interfaces;
 using WebFormHTR.Application.Interfaces;

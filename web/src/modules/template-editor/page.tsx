@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { SvgWrapper } from "@/modules/canvas/svg-wrapper";
 import { DrawablePdfViewer } from "@/modules/pdf/components/drawable-pdf-viewer";
+import { ReadonlyRoiPdfViewer } from "@/modules/pdf/components/readonly-roi-pdf-viewer";
 import { EditorNavbar } from "@/modules/template-editor/components/navbar";
 import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
 import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
@@ -63,16 +64,23 @@ export const TemplateEditorContent = () => {
                                     mode === "draw"
                                         ? "cursor-crosshair"
                                         : mode === "split"
-                                        ? "cursor-col-resize"
-                                        : "cursor-default"
+                                          ? "cursor-col-resize"
+                                          : "cursor-default"
                                 }
                             >
                                 {template.file?.id ? (
                                     <SvgWrapper>
-                                        <DrawablePdfViewer
-                                            fileId={template.file.id}
-                                            template={template}
-                                        />
+                                        {template.isEditable ? (
+                                            <DrawablePdfViewer
+                                                fileId={template.file.id}
+                                                template={template}
+                                            />
+                                        ) : (
+                                            <ReadonlyRoiPdfViewer
+                                                fileId={template.file.id}
+                                                template={template}
+                                            />
+                                        )}
                                     </SvgWrapper>
                                 ) : null}
                             </div>

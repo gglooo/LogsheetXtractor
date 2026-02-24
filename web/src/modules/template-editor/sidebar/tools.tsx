@@ -50,7 +50,6 @@ export const ToolsSidebarGroup = () => {
     const { id } = useParams<{ id: string }>();
 
     const {
-        addRoi,
         addRois,
         setRois,
         setRoisAndResiduals,
@@ -61,13 +60,14 @@ export const ToolsSidebarGroup = () => {
         undo,
         redo,
         roiInputRef,
+        template,
     } = useTemplateEditor();
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
 
     const handleSetDetectedData = (detectedData: DetectRoiResponseType) => {
         setRoisAndResiduals(
             [...rois, ...detectedData.rois],
-            [...residuals, ...detectedData.residuals]
+            [...residuals, ...detectedData.residuals],
         );
     };
 
@@ -136,7 +136,7 @@ export const ToolsSidebarGroup = () => {
             browse: browseRoiTool,
             focusRoiInput,
         },
-        shortcutWhitelist
+        shortcutWhitelist,
     );
 
     return (
@@ -165,6 +165,7 @@ export const ToolsSidebarGroup = () => {
                     <Button
                         className="flex-1"
                         variant={mode === "draw" ? "default" : "outline"}
+                        disabled={!template?.isEditable}
                         onClick={setDrawTool}
                     >
                         <Square />
@@ -179,7 +180,7 @@ export const ToolsSidebarGroup = () => {
                 </div>
                 <Button
                     variant={mode === "split" ? "default" : "outline"}
-                    disabled={rois.length === 0}
+                    disabled={rois.length === 0 || !template?.isEditable}
                     className="w-full"
                     onClick={setSplitTool}
                 >
@@ -194,7 +195,7 @@ export const ToolsSidebarGroup = () => {
                 </Button>
                 <Button
                     variant="outline"
-                    disabled={rois.length === 0}
+                    disabled={rois.length === 0 || !template?.isEditable}
                     className="w-full"
                     onClick={clearRois}
                 >
@@ -210,6 +211,7 @@ export const ToolsSidebarGroup = () => {
                 <DetectRoisAction
                     templateId={id!}
                     onResult={handleSetDetectedData}
+                    disabled={!template?.isEditable}
                     className="flex-1"
                 />
                 <Separator />

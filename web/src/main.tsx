@@ -8,12 +8,41 @@ import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+    ApiValidationError,
+    setupGlobalFetchInterceptor,
+} from "@/lib/api-client";
+import {
+    MutationCache,
+    QueryCache,
+    QueryClient,
+    QueryClientProvider,
+} from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
+import { toast } from "sonner";
 import { I18nProvider } from "./components/i18n-provider";
 import { ThemeProvider } from "./components/theme-provider";
 
-const queryClient = new QueryClient();
+setupGlobalFetchInterceptor();
+
+const handleApiError = (error: Error) => {
+    if (error instanceof ApiValidationError) {
+        error.errorMessages.forEach((msg) => {
+            toast.error(msg, {
+                duration: 5000,
+            });
+        });
+    }
+};
+
+const queryClient = new QueryClient({
+    mutationCache: new MutationCache({
+        onError: handleApiError,
+    }),
+    queryCache: new QueryCache({
+        onError: handleApiError,
+    }),
+});
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>

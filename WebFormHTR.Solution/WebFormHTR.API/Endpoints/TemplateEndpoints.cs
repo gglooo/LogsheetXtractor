@@ -4,6 +4,7 @@ using WebFormHTR.API.Extensions;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Template;
+using WebFormHTR.Application.Features.Template.CreateTemplate;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Domain.Entities;
 using Wolverine;
@@ -12,6 +13,7 @@ using Wolverine.Http;
 namespace WebFormHTR.API.Endpoints;
 
 public sealed record CloneTemplateBacksideRequest(string Name, Guid FileId);
+
 public sealed record CloneTemplateRequest(string NewName, Guid FileId, CloneTemplateBacksideRequest? Backside);
 
 public static class TemplateEndpoints
@@ -85,8 +87,8 @@ public static class TemplateEndpoints
         IMessageBus bus,
         CancellationToken ct)
     {
-        var backsideCommand = request.Backside != null 
-            ? new CloneTemplateBacksideCommand(request.Backside.Name, request.Backside.FileId) 
+        var backsideCommand = request.Backside != null
+            ? new CloneTemplateBacksideCommand(request.Backside.Name, request.Backside.FileId)
             : null;
         var command = new CloneTemplateCommand(id, request.NewName, request.FileId, backsideCommand);
 

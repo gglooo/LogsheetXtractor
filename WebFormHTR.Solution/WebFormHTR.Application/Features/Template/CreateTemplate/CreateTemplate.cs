@@ -1,12 +1,11 @@
 using FluentResults;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Features.Template.Interfaces;
 using WebFormHTR.Application.Interfaces;
 
-namespace WebFormHTR.Application.Features.Template;
+namespace WebFormHTR.Application.Features.Template.CreateTemplate;
 
 public sealed record CreateTemplateCommand
 {

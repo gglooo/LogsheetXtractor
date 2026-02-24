@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { baseDashboardPath, DashboardRoutes } from "@/modules/dashboard/routes";
 import { GamifiedProofreadingPage } from "@/modules/logsheets/proofreading/gamified-proofreading-page";
 import { baseLogsheetsPath, LogsheetsRoutes } from "@/modules/logsheets/routes";
@@ -8,7 +9,6 @@ import {
 } from "@/modules/template-editor/routes";
 import { useIntl } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { Toaster } from "sonner";
 
 function App() {
     const intl = useIntl();

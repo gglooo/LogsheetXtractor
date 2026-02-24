@@ -13,11 +13,13 @@ export const DetectRoisAction = ({
     templateId,
     inDropdown,
     className,
+    disabled,
 }: {
     templateId: string;
     inDropdown?: boolean;
     onResult?: (result: DetectRoiResponseType) => void;
     className?: string;
+    disabled?: boolean;
 }) => {
     const intl = useIntl();
 
@@ -41,7 +43,7 @@ export const DetectRoisAction = ({
                 intl.formatMessage({
                     id: "rois.actions.detectRois.success",
                     defaultMessage: "ROIs detected successfully!",
-                })
+                }),
             );
         } catch (error) {
             console.error(error);
@@ -49,7 +51,7 @@ export const DetectRoisAction = ({
                 intl.formatMessage({
                     id: "rois.actions.detectRois.error",
                     defaultMessage: "An error occurred while detecting ROIs.",
-                })
+                }),
             );
         }
     };
@@ -62,6 +64,7 @@ export const DetectRoisAction = ({
                         e.preventDefault();
                         handleDetectRois();
                     }}
+                    disabled={disabled}
                     className={className}
                 >
                     {ButtonContent}
@@ -71,6 +74,7 @@ export const DetectRoisAction = ({
                     variant="outline"
                     onClick={handleDetectRois}
                     className={className}
+                    disabled={disabled}
                 >
                     {ButtonContent}
                 </Button>

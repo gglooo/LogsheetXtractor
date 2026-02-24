@@ -14,6 +14,7 @@ using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
 using FluentResults;
 using WebFormHTR.Application.Errors;
 using Microsoft.Extensions.Logging;
+using WebFormHTR.Application.Features.Template.CreateTemplate;
 
 namespace WebFormHTR.Infrastructure.Services;
 
@@ -58,7 +59,6 @@ public class TemplateService(
         }
 
         var template = templateResult.Value;
-
 
         await dbContext.Templates.AddAsync(template, cancellationToken);
 

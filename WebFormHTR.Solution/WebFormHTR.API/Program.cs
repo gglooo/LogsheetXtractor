@@ -6,6 +6,7 @@ using Mapster;
 using WebFormHTR.Infrastructure.Installers;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.API.Middleware;
+using Wolverine.FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Host.UseWolverine(opts => { opts.Discovery.IncludeAssembly(typeof(ApplicationAssemblyReference).Assembly); });
+builder.Host.UseWolverine(opts =>
+{
+    opts.Discovery.IncludeAssembly(typeof(ApplicationAssemblyReference).Assembly);
+    opts.UseFluentValidation();
+});
 builder.Services.AddWolverineHttp();
 builder.Services.AddMapster();
 builder.Services.ConfigureHttpJsonOptions(options =>
