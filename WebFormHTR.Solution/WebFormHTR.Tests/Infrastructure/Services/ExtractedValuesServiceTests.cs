@@ -2,11 +2,13 @@ using FluentAssertions;
 using FluentResults;
 using Moq;
 using WebFormHTR.Application.DTOs;
+using WebFormHTR.Application.Features.ExtractedValues;
 using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.ValueObjects;
+using WebFormHTR.Tests.Common;
 using WebFormHTR.Infrastructure.Services;
 using Xunit;
 
@@ -58,7 +60,9 @@ public class ExtractedValuesServiceTests
                 x.GetCroppedSection(It.IsAny<byte[]>(), 0, 10, 10, 10, 10, 100, 100, It.IsAny<CancellationToken>()))
             .Returns(croppedStream);
 
-        var result = await _service.GetExtractedValueImageAsync(extractedValue, CancellationToken.None);
+        var requestDto = new GetExtractedValueImageDto(extractedValue.Id, logsheet.FileId,
+            roi.Coordinates, template.Width.Value, template.Height.Value, logsheet.AlignmentData!.Frontside);
+        var result = await _service.GetExtractedValueImageAsync(requestDto, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Stream.Should().BeSameAs(croppedStream);
@@ -74,7 +78,9 @@ public class ExtractedValuesServiceTests
         _fileServiceMock.Setup(x => x.GetFileAsync(logsheet.FileId))
             .ReturnsAsync((GetFileDto?)null);
 
-        var result = await _service.GetExtractedValueImageAsync(extractedValue, CancellationToken.None);
+        var requestDto = new GetExtractedValueImageDto(extractedValue.Id, logsheet.FileId,
+            new Coordinates(0, 0, 0, 0), 100, 100, null);
+        var result = await _service.GetExtractedValueImageAsync(requestDto, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Logsheet file not found");

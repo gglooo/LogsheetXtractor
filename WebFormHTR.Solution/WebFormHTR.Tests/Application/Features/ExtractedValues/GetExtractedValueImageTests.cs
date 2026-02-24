@@ -25,12 +25,13 @@ public class GetExtractedValueImageTests : IDisposable
         var logsheet = new Logsheet 
         { 
             Id = Guid.NewGuid(),
-            Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"} } 
+            Template = new Domain.Entities.Template { Name = "T", File = new Domain.Entities.File { StoredFileName = "t"}, FrontsideTemplate = null } 
         };
         var roi = new Roi 
         { 
             Id = Guid.NewGuid(),
-            Coordinates = new Coordinates(0, 0, 10, 10)
+            Coordinates = new Coordinates(0, 0, 10, 10),
+            Template = logsheet.Template
         };
         var extractedValue = new ExtractedValue 
         { 
@@ -49,7 +50,7 @@ public class GetExtractedValueImageTests : IDisposable
         var query = new GetExtractedValueImageQuery(extractedValue.Id);
         var expectedDto = new GetFileDto { Stream = new MemoryStream(), ContentType = "image/png", FileName = "test.png" };
 
-        _extractedValuesServiceMock.Setup(x => x.GetExtractedValueImageAsync(It.Is<ExtractedValue>(e => e.Id == extractedValue.Id), It.IsAny<CancellationToken>()))
+        _extractedValuesServiceMock.Setup(x => x.GetExtractedValueImageAsync(It.IsAny<GetExtractedValueImageDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Ok(expectedDto));
 
         var result = await GetExtractedValueImageHandler.Handle(query, _dbContext, _extractedValuesServiceMock.Object, CancellationToken.None);

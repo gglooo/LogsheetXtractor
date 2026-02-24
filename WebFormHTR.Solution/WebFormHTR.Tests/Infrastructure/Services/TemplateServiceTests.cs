@@ -87,6 +87,7 @@ public class TemplateServiceTests
             parentId,
             newTemplateName,
             fileId,
+            null,
             CancellationToken.None
         );
         await _dbContext.SaveChangesAsync();
@@ -182,6 +183,7 @@ public class TemplateServiceTests
             parentId,
             newTemplateName,
             fileId,
+            null,
             CancellationToken.None
         );
         await _dbContext.SaveChangesAsync();

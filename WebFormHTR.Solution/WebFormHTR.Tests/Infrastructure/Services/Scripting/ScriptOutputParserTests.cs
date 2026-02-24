@@ -15,7 +15,8 @@ public class ScriptOutputParserTests
 
     public ScriptOutputParserTests()
     {
-        _parser = new ScriptOutputParser(_fileStorageServiceMock.Object);
+        var coordinateTransformerMock = new Mock<WebFormHTR.Application.Interfaces.ICoordinateTransformerService>();
+        _parser = new ScriptOutputParser(_fileStorageServiceMock.Object, coordinateTransformerMock.Object);
     }
 
     [Fact]
