@@ -1,8 +1,19 @@
 import { Badge } from "@/components/ui/badge";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { LogsheetStatus } from "@/modules/logsheets/schema";
 
-export const LogsheetStatusBadge = ({ status }: { status: LogsheetStatus }) => {
+export const LogsheetStatusBadge = ({
+    status,
+    errorMessage,
+}: {
+    status: LogsheetStatus;
+    errorMessage?: string | null;
+}) => {
     const statusStyles: Record<string, { className: string; label: string }> = {
         Pending: {
             className:
@@ -32,12 +43,22 @@ export const LogsheetStatusBadge = ({ status }: { status: LogsheetStatus }) => {
         label: "Unknown",
     };
 
-    return (
+    const BadgeComponent = (
         <Badge
-            variant="outline"
             className={cn("whitespace-nowrap font-medium", config.className)}
         >
             {config.label}
         </Badge>
+    );
+
+    if (!errorMessage) {
+        return BadgeComponent;
+    }
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>{BadgeComponent}</TooltipTrigger>
+            <TooltipContent className="max-w-xs">{errorMessage}</TooltipContent>
+        </Tooltip>
     );
 };

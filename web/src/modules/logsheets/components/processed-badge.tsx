@@ -20,9 +20,9 @@ export const ProcessedBadge = ({
                     {
                         processedAt: formatDate(
                             new Date(processedAt),
-                            "d. M. yyyy, HH:mm"
+                            "d. M. yyyy, HH:mm",
                         ),
-                    }
+                    },
                 )}
             </Badge>
         );

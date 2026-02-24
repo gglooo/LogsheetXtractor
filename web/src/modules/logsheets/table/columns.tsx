@@ -63,7 +63,12 @@ export const useLogsheetsColumns = () => {
                 id: "logsheets.table.columns.status",
                 defaultMessage: "Status",
             }),
-            cell: (info) => <LogsheetStatusBadge status={info.getValue()} />,
+            cell: (info) => (
+                <LogsheetStatusBadge
+                    status={info.getValue()}
+                    errorMessage={info.row.original.errorMessage}
+                />
+            ),
         }),
         columnHelper.accessor("processedAt", {
             header: intl.formatMessage({

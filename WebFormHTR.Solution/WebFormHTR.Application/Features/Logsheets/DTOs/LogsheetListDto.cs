@@ -10,6 +10,7 @@ public record LogsheetListDto(
     ELogSheetStatus Status,
     bool IsFrontAligned,
     bool IsBackAligned,
+    string? ErrorMessage,
     DateTime? ProcessedAt,
     DateTime CreatedAt,
     DateTime? UpdatedAt
