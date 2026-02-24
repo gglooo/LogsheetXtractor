@@ -6,7 +6,8 @@ using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.Template;
 
-public sealed record CloneTemplateCommand(Guid TemplateId, string NewTemplateName, Guid FileId);
+public sealed record CloneTemplateBacksideCommand(string Name, Guid FileId);
+public sealed record CloneTemplateCommand(Guid TemplateId, string NewTemplateName, Guid FileId, CloneTemplateBacksideCommand? Backside = null);
 
 public static class CloneTemplateHandler
 {
@@ -28,7 +29,7 @@ public static class CloneTemplateHandler
             }
 
             var clonedTemplate = await templateService.CloneTemplateAsync(request.TemplateId, request.NewTemplateName,
-                request.FileId, cancellationToken);
+                request.FileId, request.Backside, cancellationToken);
 
             await dbContext.SaveChangesAsync(cancellationToken);
 

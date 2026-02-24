@@ -64,3 +64,14 @@ export const createTemplateSchema = baseCreateTemplateSchema.extend({
 export type CreateTemplateFormValues = z.infer<typeof createTemplateSchema>;
 
 export type TemplateType = z.infer<typeof templateSchema>;
+
+export const baseCloneTemplateSchema = z.object({
+    name: z.string().min(1).trim(),
+    file: pdfFileSchema,
+});
+
+export const cloneTemplateSchema = baseCloneTemplateSchema.extend({
+    backside: baseCloneTemplateSchema.optional(),
+});
+
+export type CloneTemplateFormValues = z.infer<typeof cloneTemplateSchema>;

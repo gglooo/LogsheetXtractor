@@ -11,7 +11,8 @@ using Wolverine.Http;
 
 namespace WebFormHTR.API.Endpoints;
 
-public sealed record CloneTemplateRequest(string NewName, Guid FileId);
+public sealed record CloneTemplateBacksideRequest(string Name, Guid FileId);
+public sealed record CloneTemplateRequest(string NewName, Guid FileId, CloneTemplateBacksideRequest? Backside);
 
 public static class TemplateEndpoints
 {
@@ -84,7 +85,10 @@ public static class TemplateEndpoints
         IMessageBus bus,
         CancellationToken ct)
     {
-        var command = new CloneTemplateCommand(id, request.NewName, request.FileId);
+        var backsideCommand = request.Backside != null 
+            ? new CloneTemplateBacksideCommand(request.Backside.Name, request.Backside.FileId) 
+            : null;
+        var command = new CloneTemplateCommand(id, request.NewName, request.FileId, backsideCommand);
 
         var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
 

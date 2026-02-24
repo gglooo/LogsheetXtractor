@@ -36,14 +36,16 @@ export const useCloneTemplateMutation = () => {
             templateId,
             newName,
             fileId,
+            backside,
         }: {
             templateId: string;
             newName: string;
             fileId: string;
+            backside?: { name: string; fileId: string };
         }) => {
             const response = await fetch(`/api/templates/${templateId}/clone`, {
                 method: "POST",
-                body: JSON.stringify({ newName, fileId }),
+                body: JSON.stringify({ newName, fileId, backside }),
                 headers: {
                     "Content-Type": "application/json",
                 },

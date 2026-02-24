@@ -61,33 +61,38 @@ public class TemplateService(
     }
 
     public async Task<TemplateDetailDto> CloneTemplateAsync(Guid templateId, string newTemplateName, Guid fileId,
-        CancellationToken cancellationToken)
+        CloneTemplateBacksideCommand? backside, CancellationToken cancellationToken)
     {
         logger.LogInformation("Cloning template {TemplateId} to new name '{NewTemplateName}'", templateId, newTemplateName);
         var parentTemplate = await dbContext
             .Templates
             .AsNoTracking()
             .FirstAsync(t => t.Id == templateId, cancellationToken);
-        var newId = Guid.NewGuid();
-
-        var dimensions = CalculateTemplateFileDimensions(fileId);
-
-        var clonedTemplate = new Template
-        {
-            Name = newTemplateName,
-            ParentId = parentTemplate.Id,
-            FileId = fileId,
-            Id = newId,
-            Width = dimensions.Width,
-            Height = dimensions.Height
-        };
+        var clonedTemplate = GetTemplate(newTemplateName, fileId, parentTemplate.Id);
+        clonedTemplate.Id = Guid.NewGuid();
 
         await dbContext.Templates.AddAsync(clonedTemplate, cancellationToken);
 
-        await residualService.CloneResidualsForTemplateAsync(parentTemplate.Id, newId, cancellationToken);
-        await roiService.CloneRoisForTemplateAsync(parentTemplate.Id, newId, cancellationToken);
+        if (backside is not null)
+        {
+            var backsideTemplate = GetTemplate(backside.Name, backside.FileId, null);
+            backsideTemplate.Id = Guid.NewGuid();
+
+            await dbContext.Templates.AddAsync(backsideTemplate, cancellationToken);
+            clonedTemplate.SetBacksideTemplate(backsideTemplate);
+
+            if (parentTemplate.BacksideTemplateId.HasValue)
+            {
+                backsideTemplate.ParentId = parentTemplate.BacksideTemplateId.Value;
+                await residualService.CloneResidualsForTemplateAsync(parentTemplate.BacksideTemplateId.Value, backsideTemplate.Id, cancellationToken);
+                await roiService.CloneRoisForTemplateAsync(parentTemplate.BacksideTemplateId.Value, backsideTemplate.Id, cancellationToken);
+            }
+        }
+
+        await residualService.CloneResidualsForTemplateAsync(parentTemplate.Id, clonedTemplate.Id, cancellationToken);
+        await roiService.CloneRoisForTemplateAsync(parentTemplate.Id, clonedTemplate.Id, cancellationToken);
         
-        logger.LogInformation("Template cloned successfully. New Template ID: {NewTemplateId}", newId);
+        logger.LogInformation("Template cloned successfully. New Template ID: {NewTemplateId}", clonedTemplate.Id);
 
         return mapper.Map<TemplateDetailDto>(clonedTemplate);
     }

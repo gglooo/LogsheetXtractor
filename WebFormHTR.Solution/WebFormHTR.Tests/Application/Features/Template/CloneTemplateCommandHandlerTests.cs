@@ -32,14 +32,14 @@ public class CloneTemplateCommandHandlerTests : IDisposable
 
          var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "Cloned Template", 0, 0, null, null, null, null, DateTime.UtcNow, DateTime.UtcNow, [], [], true);
 
-        _templateServiceMock.Setup(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, It.IsAny<CancellationToken>()))
+        _templateServiceMock.Setup(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, command.Backside, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);
 
         var result = await CloneTemplateHandler.Handle(command, CancellationToken.None, _templateServiceMock.Object, _dbContext);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
-        _templateServiceMock.Verify(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, It.IsAny<CancellationToken>()), Times.Once);
+        _templateServiceMock.Verify(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, command.Backside, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class CloneTemplateCommandHandlerTests : IDisposable
         var command = new CloneTemplateCommand(template.Id, "Cloned Template", file.Id);
         var errorMessage = "Service failure";
 
-        _templateServiceMock.Setup(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, It.IsAny<CancellationToken>()))
+        _templateServiceMock.Setup(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, command.Backside, It.IsAny<CancellationToken>()))
              .ThrowsAsync(new Exception(errorMessage));
 
         var result = await CloneTemplateHandler.Handle(command, CancellationToken.None, _templateServiceMock.Object, _dbContext);
@@ -95,5 +95,31 @@ public class CloneTemplateCommandHandlerTests : IDisposable
     public void Dispose()
     {
         _dbContext.Dispose();
+    }
+
+    [Fact]
+    public async Task Handle_ShouldCloneTemplateWithBackside_WhenBacksideIsProvided()
+    {
+        var file = new Domain.Entities.File { Id = Guid.NewGuid(), StoredFileName = "file.pdf" };
+        var backsideFile = new Domain.Entities.File { Id = Guid.NewGuid(), StoredFileName = "backsideFile.pdf" };
+        _dbContext.Files.Add(file);
+        _dbContext.Files.Add(backsideFile);
+        
+        var template = new Domain.Entities.Template { Id = Guid.NewGuid(), Name = "Original Template", FileId = file.Id };
+        _dbContext.Templates.Add(template);
+        await _dbContext.SaveChangesAsync();
+
+        var backsideCommand = new CloneTemplateBacksideCommand("Backside Name", backsideFile.Id);
+        var command = new CloneTemplateCommand(template.Id, "Cloned Template", file.Id, backsideCommand);
+
+        var expectedDto = new TemplateDetailDto(Guid.NewGuid(), "Cloned Template", 0, 0, null, null, null, null, DateTime.UtcNow, DateTime.UtcNow, [], [], true);
+
+        _templateServiceMock.Setup(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, command.Backside, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedDto);
+
+        var result = await CloneTemplateHandler.Handle(command, CancellationToken.None, _templateServiceMock.Object, _dbContext);
+
+        result.IsSuccess.Should().BeTrue();
+        _templateServiceMock.Verify(x => x.CloneTemplateAsync(command.TemplateId, command.NewTemplateName, command.FileId, command.Backside, It.IsAny<CancellationToken>()), Times.Once);
     }
 }
