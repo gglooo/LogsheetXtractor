@@ -32,7 +32,7 @@ import {
     Trash2,
     UploadIcon,
 } from "lucide-react";
-import { useIntl } from "react-intl";
+import { FormattedPlural, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -111,10 +111,17 @@ export const TemplateListItem = ({
                     <div className="flex gap-2">
                         <Badge>
                             {template.roiCount}{" "}
-                            {intl.formatMessage({
-                                id: "templates.rois",
-                                defaultMessage: "ROIs",
-                            })}
+                            <FormattedPlural
+                                value={template.roiCount}
+                                one={intl.formatMessage({
+                                    id: "templates.roi",
+                                    defaultMessage: "ROI",
+                                })}
+                                other={intl.formatMessage({
+                                    id: "templates.rois",
+                                    defaultMessage: "ROIs",
+                                })}
+                            />
                         </Badge>
                         {template.backsideTemplateId ? (
                             <Badge>

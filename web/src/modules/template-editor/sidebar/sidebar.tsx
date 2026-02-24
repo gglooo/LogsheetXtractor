@@ -2,7 +2,6 @@ import { Separator } from "@/components/ui/separator";
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
     SidebarHeader,
 } from "@/components/ui/sidebar";
 import { SelectedRoiSidebarGroup } from "@/modules/template-editor/sidebar/selected-roi";
@@ -29,7 +28,6 @@ export const EditorSidebar = ({ className }: EditorSidebarProps) => {
                 <Separator />
                 <SelectedRoiSidebarGroup />
             </SidebarContent>
-            <SidebarFooter>Footer</SidebarFooter>
         </Sidebar>
     );
 };

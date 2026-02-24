@@ -100,7 +100,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
             console.error(error);
             toast.error(
                 intl.formatMessage({
-                    id: "logsheets.alignment.error",
+                    id: "logsheets.alignmentEditor.error",
                     defaultMessage: "Failed to save alignment",
                 }),
             );

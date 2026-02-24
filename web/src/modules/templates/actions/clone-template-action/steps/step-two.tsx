@@ -19,7 +19,7 @@ export const StepTwo = () => {
         <div className="space-y-4 py-4">
             <h3 className="font-medium">
                 {intl.formatMessage({
-                    id: "templates.actions.createTemplate.backside.title",
+                    id: "templates.actions.cloneTemplate.backside.title",
                     defaultMessage: "Backside template (Optional)",
                 })}
             </h3>

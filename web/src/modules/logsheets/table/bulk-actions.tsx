@@ -164,7 +164,7 @@ export const LogsheetTableBulkActions = ({
                 <DialogContent>
                     <DialogTitle>
                         {intl.formatMessage({
-                            id: "logsheets.actions.processing",
+                            id: "logsheets.bulkActions.processing",
                             defaultMessage: "Processing logsheets",
                         })}
                     </DialogTitle>

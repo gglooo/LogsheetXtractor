@@ -45,7 +45,7 @@ export const LogsheetsPage = () => {
                         >
                             <FileCog className="mr-2 h-4 w-4" />
                             {intl.formatMessage({
-                                id: "logsheets.add.button",
+                                id: "logsheets.editTemplate.button",
                                 defaultMessage: "Edit template",
                             })}
                         </Button>

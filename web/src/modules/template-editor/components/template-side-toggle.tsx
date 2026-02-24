@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { baseTemplateEditorPath } from "@/modules/template-editor/routes";
 import { ArrowLeftRight } from "lucide-react";
+import { useIntl } from "react-intl";
 
 export const TemplateSideToggle = () => {
+    const intl = useIntl();
     const { template } = useTemplateEditor();
 
     if (!template) {
@@ -28,7 +30,15 @@ export const TemplateSideToggle = () => {
     return (
         <Button variant="outline" size="sm" onClick={handleToggle}>
             <ArrowLeftRight className="mr-2 h-4 w-4" />
-            {hasFrontside ? "Switch to front" : "Switch to back"}
+            {hasFrontside
+                ? intl.formatMessage({
+                      id: "templateSideToggle.switchToBack",
+                      defaultMessage: "Switch to back",
+                  })
+                : intl.formatMessage({
+                      id: "templateSideToggle.switchToFront",
+                      defaultMessage: "Switch to front",
+                  })}
         </Button>
     );
 };

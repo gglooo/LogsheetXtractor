@@ -8,7 +8,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { type SetUserCredentialsFormValues } from "@/modules/settings/schema";
 import { type UseFormReturn } from "react-hook-form";
-import { useIntl } from "react-intl";
+import { defineMessages, useIntl } from "react-intl";
+
+const messages = defineMessages({
+    Google: {
+        id: "settings.credentials.google.label",
+        defaultMessage: "Google API key",
+    },
+    Azure: {
+        id: "settings.credentials.azure.label",
+        defaultMessage: "Azure API key",
+    },
+    Amazon: {
+        id: "settings.credentials.amazon.label",
+        defaultMessage: "Amazon API key",
+    },
+});
 
 interface CredentialsFormItemProps {
     provider: string;
@@ -28,10 +43,9 @@ export const CredentialsFormItem = ({
             render={({ field }) => (
                 <FormItem>
                     <FormLabel>
-                        {intl.formatMessage({
-                            id: `settings.credentials.${provider.toLowerCase()}.label`,
-                            defaultMessage: `${provider} API key`,
-                        })}
+                        {intl.formatMessage(
+                            messages[provider as keyof typeof messages],
+                        )}
                     </FormLabel>
                     <FormControl>
                         <Input

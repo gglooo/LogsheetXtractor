@@ -62,7 +62,7 @@ const FormContent = ({
                 <div className="flex-1 flex flex-col gap-2">
                     <FormInput
                         label={intl.formatMessage({
-                            id: "proofreading.extractedValue.originalValue.label",
+                            id: "proofreading.extractedValueForm.originalValue.label",
                             defaultMessage: "Original",
                         })}
                         value={extractedValue.value}

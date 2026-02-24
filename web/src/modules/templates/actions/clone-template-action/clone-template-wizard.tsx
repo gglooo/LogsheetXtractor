@@ -133,7 +133,7 @@ export const CloneTemplateWizard = ({
                         <Spinner />
                     ) : (
                         intl.formatMessage({
-                            id: "templates.actions.clone",
+                            id: "templates.actions.clone.submit",
                             defaultMessage: "Clone template",
                         })
                     )}

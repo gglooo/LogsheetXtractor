@@ -1,6 +1,15 @@
+import type { Language } from "@/components/language-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { useLanguage } from "@/components/use-language";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +20,7 @@ import { useCredentialsStatus, useDeleteCredentialsMutation } from "./api";
 export const SettingsPage = () => {
     const intl = useIntl();
     const navigate = useNavigate();
+    const { locale, setLocale } = useLanguage();
     const { data: status, isLoading } = useCredentialsStatus();
     const deleteMutation = useDeleteCredentialsMutation();
 
@@ -155,6 +165,44 @@ export const SettingsPage = () => {
                             defaultMessage: "Clear personal credentials",
                         })}
                     </Button>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-4 border p-6 rounded-lg bg-card text-card-foreground shadow-sm">
+                <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-2">
+                        <h2 className="text-xl font-semibold">
+                            {intl.formatMessage({
+                                id: "settings.language.title",
+                                defaultMessage: "Language",
+                            })}
+                        </h2>
+                        <span className="text-sm text-muted-foreground mb-2">
+                            {intl.formatMessage({
+                                id: "settings.language.description",
+                                defaultMessage:
+                                    "Select your preferred language",
+                            })}
+                        </span>
+
+                        <div className="w-full max-w-xs">
+                            <Select
+                                value={locale}
+                                onValueChange={(value) =>
+                                    setLocale(value as Language)
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select language" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="en">English</SelectItem>
+                                    <SelectItem value="cs">Čeština</SelectItem>
+                                    <SelectItem value="de">Deutsch</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>

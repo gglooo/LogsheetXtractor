@@ -10,17 +10,26 @@ import {
     editRoiSchema,
     type EditRoiFormValues,
 } from "@/modules/template-editor/sidebar/schema";
+import { useIntl } from "react-intl";
 
 export const VARIABLE_NAME_INPUT_ID = "variableNameInput";
 
 const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
     const { setRois, roiInputRef } = useTemplateEditor();
+    const intl = useIntl();
 
     if (selectedRois.length > 1) {
         return <MultipleSelectedRois selectedRoisCount={selectedRois.length} />;
     }
     if (selectedRois.length === 0) {
-        return <div>No ROI selected.</div>;
+        return (
+            <div>
+                {intl.formatMessage({
+                    id: "selectedRoi.noRoiSelected",
+                    defaultMessage: "No ROI selected",
+                })}
+            </div>
+        );
     }
 
     const selectedRoi = selectedRois[0];
@@ -28,8 +37,8 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
     const handleSubmit = async (values: EditRoiFormValues) => {
         setRois((prevRois) =>
             prevRois.map((roi) =>
-                roi.id === selectedRoi.id ? { ...roi, ...values } : roi
-            )
+                roi.id === selectedRoi.id ? { ...roi, ...values } : roi,
+            ),
         );
     };
 
@@ -38,7 +47,10 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
             <FormInput
                 name="variableName"
                 id={VARIABLE_NAME_INPUT_ID}
-                label="Variable Name"
+                label={intl.formatMessage({
+                    id: "selectedRoi.variableName",
+                    defaultMessage: "Variable name",
+                })}
                 defaultValue={selectedRoi.variableName}
                 onFocus={(e) => e.currentTarget.select()}
                 ref={roiInputRef}
@@ -46,7 +58,10 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
             />
             <FormSelect
                 name="type"
-                label="Type"
+                label={intl.formatMessage({
+                    id: "selectedRoi.type",
+                    defaultMessage: "Type",
+                })}
                 options={roiTypeSelectOptions}
                 labelClassName="font-bold"
             />
@@ -56,6 +71,7 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
 };
 
 export const SelectedRoiSidebarGroup = () => {
+    const intl = useIntl();
     const { isSelectedRoi } = useSelectedRois();
     const { rois } = useTemplateEditor();
 
@@ -64,7 +80,13 @@ export const SelectedRoiSidebarGroup = () => {
     const selectedRoi = selectedRois[0];
 
     return (
-        <SidebarGroup title="Selected ROI" className="flex flex-col gap-2">
+        <SidebarGroup
+            title={intl.formatMessage({
+                id: "selectedRoi.sidebarTitle",
+                defaultMessage: "Selected ROI",
+            })}
+            className="flex flex-col gap-2"
+        >
             <Form
                 key={selectedRoi?.id ?? "no-selection"}
                 schema={editRoiSchema}
