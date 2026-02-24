@@ -35,7 +35,7 @@ public class PythonHtrAdapter(
     public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
         logger.LogInformation("Starting ROI selection for Template: {TemplateId}", input.Template.Id);
-        
+
         await using var context = await credentialContextProvider.GetCredentialContextAsync(ct);
         var credentials = context.CredentialPaths.ToList();
         if (credentials.Count == 0)
@@ -67,11 +67,6 @@ public class PythonHtrAdapter(
         return rois;
     }
 
-    public Task<string> AnnotateRoisAsync(Guid executionId, CancellationToken ct)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<LogsheetDetailDto> AutomaticAlignAsync(AutomaticAlignmentInputDto input, CancellationToken ct)
     {
         logger.LogInformation("Starting automatic alignment for Logsheet: {LogsheetId}", input.Logsheet.Id);
@@ -82,6 +77,14 @@ public class PythonHtrAdapter(
             logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", input.Logsheet.Id);
             throw new InvalidOperationException("Logsheet file not found");
         }
+
+        if (input.Logsheet.Template.Width is null || input.Logsheet.Template.Height is null)
+        {
+            logger.LogError("Template dimensions are required for automatic alignment. TemplateId: {TemplateId}",
+                input.Logsheet.Template.Id);
+            throw new InvalidOperationException("Template dimensions are required for automatic alignment.");
+        }
+
         var pdfBytes = pdfStream.ToByteArray();
         var hasBacksidePage = pdfCropperService.GetPageCount(pdfBytes, ct) > 1;
 
@@ -106,8 +109,13 @@ public class PythonHtrAdapter(
 
         var stdOut = await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.AutomaticAlignment, argsList, ct);
 
-        input.Logsheet.AlignmentData = JsonSerializer.Deserialize<Domain.ValueObjects.AlignmentContainer>(stdOut,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        input.Logsheet.AlignmentData = outputParser.ParseAutomaticAlignmentJson(stdOut,
+            // Using null coalescing just because the types are nullable, we check that these values are not null above
+            input.Logsheet.Template.Width ?? 0,
+            input.Logsheet.Template.Height ?? 0,
+            backsideTemplate?.Width,
+            backsideTemplate?.Height
+        );
 
         logger.LogInformation("Automatic alignment completed for Logsheet: {LogsheetId}", input.Logsheet.Id);
 
@@ -118,10 +126,10 @@ public class PythonHtrAdapter(
         CancellationToken ct)
     {
         logger.LogInformation("Processing logsheet: {LogsheetId}", input.Logsheet.Id);
-        
+
         await using var context = await credentialContextProvider.GetCredentialContextAsync(ct);
         var credentials = context.CredentialPaths.ToList();
-        
+
         if (credentials.Count == 0)
         {
             logger.LogError("No credentials available for ProcessLogsheet.");
@@ -136,6 +144,7 @@ public class PythonHtrAdapter(
             logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", logsheet.Id);
             throw new InvalidOperationException("Logsheet file not found");
         }
+
         var pdfBytes = pdfStream.ToByteArray();
         var hasBacksidePage = pdfCropperService.GetPageCount(pdfBytes, ct) > 1;
 
@@ -194,6 +203,7 @@ public class PythonHtrAdapter(
             logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", logsheet.Id);
             throw new InvalidOperationException("Logsheet file not found");
         }
+
         var pdfBytes = pdfStream.ToByteArray();
         var hasBacksidePage = pdfCropperService.GetPageCount(pdfBytes, ct) > 1;
 

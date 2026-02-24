@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DEFAULT_SCALE, SvgWrapper } from "@/modules/canvas/svg-wrapper";
 import { usePdfFileImage } from "@/modules/files/api";
@@ -118,7 +119,14 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
 
     const handleAlignAutomatically = async () => {
         try {
-            await automaticAlignMutation.mutateAsync(logsheet.id);
+            const updatedLogsheet = await automaticAlignMutation.mutateAsync(
+                logsheet.id,
+            );
+
+            setFrontCoordinates(updatedLogsheet.alignmentData!.frontside);
+            if (template?.backsideTemplate && logsheetNumPages !== 1) {
+                setBackCoordinates(updatedLogsheet.alignmentData!.backside!);
+            }
 
             toast.success(
                 intl.formatMessage({
@@ -198,16 +206,23 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                         onClick={handleAlignAutomatically}
                         disabled={automaticAlignMutation.isPending}
                     >
-                        <BotIcon className="w-4 h-4" />
-                        {automaticAlignMutation.isPending
-                            ? intl.formatMessage({
-                                  id: "alignment.automaticAligning",
-                                  defaultMessage: "Aligning...",
-                              })
-                            : intl.formatMessage({
-                                  id: "alignment.automaticAlign",
-                                  defaultMessage: "Align automatically",
-                              })}
+                        {automaticAlignMutation.isPending ? (
+                            <>
+                                <Spinner className="w-4 h-4" />
+                                {intl.formatMessage({
+                                    id: "alignment.automaticAligning",
+                                    defaultMessage: "Aligning...",
+                                })}
+                            </>
+                        ) : (
+                            <>
+                                <BotIcon className="w-4 h-4" />
+                                {intl.formatMessage({
+                                    id: "alignment.automaticAlign",
+                                    defaultMessage: "Align automatically",
+                                })}
+                            </>
+                        )}
                     </Button>
                     <Button
                         onClick={handleSave}

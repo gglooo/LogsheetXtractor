@@ -9,4 +9,10 @@ public interface ICoordinateTransformerService
         Coordinates sourceCoordinates,
         List<PointCoordinate>? alignmentPoints,
         double renderScaleFactor = 1.0);
+
+    List<PointCoordinate> NormalizeAlignmentPoints(
+        List<PointCoordinate> rawTemplatePoints,
+        List<PointCoordinate> rawTargetPoints,
+        int templateWidth,
+        int templateHeight);
 }

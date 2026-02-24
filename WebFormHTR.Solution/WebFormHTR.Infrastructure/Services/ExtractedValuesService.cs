@@ -5,6 +5,7 @@ using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Features.ExtractedValues;
 using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
@@ -18,35 +19,37 @@ public class ExtractedValuesService(
     ILogger<ExtractedValuesService> logger)
     : IExtractedValuesService
 {
-    public async Task<Result<GetFileDto>> GetExtractedValueImageAsync(ExtractedValue extractedValue,
+    public async Task<Result<GetFileDto>> GetExtractedValueImageAsync(GetExtractedValueImageDto extractedValueDto,
         CancellationToken ct)
     {
-        logger.LogInformation("Getting extracted value image. ExtractedValueId: {Id}", extractedValue.Id);
-        var pdfStream = (await fileService.GetFileAsync(extractedValue.Logsheet.FileId))?.Stream;
+        logger.LogInformation("Getting extracted value image. ExtractedValueId: {Id}",
+            extractedValueDto.ExtractedValueId);
+        var pdfStream = (await fileService.GetFileAsync(extractedValueDto.LogsheetFileId))?.Stream;
         if (pdfStream is null)
         {
-            logger.LogWarning("Logsheet file not found for ExtractedValueId: {Id}", extractedValue.Id);
+            logger.LogWarning("Logsheet file not found for ExtractedValueId: {Id}", extractedValueDto.ExtractedValueId);
             return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 
         var alignedRoiCoordinates =
-            coordinateTransformer.TransformCoordinates(extractedValue.Roi.Coordinates,
+            coordinateTransformer.TransformCoordinates(extractedValueDto.RoiCoordinates,
                 new Domain.ValueObjects.Coordinates(
                     0,
                     0,
-                    extractedValue.Logsheet.Template.Width ?? 0,
-                    extractedValue.Logsheet.Template.Height ?? 0
-                ), extractedValue.Logsheet.AlignmentData.Frontside);
+                    extractedValueDto.TemplateWidth,
+                    extractedValueDto.TemplateHeight
+                ), extractedValueDto.AlignmentData);
 
-        var logsheetPdfStream = pdfCropperService.GetCroppedSection(pdfStream.ToByteArray(), 0,
+        var logsheetPdfStream = pdfCropperService.GetCroppedSection(pdfStream.ToByteArray(),
+            extractedValueDto.PageNumber,
             alignedRoiCoordinates.X, alignedRoiCoordinates.Y,
             alignedRoiCoordinates.Width,
-            alignedRoiCoordinates.Height, (int)extractedValue.Logsheet.Template.Width!,
-            (int)extractedValue.Logsheet.Template.Height!, ct);
+            alignedRoiCoordinates.Height, extractedValueDto.TemplateWidth,
+            extractedValueDto.TemplateHeight, ct);
 
         return Result.Ok(new GetFileDto
         {
-            FileName = $"extracted_value_{extractedValue.Id}.png",
+            FileName = $"extracted_value_{extractedValueDto.ExtractedValueId}.png",
             ContentType = "image/png",
             Stream = logsheetPdfStream
         });

@@ -54,7 +54,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RoiId");
 
-                    b.ToTable("ExtractedValues");
+                    b.ToTable("ExtractedValues", (string)null);
                 });
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.File", b =>
@@ -93,7 +93,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Files");
+                    b.ToTable("Files", (string)null);
                 });
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Logsheet", b =>
@@ -139,7 +139,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TemplateId");
 
-                    b.ToTable("Logsheets");
+                    b.ToTable("Logsheets", (string)null);
                 });
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Residual", b =>
@@ -168,7 +168,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TemplateId");
 
-                    b.ToTable("Residuals");
+                    b.ToTable("Residuals", (string)null);
                 });
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Roi", b =>
@@ -202,7 +202,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[DeletedAt] IS NULL");
 
-                    b.ToTable("Rois");
+                    b.ToTable("Rois", (string)null);
                 });
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.Template", b =>
@@ -253,7 +253,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Templates");
+                    b.ToTable("Templates", (string)null);
                 });
 
             modelBuilder.Entity("WebFormHTR.Domain.Entities.ExtractedValue", b =>
@@ -321,7 +321,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ResidualId");
 
-                            b1.ToTable("Residuals");
+                            b1.ToTable("Residuals", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ResidualId");
@@ -360,7 +360,7 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("RoiId");
 
-                            b1.ToTable("Rois");
+                            b1.ToTable("Rois", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("RoiId");

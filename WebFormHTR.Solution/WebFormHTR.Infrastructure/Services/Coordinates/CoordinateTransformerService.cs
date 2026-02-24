@@ -95,4 +95,26 @@ public class CoordinateTransformerService(
             finalMaxY - finalY
         );
     }
+
+    public List<PointCoordinate> NormalizeAlignmentPoints(List<PointCoordinate> rawTemplatePoints,
+        List<PointCoordinate> rawTargetPoints, int templateWidth, int templateHeight)
+    {
+        var matrix = perspectiveMatrixComputer.ComputePerspectiveMatrix(
+            rawTemplatePoints.Select(p => new SKPoint(p.X, p.Y)).ToArray(),
+            rawTargetPoints.Select(p => new SKPoint(p.X, p.Y)).ToArray());
+
+        var standardCorners = new SKPoint[]
+        {
+            new(0, 0),
+            new(templateWidth, 0),
+            new(templateWidth, templateHeight),
+            new(0, templateHeight)
+        };
+
+        var normalizedPoints = matrix.MapPoints(standardCorners)
+            .Select(p => new PointCoordinate((int)p.X, (int)p.Y))
+            .ToList();
+
+        return normalizedPoints;
+    }
 }
