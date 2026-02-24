@@ -6,23 +6,21 @@ export const SelectedRoisProvider = ({ children }: PropsWithChildren) => {
 
     const selectedRoiIdsSet = useMemo(
         () => new Set(selectedRoiIds),
-        [selectedRoiIds]
+        [selectedRoiIds],
     );
 
     const isSelectedRoi = useCallback(
         (roiId: string) => {
             return selectedRoiIdsSet.has(roiId);
         },
-        [selectedRoiIdsSet]
+        [selectedRoiIdsSet],
     );
 
     const setSelectedRoiIds = useCallback(
         (ids: string[] | ((prevIds: string[]) => string[])) => {
-            console.log("Setting selected ROI IDs:", ids);
-
             setSelectedRoiIds_(ids);
         },
-        []
+        [],
     );
 
     return (

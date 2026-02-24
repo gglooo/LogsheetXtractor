@@ -72,7 +72,6 @@ export const useDeleteTemplateMutation = () => {
             return;
         },
         onSuccess: async () => {
-            console.log("Invalidating templates query");
             await queryClient.invalidateQueries({ queryKey: ["templates"] });
         },
     });

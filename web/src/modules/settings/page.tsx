@@ -191,10 +191,9 @@ export const SettingsPage = () => {
                         <div className="w-full max-w-xs">
                             <Select
                                 value={locale}
-                                onValueChange={(value) => {
-                                    console.log("Selected language:", value);
-                                    return setLocale(value as Language);
-                                }}
+                                onValueChange={(value) =>
+                                    setLocale(value as Language)
+                                }
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select language" />
