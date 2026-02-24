@@ -36,6 +36,7 @@ import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { TemplatePreviewImage } from "@/modules/dashboard/components/template-preview-image";
 
 export const TemplateListItem = ({
@@ -106,7 +107,24 @@ export const TemplateListItem = ({
             />
             <CardHeader className="flex-none">
                 <CardTitle className="hyphens-auto">{template.name}</CardTitle>
-                <CardDescription>
+                <CardDescription className="mt-1 gap-2 flex flex-col">
+                    <div className="flex gap-2">
+                        <Badge>
+                            {template.roiCount}{" "}
+                            {intl.formatMessage({
+                                id: "templates.rois",
+                                defaultMessage: "ROIs",
+                            })}
+                        </Badge>
+                        {template.backsideTemplateId ? (
+                            <Badge>
+                                {intl.formatMessage({
+                                    id: "templates.with-backside",
+                                    defaultMessage: "With backside",
+                                })}
+                            </Badge>
+                        ) : null}
+                    </div>
                     {format(new Date(template.createdAt), "PPP p")}
                 </CardDescription>
                 <CardAction>
