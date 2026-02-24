@@ -146,7 +146,7 @@ public class FileService(
             return null;
         }
 
-        var cacheKey = $"template-preview-{fileId}ssad11wa2";
+        var cacheKey = $"template-preview-{fileId}";
         if (!memoryCache.TryGetValue(cacheKey, out byte[]? cachedImage))
         {
             logger.LogInformation("Generating preview for file. FileId: {FileId}", fileId);
