@@ -36,6 +36,8 @@ import { useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { TemplatePreviewImage } from "@/modules/dashboard/components/template-preview-image";
+
 export const TemplateListItem = ({
     template,
 }: {
@@ -96,8 +98,13 @@ export const TemplateListItem = ({
     };
 
     return (
-        <Card>
-            <CardHeader>
+        <Card className="flex flex-col overflow-hidden">
+            <TemplatePreviewImage
+                templateId={template.id}
+                templateName={template.name}
+                fileId={template.fileId}
+            />
+            <CardHeader className="flex-none">
                 <CardTitle className="hyphens-auto">{template.name}</CardTitle>
                 <CardDescription>
                     {format(new Date(template.createdAt), "PPP p")}
@@ -179,6 +186,7 @@ export const TemplateListItem = ({
             <CardContent>
                 <div className="flex flex-row lg:flex-row gap-2 w-full">
                     <Button
+                        variant="outline"
                         size="sm"
                         className="flex-1 gap-2"
                         onClick={hadleUploadLogsheets}

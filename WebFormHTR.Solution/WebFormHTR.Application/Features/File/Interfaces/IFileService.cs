@@ -13,4 +13,6 @@ public interface IFileService
         CancellationToken cancellationToken);
 
     Task<GetFileDto?> ConvertToImageAsync(Guid fileId);
+    
+    Task<GetFileDto?> GetFilePreviewAsync(Guid fileId);
 }

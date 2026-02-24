@@ -2,6 +2,7 @@ using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using WebFormHTR.API.Extensions;
 using WebFormHTR.Application.DTOs;
+using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Template;
 using WebFormHTR.Application.Features.Template.CreateTemplate;
@@ -135,6 +136,21 @@ public static class TemplateEndpoints
     {
         var query = new IdentifyTemplatesFromFileQuery(fileId);
         var result = await bus.InvokeAsync<Result<Dictionary<int, TemplateListDto>>>(query, ct);
+
+        return result.ToHttpResult();
+    }
+    
+    [WolverineGet("/api/templates/{id}/preview")]
+    [ProducesResponseType(200, Type = typeof(GetFileDto))]
+    [ProducesResponseType(404)]
+    [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
+    public static async Task<IResult> GetTemplatePreview(
+        Guid id,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var query = new GetTemplatePreviewQuery(id);
+        var result = await bus.InvokeAsync<Result<GetFileDto>>(query, ct);
 
         return result.ToHttpResult();
     }

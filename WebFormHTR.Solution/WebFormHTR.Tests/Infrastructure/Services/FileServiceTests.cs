@@ -1,6 +1,7 @@
 using FluentAssertions;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using WebFormHTR.Application.Features.File.DTOs;
 using WebFormHTR.Infrastructure.Persistence;
@@ -22,6 +23,7 @@ public class FileServiceTests : IDisposable
     private readonly Mock<IDocLib> _docLibMock;
     private readonly Mock<Microsoft.Extensions.Logging.ILogger<FileService>> _loggerMock;
     private readonly FileService _fileService;
+    private readonly IMemoryCache _cache;
 
     public FileServiceTests()
     {
@@ -30,7 +32,9 @@ public class FileServiceTests : IDisposable
         _fileStorageServiceMock = new Mock<IFileStorageService>();
         _docLibMock = new Mock<IDocLib>();
         _loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<FileService>>();
-        _fileService = new FileService(_dbContext, _mapperMock.Object, _fileStorageServiceMock.Object, _docLibMock.Object, _loggerMock.Object);
+        _cache = new MemoryCache(new MemoryCacheOptions());
+        _fileService = new FileService(_dbContext, _mapperMock.Object, _fileStorageServiceMock.Object,
+            _docLibMock.Object, _loggerMock.Object, _cache);
     }
 
     [Fact]

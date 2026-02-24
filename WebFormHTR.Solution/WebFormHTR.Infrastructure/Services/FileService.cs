@@ -3,6 +3,7 @@ using Docnet.Core;
 using Docnet.Core.Models;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
@@ -20,11 +21,13 @@ public class FileService(
     IMapper mapper,
     IFileStorageService fileStorageService,
     IDocLib docLib,
-    ILogger<FileService> logger) : IFileService
+    ILogger<FileService> logger,
+    IMemoryCache memoryCache) : IFileService
 {
     public async Task<FileDto> UploadFileAsync(byte[] fileContent, string fileName, string contentType)
     {
-        logger.LogInformation("Uploading file: {FileName}, ContentType: {ContentType}, Size: {Size}", fileName, contentType, fileContent.Length);
+        logger.LogInformation("Uploading file: {FileName}, ContentType: {ContentType}, Size: {Size}", fileName,
+            contentType, fileContent.Length);
         var storagePath = await fileStorageService.SaveFileAsync(fileContent, fileName);
 
         var file = new Domain.Entities.File
@@ -132,6 +135,67 @@ public class FileService(
             Stream = encodedStream,
             ContentType = "image/png",
             FileName = Path.ChangeExtension(file.OriginalFileName, ".png")
+        };
+    }
+
+    public async Task<GetFileDto?> GetFilePreviewAsync(Guid fileId)
+    {
+        var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == fileId);
+        if (file is null || file.ContentType != "application/pdf")
+        {
+            return null;
+        }
+
+        var cacheKey = $"template-preview-{fileId}ssad11wa2";
+        if (!memoryCache.TryGetValue(cacheKey, out byte[]? cachedImage))
+        {
+            logger.LogInformation("Generating preview for file. FileId: {FileId}", fileId);
+            var fileContent = await fileStorageService.ReadFileAsync(file.StoragePath);
+
+            using var docReader = docLib.GetDocReader(fileContent, new PageDimensions(0.7));
+            using var pageReader = docReader.GetPageReader(0);
+
+            var rawBytes = pageReader.GetImage();
+            var width = pageReader.GetPageWidth();
+            var height = pageReader.GetPageHeight();
+
+            var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            using var bitmap = new SKBitmap(info);
+
+            var pixelsAddr = bitmap.GetPixels();
+            Marshal.Copy(rawBytes, 0, pixelsAddr, rawBytes.Length);
+
+            var destInfo = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
+            using var destSurface = SKSurface.Create(destInfo);
+            var canvas = destSurface.Canvas;
+
+            // White background to replace transparency
+            canvas.Clear(SKColors.White);
+            canvas.DrawBitmap(bitmap, 0, 0);
+
+            using var image = destSurface.Snapshot();
+            using var data = image.Encode(SKEncodedImageFormat.Webp, 50);
+
+            using var memoryStream = new MemoryStream();
+            data.SaveTo(memoryStream);
+            cachedImage = memoryStream.ToArray();
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromDays(1));
+
+            memoryCache.Set(cacheKey, cachedImage, cacheOptions);
+            logger.LogInformation("Preview cached for file. FileId: {FileId}", fileId);
+        }
+        else
+        {
+            logger.LogInformation("Serving preview from cache. FileId: {FileId}", fileId);
+        }
+
+        return new GetFileDto
+        {
+            Stream = new MemoryStream(cachedImage!),
+            ContentType = "image/webp",
+            FileName = Path.ChangeExtension(file.OriginalFileName, "_preview.webp")
         };
     }
 }

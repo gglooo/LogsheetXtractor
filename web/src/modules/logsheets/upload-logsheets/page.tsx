@@ -51,7 +51,7 @@ export const UploadLogsheetPage = () => {
     }
 
     return (
-        <div className="flex flex-col items-center overflow-hidden w-full pt-10 pb-6 bg-background">
+        <div className="flex flex-col items-center overflow-auto w-full pt-10 pb-6 bg-background">
             <div className="flex flex-col items-center gap-6 w-10/12 py-20 md:w-9/12 lg:w-8/12">
                 <FileUpload
                     file={files}
@@ -98,9 +98,9 @@ export const UploadLogsheetPage = () => {
                                     templateQuery.data?.updatedAt
                                         ? formatDate(
                                               new Date(
-                                                  templateQuery.data.updatedAt
+                                                  templateQuery.data.updatedAt,
                                               ),
-                                              "PP p"
+                                              "PP p",
                                           )
                                         : "-"
                                 }
