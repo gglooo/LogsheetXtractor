@@ -1,6 +1,5 @@
 using FluentAssertions;
 using FluentResults;
-
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -17,8 +16,6 @@ namespace WebFormHTR.Tests.Application.Features.Logsheets;
 public class ProcessLogsheetDataCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
-    private readonly Mock<IHtrScriptEngine> _scriptEngineMock = new();
-    private readonly Mock<IMapper> _mapperMock = new();
     private readonly Mock<ILogsheetService> _logsheetServiceMock = new();
 
     [Fact]
@@ -27,7 +24,7 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
         var command = new ProcessLogsheetDataCommand(Guid.NewGuid());
 
         var result =
-            await ProcessLogsheetDataHandler.Handle(command, _dbContext, _logsheetServiceMock.Object, _scriptEngineMock.Object, _mapperMock.Object,
+            await ProcessLogsheetDataHandler.Handle(command, _dbContext, _logsheetServiceMock.Object,
                 CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();

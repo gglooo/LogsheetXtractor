@@ -2,6 +2,7 @@ using FluentResults;
 using ImTools;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting;
@@ -14,7 +15,7 @@ namespace WebFormHTR.Infrastructure.Services;
 
 public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngine scriptEngine) : IRoiService
 {
-    public async Task<IEnumerable<RoiDto>> SetRoisForTemplateAsync(
+    public async Task<Result<IEnumerable<RoiDto>>> SetRoisForTemplateAsync(
         Guid templateId,
         IEnumerable<SetRoiDto> updateRois,
         CancellationToken cancellationToken)
@@ -63,10 +64,10 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
             processedEntities.Add(entity);
         }
 
-        return mapper.Map<IEnumerable<RoiDto>>(processedEntities);
+        return Result.Ok(mapper.Map<IEnumerable<RoiDto>>(processedEntities));
     }
 
-    public async Task<IEnumerable<RoiDto>> UpsertRoisForTemplateAsync(Guid templateId,
+    public async Task<Result<IEnumerable<RoiDto>>> UpsertRoisForTemplateAsync(Guid templateId,
         IEnumerable<UpsertRoiDto> upsertRois,
         CancellationToken cancellationToken)
     {
@@ -76,7 +77,7 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
 
         if (template is null)
         {
-            throw new Exception("Template not found");
+            return Result.Fail(new NotFoundError("Template not found"));
         }
 
         var existingRoisMap = template.Rois.ToDictionary(r => r.Id);
@@ -106,28 +107,38 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
             await dbContext.Rois.AddRangeAsync(newRois, cancellationToken);
         }
 
-        return mapper.Map<IEnumerable<RoiDto>>(allProcessedRois);
+        return Result.Ok(mapper.Map<IEnumerable<RoiDto>>(allProcessedRois));
     }
 
-    public Task<RoiDto> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi,
+    public async Task<Result<RoiDto>> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi,
         CancellationToken cancellationToken)
     {
-        return UpsertRoisForTemplateAsync(templateId, [updateRoi], cancellationToken)
-            .ContinueWith(t => t.Result.First(), cancellationToken);
+        var result = await UpsertRoisForTemplateAsync(templateId, [updateRoi], cancellationToken);
+        if (result.IsFailed)
+        {
+            return result.ToResult();
+        }
+
+        return Result.Ok(result.Value.First());
     }
 
-    public async Task<DetectRoisResponseDto> DetectRoisAsync(
+    public async Task<Result<DetectRoisResponseDto>> DetectRoisAsync(
         Template template,
         CancellationToken cancellationToken)
     {
         var input = new SelectRoisInputDto(template);
 
-        var result = await scriptEngine.SelectRoisAsync(input, cancellationToken);
+        var resultResult = await scriptEngine.SelectRoisAsync(input, cancellationToken);
+        if (resultResult.IsFailed)
+        {
+            return resultResult.ToResult();
+        }
 
-        return mapper.Map<DetectRoisResponseDto>(result);
+        return Result.Ok(mapper.Map<DetectRoisResponseDto>(resultResult.Value));
     }
 
-    public async Task<IEnumerable<RoiDto>> CloneRoisForTemplateAsync(Guid sourceTemplateId, Guid targetTemplateId,
+    public async Task<Result<IEnumerable<RoiDto>>> CloneRoisForTemplateAsync(Guid sourceTemplateId,
+        Guid targetTemplateId,
         CancellationToken cancellationToken)
     {
         var sourceRois = await dbContext.Rois
@@ -145,6 +156,6 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
 
         await dbContext.Rois.AddRangeAsync(clonedRois, cancellationToken);
 
-        return mapper.Map<IEnumerable<RoiDto>>(clonedRois);
+        return Result.Ok(mapper.Map<IEnumerable<RoiDto>>(clonedRois));
     }
 }

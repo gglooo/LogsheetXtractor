@@ -16,6 +16,8 @@ using File = WebFormHTR.Domain.Entities.File;
 using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Features.File.Interfaces;
+using FluentResults;
+using WebFormHTR.Application.Errors;
 
 namespace WebFormHTR.Infrastructure.Services.Scripting;
 
@@ -32,7 +34,7 @@ public class PythonHtrAdapter(
 {
     private readonly string _selectRoisOutputPath = "selected_rois.json";
 
-    public async Task<SelectRoisOutputDto> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
+    public async Task<Result<SelectRoisOutputDto>> SelectRoisAsync(SelectRoisInputDto input, CancellationToken ct)
     {
         logger.LogInformation("Starting ROI selection for Template: {TemplateId}", input.Template.Id);
 
@@ -41,7 +43,7 @@ public class PythonHtrAdapter(
         if (credentials.Count == 0)
         {
             logger.LogError("No credentials available for ROI selection.");
-            throw new InvalidOperationException("No credentials available for ROI selection.");
+            return Result.Fail(new InvalidStateError("No credentials available for ROI selection."));
         }
 
         var uniqueStoragePath = $"{Guid.NewGuid()}_{_selectRoisOutputPath}";
@@ -64,10 +66,11 @@ public class PythonHtrAdapter(
         var rois = await outputParser.ParseSelectRoisJsonAsync(outputFilePath, input.Template.Id, ct);
         logger.LogInformation("ROI selection completed. Found {Count} ROIs.", rois.Rois.Count());
 
-        return rois;
+        return Result.Ok(rois);
     }
 
-    public async Task<LogsheetDetailDto> AutomaticAlignAsync(AutomaticAlignmentInputDto input, CancellationToken ct)
+    public async Task<Result<LogsheetDetailDto>> AutomaticAlignAsync(AutomaticAlignmentInputDto input,
+        CancellationToken ct)
     {
         logger.LogInformation("Starting automatic alignment for Logsheet: {LogsheetId}", input.Logsheet.Id);
         var logsheetPath = fileStorageService.GetResolvedPath(input.Logsheet.File.StoragePath);
@@ -75,14 +78,14 @@ public class PythonHtrAdapter(
         if (pdfStream is null)
         {
             logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", input.Logsheet.Id);
-            throw new InvalidOperationException("Logsheet file not found");
+            return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 
         if (input.Logsheet.Template.Width is null || input.Logsheet.Template.Height is null)
         {
             logger.LogError("Template dimensions are required for automatic alignment. TemplateId: {TemplateId}",
                 input.Logsheet.Template.Id);
-            throw new InvalidOperationException("Template dimensions are required for automatic alignment.");
+            return Result.Fail(new InvalidStateError("Template dimensions are required for automatic alignment."));
         }
 
         var pdfBytes = pdfStream.ToByteArray();
@@ -119,10 +122,10 @@ public class PythonHtrAdapter(
 
         logger.LogInformation("Automatic alignment completed for Logsheet: {LogsheetId}", input.Logsheet.Id);
 
-        return mapper.Map<LogsheetDetailDto>(input.Logsheet);
+        return Result.Ok(mapper.Map<LogsheetDetailDto>(input.Logsheet));
     }
 
-    public async Task<ProcessLogsheetOutputDto> ProcessLogsheetAsync(ProcessLogsheetInputDto input,
+    public async Task<Result<ProcessLogsheetOutputDto>> ProcessLogsheetAsync(ProcessLogsheetInputDto input,
         CancellationToken ct)
     {
         logger.LogInformation("Processing logsheet: {LogsheetId}", input.Logsheet.Id);
@@ -133,7 +136,7 @@ public class PythonHtrAdapter(
         if (credentials.Count == 0)
         {
             logger.LogError("No credentials available for ProcessLogsheet.");
-            throw new InvalidOperationException("No credentials available for logsheet processing.");
+            return Result.Fail(new InvalidStateError("No credentials available for logsheet processing."));
         }
 
         var logsheet = input.Logsheet;
@@ -142,7 +145,7 @@ public class PythonHtrAdapter(
         if (pdfStream is null)
         {
             logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", logsheet.Id);
-            throw new InvalidOperationException("Logsheet file not found");
+            return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 
         var pdfBytes = pdfStream.ToByteArray();
@@ -175,10 +178,10 @@ public class PythonHtrAdapter(
 
         var parsedData = await outputParser.ParseProcessLogsheetCsvAsync(outputFilePath, ct);
 
-        return new ProcessLogsheetOutputDto(parsedData);
+        return Result.Ok(new ProcessLogsheetOutputDto(parsedData));
     }
 
-    public async Task<PdfDimensionsDto> GetPdfDimensionsAsync(File file, CancellationToken ct)
+    public async Task<Result<PdfDimensionsDto>> GetPdfDimensionsAsync(File file, CancellationToken ct)
     {
         var filePath = fileStorageService.GetResolvedPath(file.StoragePath);
 
@@ -186,10 +189,10 @@ public class PythonHtrAdapter(
             PythonScriptTypes.PdfDimensions,
             new[] { "--pdf_file", filePath }, ct);
 
-        return dimensions;
+        return Result.Ok(dimensions);
     }
 
-    public async Task<GetFileDto> ExportLogsheetDataAsync(Logsheet logsheet,
+    public async Task<Result<GetFileDto>> ExportLogsheetDataAsync(Logsheet logsheet,
         IEnumerable<ExportLogsheetDataDto> data,
         File logsheetFile,
         File templateFile,
@@ -201,7 +204,7 @@ public class PythonHtrAdapter(
         if (pdfStream is null)
         {
             logger.LogWarning("Logsheet file not found for LogsheetId: {Id}", logsheet.Id);
-            throw new InvalidOperationException("Logsheet file not found");
+            return Result.Fail(new NotFoundError("Logsheet file not found"));
         }
 
         var pdfBytes = pdfStream.ToByteArray();
@@ -244,11 +247,12 @@ public class PythonHtrAdapter(
         logger.LogInformation("Export script completed successfully for Logsheet {LogsheetId}", logsheet.Id);
 
         var fileStream = fileStorageService.GetTemporaryFile(outputFilePath);
-        return new GetFileDto
+
+        return Result.Ok(new GetFileDto
         {
             FileName = $"exported_logsheet_{Guid.NewGuid()}.xlsx",
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             Stream = fileStream
-        };
+        });
     }
 }

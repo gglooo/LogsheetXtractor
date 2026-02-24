@@ -24,6 +24,7 @@ public class ExtractedValuesService(
     {
         logger.LogInformation("Getting extracted value image. ExtractedValueId: {Id}",
             extractedValueDto.ExtractedValueId);
+
         var pdfStream = (await fileService.GetFileAsync(extractedValueDto.LogsheetFileId))?.Stream;
         if (pdfStream is null)
         {
@@ -40,18 +41,23 @@ public class ExtractedValuesService(
                     extractedValueDto.TemplateHeight
                 ), extractedValueDto.AlignmentData);
 
-        var logsheetPdfStream = pdfCropperService.GetCroppedSection(pdfStream.ToByteArray(),
+        var logsheetPdfStreamResult = pdfCropperService.GetCroppedSection(pdfStream.ToByteArray(),
             extractedValueDto.PageNumber,
             alignedRoiCoordinates.X, alignedRoiCoordinates.Y,
             alignedRoiCoordinates.Width,
             alignedRoiCoordinates.Height, extractedValueDto.TemplateWidth,
             extractedValueDto.TemplateHeight, ct);
 
+        if (logsheetPdfStreamResult.IsFailed)
+        {
+            return logsheetPdfStreamResult.ToResult();
+        }
+
         return Result.Ok(new GetFileDto
         {
             FileName = $"extracted_value_{extractedValueDto.ExtractedValueId}.png",
             ContentType = "image/png",
-            Stream = logsheetPdfStream
+            Stream = logsheetPdfStreamResult.Value
         });
     }
 }

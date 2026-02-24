@@ -54,36 +54,38 @@ public class LogsheetServiceTests
 
         var result = await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
 
-        result.Should().Be(expectedDto);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(expectedDto);
         logsheet.Status.Should().Be(ELogSheetStatus.NeedsReview);
         logsheet.ProcessedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task ProcessLogsheetAsync_ShouldThrow_WhenLogsheetIsNull()
+    public async Task ProcessLogsheetAsync_ShouldReturnFail_WhenLogsheetIsNull()
     {
-        Func<Task> act = async () => await _service.ProcessLogsheetAsync(null!, CancellationToken.None);
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("Logsheet not found");
+        var result = await _service.ProcessLogsheetAsync(null!, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be("Logsheet not found");
     }
 
     [Fact]
-    public async Task ProcessLogsheetAsync_ShouldThrow_WhenStatusIsInvalid()
+    public async Task ProcessLogsheetAsync_ShouldReturnFail_WhenStatusIsInvalid()
     {
         var logsheet = new Logsheet { Status = ELogSheetStatus.Completed };
-        Func<Task> act = async () => await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("Logsheet is not in a valid state for processing");
+        var result = await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be("Logsheet is not in a valid state for processing");
     }
 
     [Fact]
-    public async Task ProcessLogsheetAsync_ShouldSetFailedStatus_WhenEngineThrows()
+    public async Task ProcessLogsheetAsync_ShouldSetFailedStatus_WhenEngineFails()
     {
         var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
         var errorMessage = "Engine failure";
 
         _scriptEngineMock.Setup(x =>
                 x.ProcessLogsheetAsync(It.IsAny<ProcessLogsheetInputDto>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception(errorMessage));
+            .ReturnsAsync(FluentResults.Result.Fail(new WebFormHTR.Application.Errors.InvalidStateError(errorMessage)));
 
 
         var expectedDto = new LogsheetDetailDto(

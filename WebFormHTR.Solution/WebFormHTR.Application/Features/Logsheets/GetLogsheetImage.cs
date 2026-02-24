@@ -75,16 +75,21 @@ public static class GetLogsheetImageHandler
         var dstPoints = GetTemplateCorners(template, outputScale);
         var page = query.IsFrontside ? 0 : 1;
 
-        var warpedStream = pdfCropperService.GetWarpedSection(pdfBytes, page, srcPoints,
+        var warpedStreamResult = pdfCropperService.GetWarpedSection(pdfBytes, page, srcPoints,
             dstPoints,
             template.Width * outputScale ?? 0, template.Height * outputScale ?? 0,
             template.Width ?? 0, template.Height ?? 0, cancellationToken);
+
+        if (warpedStreamResult.IsFailed)
+        {
+            return warpedStreamResult.ToResult();
+        }
 
         return Result.Ok(new GetFileDto
         {
             FileName = $"logsheet_{logsheet.Id}.png",
             ContentType = "image/png",
-            Stream = warpedStream
+            Stream = warpedStreamResult.Value
         });
     }
 

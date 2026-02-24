@@ -28,12 +28,17 @@ public static class CloneTemplateHandler
                 return Result.Fail<TemplateDetailDto>(new NotFoundError("Cloned template's file not found"));
             }
 
-            var clonedTemplate = await templateService.CloneTemplateAsync(request.TemplateId, request.NewTemplateName,
+            var clonedTemplateResult = await templateService.CloneTemplateAsync(request.TemplateId, request.NewTemplateName,
                 request.FileId, request.Backside, cancellationToken);
+            
+            if (clonedTemplateResult.IsFailed) 
+            {
+                return clonedTemplateResult.ToResult();
+            }
 
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return Result.Ok(clonedTemplate);
+            return Result.Ok(clonedTemplateResult.Value);
         }
         catch (Exception ex)
         {

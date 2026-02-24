@@ -21,7 +21,7 @@ public static class SetTemplateRoisHandler
             .Select(TemplateRules.IsEditable)
             .ToListAsync(ct);
 
-        if (!templateEditStatus.Any())
+        if (templateEditStatus.Count == 0)
         {
             return Result.Fail<IEnumerable<RoiDto>>(new NotFoundError("Template not found"));
         }
@@ -33,10 +33,15 @@ public static class SetTemplateRoisHandler
 
         try
         {
-            var updatedRois = await roiService.SetRoisForTemplateAsync(request.TemplateId, request.Rois, ct);
+            var updatedRoisResult = await roiService.SetRoisForTemplateAsync(request.TemplateId, request.Rois, ct);
+            if (updatedRoisResult.IsFailed)
+            {
+                return updatedRoisResult.ToResult();
+            }
+
             await dbContext.SaveChangesAsync(ct);
 
-            return Result.Ok(updatedRois);
+            return Result.Ok(updatedRoisResult.Value);
         }
         catch (Exception ex)
         {

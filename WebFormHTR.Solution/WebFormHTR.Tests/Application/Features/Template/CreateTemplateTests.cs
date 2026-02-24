@@ -32,7 +32,8 @@ public class CreateTemplateTests : IDisposable
         };
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _templateServiceMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -49,7 +50,8 @@ public class CreateTemplateTests : IDisposable
         };
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _templateServiceMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
@@ -74,12 +76,14 @@ public class CreateTemplateTests : IDisposable
         };
 
         var expectedDto =
-            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0, 0, null, null, null, null, DateTime.Now, DateTime.Now, [], [], true);
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0, 0, null, null, null, null, DateTime.Now,
+                DateTime.Now, [], [], true);
         _templateServiceMock.Setup(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _templateServiceMock.Object,
+                CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(expectedDto);
@@ -107,12 +111,14 @@ public class CreateTemplateTests : IDisposable
         };
 
         var expectedDto =
-            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0, 0, null, null, null, null, DateTime.Now, DateTime.Now, [], [], true);
+            new TemplateDetailDto(Guid.NewGuid(), command.Name, 0, 0, null, null, null, null, DateTime.Now,
+                DateTime.Now, [], [], true);
         _templateServiceMock.Setup(s => s.CreateTemplateAsync(command, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _templateServiceMock.Object,
+                CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
 

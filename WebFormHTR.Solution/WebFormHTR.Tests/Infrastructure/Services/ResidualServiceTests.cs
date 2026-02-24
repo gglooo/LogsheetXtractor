@@ -57,7 +57,8 @@ public class ResidualServiceTests : IDisposable
         var result = await _sut.SetResidualsForTemplateAsync(templateId, updateResiduals, CancellationToken.None);
 
         // Assert
-        result.Should().HaveCount(2);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
         var residualsInDb = await Context.Residuals.Where(r => r.TemplateId == templateId).ToListAsync();
         residualsInDb.Should().HaveCount(2);
         residualsInDb.Should().Contain(r => r.Content == "Content 1");
@@ -98,7 +99,8 @@ public class ResidualServiceTests : IDisposable
         var result = await _sut.SetResidualsForTemplateAsync(templateId, updateResiduals, CancellationToken.None);
 
         // Assert
-        result.Should().HaveCount(1);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
         var residualInDb = await Context.Residuals.FirstAsync(r => r.Id == existingResidual.Id);
         residualInDb.Content.Should().Be("New Content");
     }

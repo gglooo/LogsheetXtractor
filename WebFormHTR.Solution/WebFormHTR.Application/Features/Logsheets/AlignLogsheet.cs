@@ -4,7 +4,6 @@ using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
-
 using Microsoft.Extensions.Logging;
 
 namespace WebFormHTR.Application.Features.Logsheets;
@@ -30,11 +29,17 @@ public static class AlignLogsheetHandler
         try
         {
             var alignmentResult = await scriptEngine.AutomaticAlignAsync(new AutomaticAlignmentInputDto(logsheet), ct);
+            if (alignmentResult.IsFailed)
+            {
+                return alignmentResult.ToResult();
+            }
 
             await dbContext.SaveChangesAsync(ct);
 
-            logger.LogInformation("Automatic alignment completed successfully for Logsheet {LogsheetId}", request.LogsheetId);
-            return Result.Ok(alignmentResult);
+            logger.LogInformation("Automatic alignment completed successfully for Logsheet {LogsheetId}",
+                request.LogsheetId);
+
+            return alignmentResult;
         }
         catch (Exception ex)
         {

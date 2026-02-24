@@ -12,7 +12,8 @@ public sealed record UpsertRoiCommand(
 
 public static class UpsertRoiHandler
 {
-    public static async Task<Result<RoiDto>> Handle(UpsertRoiCommand request, IAppDbContext dbContext, IRoiService roiService, CancellationToken ct)
+    public static async Task<Result<RoiDto>> Handle(UpsertRoiCommand request, IAppDbContext dbContext,
+        IRoiService roiService, CancellationToken ct)
     {
         try
         {
@@ -22,10 +23,15 @@ public static class UpsertRoiHandler
                 return Result.Fail<RoiDto>(new NotFoundError("Template not found"));
             }
 
-            var upsertedRoi = await roiService.UpsertRoiForTemplateAsync(request.TemplateId, request.Roi, ct);
+            var upsertedRoiResult = await roiService.UpsertRoiForTemplateAsync(request.TemplateId, request.Roi, ct);
+            if (upsertedRoiResult.IsFailed)
+            {
+                return upsertedRoiResult.ToResult();
+            }
+
             await dbContext.SaveChangesAsync(ct);
 
-            return Result.Ok(upsertedRoi);
+            return upsertedRoiResult;
         }
         catch (Exception ex)
         {

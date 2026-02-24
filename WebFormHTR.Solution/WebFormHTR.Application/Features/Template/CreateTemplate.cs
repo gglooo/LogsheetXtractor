@@ -28,7 +28,7 @@ public sealed record CreateTemplateBacksideCommand
 public static class CreateTemplateHandler
 {
     public static async Task<Result<TemplateDetailDto>> Handle(CreateTemplateCommand request, IAppDbContext dbContext,
-        IMapper mapper, ITemplateService templateService, CancellationToken ct)
+        ITemplateService templateService, CancellationToken ct)
     {
         if (request.ParentId is not null &&
             !await dbContext.Templates

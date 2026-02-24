@@ -125,17 +125,18 @@ public class PythonHtrAdapterTests
 
         var result = await _adapter.SelectRoisAsync(input, ct);
 
-        result.Should().NotBeNull();
-        result.Rois.Should().HaveCount(1);
-        var roi = result.Rois.First();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Rois.Should().HaveCount(1);
+        var roi = result.Value.Rois.First();
         roi.Coordinates.X.Should().Be(10);
         roi.Coordinates.Y.Should().Be(20);
         roi.Coordinates.Width.Should().Be(100);
         roi.Coordinates.Height.Should().Be(50);
         roi.VariableName.Should().Be("TestROI");
 
-        result.Residuals.Should().HaveCount(1);
-        var residual = result.Residuals.First();
+        result.Value.Residuals.Should().HaveCount(1);
+        var residual = result.Value.Residuals.First();
         residual.Coordinates.X.Should().Be(200);
         residual.Coordinates.Y.Should().Be(200);
         residual.Coordinates.Width.Should().Be(50);
@@ -144,7 +145,7 @@ public class PythonHtrAdapterTests
     }
 
     [Fact]
-    public async Task SelectRoisAsync_ShouldThrow_WhenCredentialsMissing()
+    public async Task SelectRoisAsync_ShouldReturnFail_WhenCredentialsMissing()
     {
         var template = new Domain.Entities.Template { File = new Domain.Entities.File { StoragePath = "input.pdf" } };
         var input = new SelectRoisInputDto(template);
@@ -156,9 +157,9 @@ public class PythonHtrAdapterTests
         _credentialContextProviderMock.Setup(x => x.GetCredentialContextAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(contextMock.Object);
 
-        var act = async () => await _adapter.SelectRoisAsync(input, CancellationToken.None);
+        var result = await _adapter.SelectRoisAsync(input, CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("No credentials available for ROI selection.");
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be("No credentials available for ROI selection.");
     }
 }

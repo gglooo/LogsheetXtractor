@@ -12,21 +12,21 @@ public sealed record ListRoisForTemplateQuery(Guid TemplateId);
 
 public static class ListRoisForTemplateHandler
 {
-    public static Task<Result<IEnumerable<RoiDto>>> Handle(ListRoisForTemplateQuery request,
+    public static async Task<Result<IEnumerable<RoiDto>>> Handle(ListRoisForTemplateQuery request,
         IAppDbContext dbContext,
         IMapper mapper,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var template = dbContext.Templates
+        var template = await dbContext.Templates
             .AsNoTracking()
             .Include(t => t.Rois)
-            .FindFirst(t => t.Id == request.TemplateId);
+            .FirstOrDefaultAsync(t => t.Id == request.TemplateId, ct);
 
         if (template is null)
         {
-            return Task.FromResult(Result.Fail<IEnumerable<RoiDto>>(new NotFoundError("Template not found")));
+            return Result.Fail<IEnumerable<RoiDto>>(new NotFoundError("Template not found"));
         }
 
-        return Task.FromResult(Result.Ok(mapper.Map<IEnumerable<RoiDto>>(template.Rois)));
+        return Result.Ok(mapper.Map<IEnumerable<RoiDto>>(template.Rois));
     }
 }

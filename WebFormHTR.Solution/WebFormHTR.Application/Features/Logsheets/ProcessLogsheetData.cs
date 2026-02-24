@@ -20,7 +20,7 @@ public static class ProcessLogsheetDataHandler
     public static async Task<Result<LogsheetDetailDto>> Handle(ProcessLogsheetDataCommand request,
         IAppDbContext dbContext,
         ILogsheetService logsheetService,
-        IHtrScriptEngine scriptEngine, IMapper mapper, CancellationToken ct)
+        CancellationToken ct)
     {
         var logsheet = await dbContext.Logsheets.FirstOrDefaultAsync(ls => ls.Id == request.LogsheetId, ct);
         if (logsheet is null)
@@ -30,15 +30,15 @@ public static class ProcessLogsheetDataHandler
 
         try
         {
-            var processedLogsheet = await logsheetService.ProcessLogsheetAsync(logsheet, ct);
+            var processResult = await logsheetService.ProcessLogsheetAsync(logsheet, ct);
+            if (processResult.IsFailed)
+            {
+                return processResult;
+            }
 
             await dbContext.SaveChangesAsync(ct);
 
-            return Result.Ok(processedLogsheet);
-        }
-        catch (ValidationException exc)
-        {
-            return Result.Fail<LogsheetDetailDto>(new InvalidStateError(exc.Message));
+            return processResult;
         }
         catch (Exception ex)
         {

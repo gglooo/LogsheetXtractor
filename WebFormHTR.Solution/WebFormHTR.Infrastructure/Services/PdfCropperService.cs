@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using Docnet.Core;
 using Docnet.Core.Models;
 using SkiaSharp;
+using FluentResults;
+using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.PdfCropper;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
@@ -42,7 +44,7 @@ public class PdfCropperService(
         };
     }
 
-    public Stream GetCroppedSection(byte[] bytes, int pageNumber, int x, int y, int width, int height,
+    public Result<Stream> GetCroppedSection(byte[] bytes, int pageNumber, int x, int y, int width, int height,
         int refTotalWidth,
         int refTotalHeight,
         CancellationToken ct)
@@ -72,15 +74,17 @@ public class PdfCropperService(
         cropRect.Intersect(imageRect);
         if (cropRect.IsEmpty)
         {
-            logger.LogError("Crop rectangle is empty or outside image bounds. FinalX: {X}, FinalY: {Y}, Width: {Width}, Height: {Height}", finalX, finalY, finalWidth, finalHeight);
-            throw new InvalidOperationException("Crop rectangle is empty or outside image bounds.");
+            logger.LogError(
+                "Crop rectangle is empty or outside image bounds. FinalX: {X}, FinalY: {Y}, Width: {Width}, Height: {Height}",
+                finalX, finalY, finalWidth, finalHeight);
+            return Result.Fail(new InvalidStateError("Crop rectangle is empty or outside image bounds."));
         }
 
         using var croppedBitmap = new SKBitmap(cropRect.Width, cropRect.Height);
         if (!ctx.Bitmap.ExtractSubset(croppedBitmap, cropRect))
         {
             logger.LogError("Failed to extract image subset from bitmap.");
-            throw new InvalidOperationException("Failed to extract image subset.");
+            return Result.Fail(new InvalidStateError("Failed to extract image subset."));
         }
 
         var outputStream = new MemoryStream();
@@ -88,10 +92,10 @@ public class PdfCropperService(
         data.SaveTo(outputStream);
         outputStream.Position = 0;
 
-        return outputStream;
+        return Result.Ok<Stream>(outputStream);
     }
 
-    public Stream GetWarpedSection(byte[] bytes, int pageNumber, IEnumerable<PointCoordinate> srcPoints,
+    public Result<Stream> GetWarpedSection(byte[] bytes, int pageNumber, IEnumerable<PointCoordinate> srcPoints,
         IEnumerable<PointCoordinate> dstPoints, int width,
         int height, int referenceWidth, int referenceHeight, CancellationToken ct)
     {
@@ -132,7 +136,7 @@ public class PdfCropperService(
         data.SaveTo(outputStream);
         outputStream.Position = 0;
 
-        return outputStream;
+        return Result.Ok<Stream>(outputStream);
     }
 
     private class BitmapContext : IDisposable

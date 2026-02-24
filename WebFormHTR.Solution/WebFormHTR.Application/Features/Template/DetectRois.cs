@@ -27,7 +27,14 @@ public static class DetectRoisHandler
 
         try
         {
-            var detectedRois = await roiService.DetectRoisAsync(template, ct);
+            var detectedRoisResult = await roiService.DetectRoisAsync(template, ct);
+            if (detectedRoisResult.IsFailed)
+            {
+                return detectedRoisResult.ToResult();
+            }
+
+            var detectedRois = detectedRoisResult.Value;
+
             template.Residuals.Clear();
             await dbContext.Residuals.AddRangeAsync(
                 detectedRois.Residuals.Select(mapper.Map<Domain.Entities.Residual>), ct);

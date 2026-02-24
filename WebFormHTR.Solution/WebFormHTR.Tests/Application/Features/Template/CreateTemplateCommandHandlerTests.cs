@@ -17,7 +17,6 @@ namespace WebFormHTR.Tests.Application.Features.Template;
 public class CreateTemplateCommandHandlerTests
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
-    private readonly Mock<IMapper> _mapperMock = new();
     private readonly Mock<ITemplateService> _templateServiceMock = new();
 
     [Fact]
@@ -38,7 +37,8 @@ public class CreateTemplateCommandHandlerTests
             .ReturnsAsync(expectedDto);
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _templateServiceMock.Object,
+                CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -51,7 +51,8 @@ public class CreateTemplateCommandHandlerTests
         var command = new CreateTemplateCommand { Name = "Child Template", ParentId = Guid.NewGuid() };
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _templateServiceMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Parent template not found");
@@ -63,7 +64,8 @@ public class CreateTemplateCommandHandlerTests
         var command = new CreateTemplateCommand { Name = "Template with File", FileId = Guid.NewGuid() };
 
         var result =
-            await CreateTemplateHandler.Handle(command, _dbContext, _mapperMock.Object, _templateServiceMock.Object, CancellationToken.None);
+            await CreateTemplateHandler.Handle(command, _dbContext, _templateServiceMock.Object,
+                CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "File not found");

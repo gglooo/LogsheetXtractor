@@ -15,10 +15,14 @@ public static class ExportTemplateHandler
     {
         try
         {
-            var config = await templateService.ExportTemplateConfigAsync(request.Id, ct);
+            var configResult = await templateService.ExportTemplateConfigAsync(request.Id, ct);
+            if (configResult.IsFailed)
+            {
+                return configResult.ToResult();
+            }
 
             var fileDto = await fileService.GetFileFromContentAsync(
-                System.Text.Encoding.UTF8.GetBytes(config),
+                System.Text.Encoding.UTF8.GetBytes(configResult.Value),
                 $"template_{request.Id}_config.json",
                 "application/json",
                 ct);

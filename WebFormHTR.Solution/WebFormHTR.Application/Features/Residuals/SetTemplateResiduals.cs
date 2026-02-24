@@ -24,7 +24,8 @@ public static class SetTemplateResidualsHandler
         try
         {
             var result = await residualService.SetResidualsForTemplateAsync(request.TemplateId, request.Residuals, ct);
-            return Result.Ok(result);
+
+            return result;
         }
         catch (Exception ex)
         {

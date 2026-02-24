@@ -12,22 +12,22 @@ public sealed record ListResidualsForTemplateQuery(Guid TemplateId);
 
 public static class ListResidualsForTemplateHandler
 {
-    public static Task<Result<IEnumerable<ResidualDto>>> Handle(
+    public static async Task<Result<IEnumerable<ResidualDto>>> Handle(
         ListResidualsForTemplateQuery request,
         IAppDbContext dbContext,
         IMapper mapper,
         CancellationToken ct)
     {
-        var template = dbContext.Templates
+        var template = await dbContext.Templates
             .AsNoTracking()
             .Include(t => t.Residuals)
-            .FindFirst(t => t.Id == request.TemplateId);
+            .FirstOrDefaultAsync(t => t.Id == request.TemplateId, ct);
 
         if (template is null)
         {
-            return Task.FromResult(Result.Fail<IEnumerable<ResidualDto>>(new NotFoundError("Template not found")));
+            return Result.Fail<IEnumerable<ResidualDto>>(new NotFoundError("Template not found"));
         }
 
-        return Task.FromResult(Result.Ok(mapper.Map<IEnumerable<ResidualDto>>(template.Residuals)));
+        return Result.Ok(mapper.Map<IEnumerable<ResidualDto>>(template.Residuals));
     }
 }

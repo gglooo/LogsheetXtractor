@@ -1,5 +1,7 @@
+using FluentResults;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Residuals;
 using WebFormHTR.Application.Features.Residuals.DTOs;
 using WebFormHTR.Application.Interfaces;
@@ -9,7 +11,7 @@ namespace WebFormHTR.Infrastructure.Services;
 
 public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidualService
 {
-    public async Task<IEnumerable<ResidualDto>> SetResidualsForTemplateAsync(Guid templateId,
+    public async Task<Result<IEnumerable<ResidualDto>>> SetResidualsForTemplateAsync(Guid templateId,
         IEnumerable<SetResidualDto> updateResiduals,
         CancellationToken cancellationToken)
     {
@@ -60,10 +62,10 @@ public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidua
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<IEnumerable<ResidualDto>>(allEntities);
+        return Result.Ok(mapper.Map<IEnumerable<ResidualDto>>(allEntities));
     }
 
-    public async Task<IEnumerable<ResidualDto>> UpsertResidualsForTemplateAsync(Guid templateId,
+    public async Task<Result<IEnumerable<ResidualDto>>> UpsertResidualsForTemplateAsync(Guid templateId,
         IEnumerable<UpsertResidualDto> upsertResiduals,
         CancellationToken cancellationToken)
     {
@@ -73,7 +75,7 @@ public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidua
 
         if (template is null)
         {
-            throw new Exception("Template not found");
+            return Result.Fail(new NotFoundError("Template not found"));
         }
 
         var existingResidualsMap = template.Residuals.ToDictionary(r => r.Id);
@@ -105,17 +107,23 @@ public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidua
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<IEnumerable<ResidualDto>>(allProcessedResiduals);
+        return Result.Ok(mapper.Map<IEnumerable<ResidualDto>>(allProcessedResiduals));
     }
 
-    public Task<ResidualDto> UpsertResidualForTemplateAsync(Guid templateId, UpsertResidualDto updateResidual,
+    public async Task<Result<ResidualDto>> UpsertResidualForTemplateAsync(Guid templateId,
+        UpsertResidualDto updateResidual,
         CancellationToken cancellationToken)
     {
-        return UpsertResidualsForTemplateAsync(templateId, [updateResidual], cancellationToken)
-            .ContinueWith(t => t.Result.First(), cancellationToken);
+        var result = await UpsertResidualsForTemplateAsync(templateId, [updateResidual], cancellationToken);
+        if (result.IsFailed)
+        {
+            return result.ToResult();
+        }
+
+        return Result.Ok(result.Value.First());
     }
 
-    public async Task<IEnumerable<ResidualDto>> CloneResidualsForTemplateAsync(Guid sourceTemplateId,
+    public async Task<Result<IEnumerable<ResidualDto>>> CloneResidualsForTemplateAsync(Guid sourceTemplateId,
         Guid targetTemplateId,
         CancellationToken cancellationToken)
     {
@@ -134,6 +142,6 @@ public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidua
 
         await dbContext.Residuals.AddRangeAsync(clonedResiduals, cancellationToken);
 
-        return mapper.Map<IEnumerable<ResidualDto>>(clonedResiduals);
+        return Result.Ok(mapper.Map<IEnumerable<ResidualDto>>(clonedResiduals));
     }
 }

@@ -7,7 +7,8 @@ namespace WebFormHTR.Application.Features.Logsheets;
 
 public interface ILogsheetService
 {
-    Error? ValidateLogsheet(Logsheet? logsheet);
-    Task<LogsheetDetailDto> ProcessLogsheetAsync(Logsheet logsheet, CancellationToken ct);
-    Task<IEnumerable<LogsheetDetailDto>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets, CancellationToken ct);
+    Task<Result<LogsheetDetailDto>> ProcessLogsheetAsync(Logsheet logsheet, CancellationToken ct);
+
+    Task<Result<IEnumerable<LogsheetDetailDto>>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets,
+        CancellationToken ct);
 }

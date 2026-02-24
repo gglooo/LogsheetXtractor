@@ -53,8 +53,7 @@ public class RoiServiceTests : IDisposable
             .Returns((IEnumerable<Roi> rois) =>
                 rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates, r.CreatedAt, r.UpdatedAt)));
 
-        var result =
-            (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
+        var result = await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None);
         await _dbContext.SaveChangesAsync();
 
         var savedRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
@@ -62,8 +61,9 @@ public class RoiServiceTests : IDisposable
         savedRois[0].VariableName.Should().Be("New ROI");
         savedRois[0].TemplateId.Should().Be(templateId);
 
-        result.Should().HaveCount(1);
-        result.First().VariableName.Should().Be("New ROI");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().VariableName.Should().Be("New ROI");
     }
 
     [Fact]
@@ -99,16 +99,16 @@ public class RoiServiceTests : IDisposable
             .Returns((IEnumerable<Roi> rois) =>
                 rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates, r.CreatedAt, r.UpdatedAt)));
 
-        var result =
-            (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
+        var result = await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None);
         await _dbContext.SaveChangesAsync();
 
         var savedRoi = await _dbContext.Rois.FirstAsync(r => r.Id == existingRoiId);
         savedRoi.VariableName.Should().Be("Updated Name");
         savedRoi.Coordinates.Width.Should().Be(60);
 
-        result.Should().HaveCount(1);
-        result.First().VariableName.Should().Be("Updated Name");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().VariableName.Should().Be("Updated Name");
     }
 
     [Fact]
@@ -139,16 +139,16 @@ public class RoiServiceTests : IDisposable
             .Returns((IEnumerable<Roi> rois) =>
                 rois.Select(r => new RoiDto(r.Id, r.VariableName, r.TemplateId, r.Type, r.Coordinates, r.CreatedAt, r.UpdatedAt)));
 
-        var result =
-            (await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None)).ToList();
+        var result = await _roiService.SetRoisForTemplateAsync(templateId, updateRois, CancellationToken.None);
         await _dbContext.SaveChangesAsync();
 
         var allRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
         allRois.Should().HaveCount(1);
         allRois[0].Id.Should().Be(roiToKeep.Id);
 
-        result.Should().HaveCount(1);
-        result.First().Id.Should().Be(roiToKeep.Id);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().Id.Should().Be(roiToKeep.Id);
     }
 
     [Fact]
@@ -173,7 +173,8 @@ public class RoiServiceTests : IDisposable
 
         var allRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
         allRois.Should().BeEmpty();
-        result.Should().BeEmpty();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
     }
 
     [Fact]
@@ -204,7 +205,8 @@ public class RoiServiceTests : IDisposable
 
         var savedRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
         savedRois.Should().HaveCount(2);
-        result.Should().HaveCount(2);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
     }
 
     [Fact]

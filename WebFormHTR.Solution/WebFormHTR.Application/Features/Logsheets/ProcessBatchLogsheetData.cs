@@ -19,19 +19,23 @@ public static class ProcessBatchLogsheetDataHandler
     public static async Task<Result<IEnumerable<LogsheetDetailDto>>> Handle(BatchProcessLogsheetDataCommand request,
         IAppDbContext dbContext,
         ILogsheetService logsheetService,
-        IHtrScriptEngine scriptEngine, IMapper mapper, CancellationToken ct)
+        CancellationToken ct)
     {
         var logsheets = await dbContext.Logsheets
-            .Where(ls => request.LogsheetIds.Contains(ls.Id))
+            .Where(ls => request.LogsheetIds.AsEnumerable().Contains(ls.Id))
             .ToListAsync(ct);
 
         try
         {
-            var processedLogsheets = await logsheetService.ProcessLogsheetsAsync(logsheets, ct);
+            var processResult = await logsheetService.ProcessLogsheetsAsync(logsheets, ct);
+            if (processResult.IsFailed)
+            {
+                return processResult.ToResult();
+            }
 
             await dbContext.SaveChangesAsync(ct);
 
-            return Result.Ok(processedLogsheets);
+            return processResult;
         }
         catch (Exception ex)
         {

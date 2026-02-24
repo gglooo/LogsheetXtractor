@@ -92,7 +92,8 @@ public class TemplateServiceTests
         );
         await _dbContext.SaveChangesAsync();
 
-        result.Should().Be(expectedDto);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(expectedDto);
         _dbContext
             .Templates.Should()
             .Contain(t =>
@@ -187,6 +188,8 @@ public class TemplateServiceTests
             CancellationToken.None
         );
         await _dbContext.SaveChangesAsync();
+
+        result.IsSuccess.Should().BeTrue();
 
         var clonedTemplate = await _dbContext.Templates
             .FirstOrDefaultAsync(t => t.Name == newTemplateName && t.ParentId == parentId);

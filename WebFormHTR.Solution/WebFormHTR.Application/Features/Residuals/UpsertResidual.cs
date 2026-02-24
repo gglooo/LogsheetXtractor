@@ -24,7 +24,8 @@ public static class UpsertResidualHandler
         try
         {
             var result = await residualService.UpsertResidualForTemplateAsync(request.TemplateId, request.Residual, ct);
-            return Result.Ok(result);
+
+            return result;
         }
         catch (Exception ex)
         {

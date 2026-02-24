@@ -11,7 +11,8 @@ using WebFormHTR.Application.Features.Template.Interfaces;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Services.Scripting.DTOs;
-
+using FluentResults;
+using WebFormHTR.Application.Errors;
 using Microsoft.Extensions.Logging;
 
 namespace WebFormHTR.Infrastructure.Services;
@@ -25,21 +26,38 @@ public class TemplateService(
     ILogger<TemplateService> logger
 ) : ITemplateService
 {
-    public async Task<TemplateDetailDto> CreateTemplateAsync(CreateTemplateCommand command,
+    public async Task<Result<TemplateDetailDto>> CreateTemplateAsync(CreateTemplateCommand command,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Creating template {TemplateName}", command.Name);
 
-        var backsideTemplate = command.Backside is not null
-            ? command.Backside.ImportedConfig is not null
-                ? GetTemplateFromImportedConfig(command.Backside.ImportedConfig, command.Backside.FileId,
+        Template? backsideTemplate = null;
+        if (command.Backside is not null)
+        {
+            var backsideResult = command.Backside.ImportedConfig is not null
+                ? await GetTemplateFromImportedConfigAsync(command.Backside.ImportedConfig, command.Backside.FileId,
                     command.Backside.Name, command.Backside.ParentId)
-                : GetTemplate(command.Backside.Name, command.Backside.FileId, command.Backside.ParentId)
-            : null;
+                : await GetTemplateAsync(command.Backside.Name, command.Backside.FileId, command.Backside.ParentId);
 
-        var template = command.ImportedConfig is not null
-            ? GetTemplateFromImportedConfig(command.ImportedConfig, command.FileId, command.Name, command.ParentId)
-            : GetTemplate(command.Name, command.FileId, command.ParentId);
+            if (backsideResult.IsFailed)
+            {
+                return backsideResult.ToResult();
+            }
+
+            backsideTemplate = backsideResult.Value;
+        }
+
+        var templateResult = command.ImportedConfig is not null
+            ? await GetTemplateFromImportedConfigAsync(command.ImportedConfig, command.FileId, command.Name,
+                command.ParentId)
+            : await GetTemplateAsync(command.Name, command.FileId, command.ParentId);
+
+        if (templateResult.IsFailed)
+        {
+            return templateResult.ToResult();
+        }
+
+        var template = templateResult.Value;
 
 
         await dbContext.Templates.AddAsync(template, cancellationToken);
@@ -47,8 +65,9 @@ public class TemplateService(
         template.SetBacksideTemplate(backsideTemplate);
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        
-        logger.LogInformation("Template {TemplateId} ('{TemplateName}') created successfully", template.Id, template.Name);
+
+        logger.LogInformation("Template {TemplateId} ('{TemplateName}') created successfully", template.Id,
+            template.Name);
 
         var createdTemplate = await dbContext.Templates
             .AsNoTracking()
@@ -57,25 +76,45 @@ public class TemplateService(
             .Include(t => t.BacksideTemplate)
             .FirstAsync(t => t.Id == template.Id, cancellationToken);
 
-        return mapper.Map<TemplateDetailDto>(createdTemplate);
+        return Result.Ok(mapper.Map<TemplateDetailDto>(createdTemplate));
     }
 
-    public async Task<TemplateDetailDto> CloneTemplateAsync(Guid templateId, string newTemplateName, Guid fileId,
+    public async Task<Result<TemplateDetailDto>> CloneTemplateAsync(Guid templateId, string newTemplateName,
+        Guid fileId,
         CloneTemplateBacksideCommand? backside, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Cloning template {TemplateId} to new name '{NewTemplateName}'", templateId, newTemplateName);
+        logger.LogInformation("Cloning template {TemplateId} to new name '{NewTemplateName}'", templateId,
+            newTemplateName);
         var parentTemplate = await dbContext
             .Templates
             .AsNoTracking()
-            .FirstAsync(t => t.Id == templateId, cancellationToken);
-        var clonedTemplate = GetTemplate(newTemplateName, fileId, parentTemplate.Id);
+            .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
+
+        if (parentTemplate is null)
+        {
+            return Result.Fail(new NotFoundError("Parent template not found"));
+        }
+
+        var clonedTemplateResult = await GetTemplateAsync(newTemplateName, fileId, parentTemplate.Id);
+        if (clonedTemplateResult.IsFailed)
+        {
+            return clonedTemplateResult.ToResult();
+        }
+
+        var clonedTemplate = clonedTemplateResult.Value;
         clonedTemplate.Id = Guid.NewGuid();
 
         await dbContext.Templates.AddAsync(clonedTemplate, cancellationToken);
 
         if (backside is not null)
         {
-            var backsideTemplate = GetTemplate(backside.Name, backside.FileId, null);
+            var backsideTemplateResult = await GetTemplateAsync(backside.Name, backside.FileId, null);
+            if (backsideTemplateResult.IsFailed)
+            {
+                return backsideTemplateResult.ToResult();
+            }
+
+            var backsideTemplate = backsideTemplateResult.Value;
             backsideTemplate.Id = Guid.NewGuid();
 
             await dbContext.Templates.AddAsync(backsideTemplate, cancellationToken);
@@ -84,20 +123,46 @@ public class TemplateService(
             if (parentTemplate.BacksideTemplateId.HasValue)
             {
                 backsideTemplate.ParentId = parentTemplate.BacksideTemplateId.Value;
-                await residualService.CloneResidualsForTemplateAsync(parentTemplate.BacksideTemplateId.Value, backsideTemplate.Id, cancellationToken);
-                await roiService.CloneRoisForTemplateAsync(parentTemplate.BacksideTemplateId.Value, backsideTemplate.Id, cancellationToken);
+
+                var cloneResBacksideResult =
+                    await residualService.CloneResidualsForTemplateAsync(parentTemplate.BacksideTemplateId.Value,
+                        backsideTemplate.Id, cancellationToken);
+                if (cloneResBacksideResult.IsFailed)
+                {
+                    return cloneResBacksideResult.ToResult();
+                }
+
+                var cloneRoiBacksideResult =
+                    await roiService.CloneRoisForTemplateAsync(parentTemplate.BacksideTemplateId.Value,
+                        backsideTemplate.Id, cancellationToken);
+                if (cloneRoiBacksideResult.IsFailed)
+                {
+                    return cloneRoiBacksideResult.ToResult();
+                }
             }
         }
 
-        await residualService.CloneResidualsForTemplateAsync(parentTemplate.Id, clonedTemplate.Id, cancellationToken);
-        await roiService.CloneRoisForTemplateAsync(parentTemplate.Id, clonedTemplate.Id, cancellationToken);
-        
+        var cloneResResult =
+            await residualService.CloneResidualsForTemplateAsync(parentTemplate.Id, clonedTemplate.Id,
+                cancellationToken);
+        if (cloneResResult.IsFailed)
+        {
+            return cloneResResult.ToResult();
+        }
+
+        var cloneRoiResult =
+            await roiService.CloneRoisForTemplateAsync(parentTemplate.Id, clonedTemplate.Id, cancellationToken);
+        if (cloneRoiResult.IsFailed)
+        {
+            return cloneRoiResult.ToResult();
+        }
+
         logger.LogInformation("Template cloned successfully. New Template ID: {NewTemplateId}", clonedTemplate.Id);
 
-        return mapper.Map<TemplateDetailDto>(clonedTemplate);
+        return Result.Ok(mapper.Map<TemplateDetailDto>(clonedTemplate));
     }
 
-    public async Task<string> ExportTemplateConfigAsync(Guid templateId, CancellationToken cancellationToken)
+    public async Task<Result<string>> ExportTemplateConfigAsync(Guid templateId, CancellationToken cancellationToken)
     {
         logger.LogInformation("Exporting config for template {TemplateId}", templateId);
         var template = await dbContext.Templates
@@ -108,48 +173,61 @@ public class TemplateService(
         if (template is null)
         {
             logger.LogWarning("Template {TemplateId} not found for export", templateId);
-            throw new Exception("Template not found");
+            return Result.Fail(new NotFoundError("Template not found"));
         }
 
         var templateConfig = mapper.Map<PythonTemplateConfig>(template);
         var options = new JsonSerializerOptions { WriteIndented = true };
-        return JsonSerializer.Serialize(templateConfig, options);
+        return Result.Ok(JsonSerializer.Serialize(templateConfig, options));
     }
 
-    private PdfDimensionsDto CalculateTemplateFileDimensions(Guid fileId)
+    private async Task<Result<PdfDimensionsDto>> CalculateTemplateFileDimensionsAsync(Guid fileId)
     {
-        var file = dbContext.Files.FirstOrDefault(f => f.Id == fileId);
+        var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == fileId);
         if (file is null)
         {
             logger.LogError("File {FileId} not found", fileId);
-            throw new Exception("File not found");
+            return Result.Fail(new NotFoundError("File not found"));
         }
 
-        var dimensions = scriptEngine.GetPdfDimensionsAsync(file, CancellationToken.None).Result;
-        if (dimensions is null)
+        try
         {
-            logger.LogError("Unable to get PDF dimensions for file {FileId}", fileId);
-            throw new Exception("Unable to get PDF dimensions");
-        }
+            var dimensionsResult = await scriptEngine.GetPdfDimensionsAsync(file, CancellationToken.None);
+            if (dimensionsResult.IsFailed)
+            {
+                var errorMessage = dimensionsResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
+                logger.LogError("Unable to get PDF dimensions for file {FileId}: {Error}", fileId, errorMessage);
+                return Result.Fail(new InvalidStateError("Unable to get PDF dimensions"));
+            }
 
-        return dimensions;
+            return Result.Ok(dimensionsResult.Value);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(new InvalidStateError($"Error calculating template dimensions: {ex.Message}"));
+        }
     }
 
-    private Template GetTemplate(string templateName, Guid fileId, Guid? parentId)
+    private async Task<Result<Template>> GetTemplateAsync(string templateName, Guid fileId, Guid? parentId)
     {
-        var dimensions = CalculateTemplateFileDimensions(fileId);
+        var dimensionsResult = await CalculateTemplateFileDimensionsAsync(fileId);
+        if (dimensionsResult.IsFailed)
+        {
+            return dimensionsResult.ToResult();
+        }
 
-        return new Template
+        return Result.Ok(new Template
         {
             Name = templateName,
             ParentId = parentId,
             FileId = fileId,
-            Width = dimensions.Width,
-            Height = dimensions.Height
-        };
+            Width = dimensionsResult.Value.Width,
+            Height = dimensionsResult.Value.Height
+        });
     }
 
-    private Template GetTemplateFromImportedConfig(string importedConfig, Guid fileId, string templateName,
+    private async Task<Result<Template>> GetTemplateFromImportedConfigAsync(string importedConfig, Guid fileId,
+        string templateName,
         Guid? parentId)
     {
         try
@@ -160,7 +238,7 @@ public class TemplateService(
             if (deserialized is null)
             {
                 logger.LogError("Imported configuration deserialized to null");
-                throw new Exception("Imported configuration is null");
+                return Result.Fail(new ValidationError("Imported configuration is null"));
             }
 
             var template = mapper.Map<Template>(deserialized);
@@ -168,12 +246,12 @@ public class TemplateService(
             template.Name = templateName;
             template.ParentId = parentId;
 
-            return template;
+            return Result.Ok(template);
         }
         catch (JsonException ex)
         {
             logger.LogError(ex, "Invalid imported configuration format");
-            throw new Exception("Invalid imported configuration format", ex);
+            return Result.Fail(new ValidationError("Invalid imported configuration format"));
         }
     }
 }

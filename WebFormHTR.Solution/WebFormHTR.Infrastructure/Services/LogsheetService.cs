@@ -9,7 +9,6 @@ using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
-
 using Microsoft.Extensions.Logging;
 
 namespace WebFormHTR.Infrastructure.Services;
@@ -20,7 +19,7 @@ public class LogsheetService(
     ILogger<LogsheetService> logger
 ) : ILogsheetService
 {
-    public Error? ValidateLogsheet(Logsheet? logsheet)
+    private Result ValidateLogsheet(Logsheet? logsheet)
     {
         if (logsheet is null)
         {
@@ -30,11 +29,12 @@ public class LogsheetService(
 
         if (logsheet.Status == ELogSheetStatus.Completed || logsheet.ProcessedAt is not null)
         {
-            logger.LogWarning("Logsheet {LogsheetId} is not in a valid state for processing. Status: {Status}", logsheet.Id, logsheet.Status);
+            logger.LogWarning("Logsheet {LogsheetId} is not in a valid state for processing. Status: {Status}",
+                logsheet.Id, logsheet.Status);
             return new InvalidStateError("Logsheet is not in a valid state for processing");
         }
 
-        return null;
+        return Result.Ok();
     }
 
     private async Task InvokeLogsheetProcessing(Logsheet logsheet, CancellationToken ct)
@@ -42,14 +42,26 @@ public class LogsheetService(
         try
         {
             logger.LogInformation("Invoking script engine for Logsheet {LogsheetId}", logsheet.Id);
-            var output = await scriptEngine.ProcessLogsheetAsync(new ProcessLogsheetInputDto(logsheet), ct);
+            var outputResult = await scriptEngine.ProcessLogsheetAsync(new ProcessLogsheetInputDto(logsheet), ct);
+
+            if (outputResult.IsFailed)
+            {
+                var errorMessage = outputResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
+                logger.LogError("Script processing failed for Logsheet {LogsheetId}: {Error}", logsheet.Id,
+                    errorMessage);
+                AdjustAfterFailedProcessing(logsheet, errorMessage);
+                return;
+            }
+
+            var output = outputResult.Value;
 
             var extractedData = output.ExtractedData.BuildAdapter()
                 .AddParameters("LogsheetId", logsheet.Id)
                 .AdaptToType<IEnumerable<ExtractedValue>>()
                 .ToList();
-            
-            logger.LogInformation("Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.", logsheet.Id, extractedData.Count);
+
+            logger.LogInformation("Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.",
+                logsheet.Id, extractedData.Count);
 
             AdjustAfterSuccessfulProcessing(logsheet, extractedData);
         }
@@ -60,41 +72,42 @@ public class LogsheetService(
         }
     }
 
-    public async Task<LogsheetDetailDto> ProcessLogsheetAsync(Logsheet logsheet,
+    public async Task<Result<LogsheetDetailDto>> ProcessLogsheetAsync(Logsheet logsheet,
         CancellationToken ct)
     {
-        var validationError = ValidateLogsheet(logsheet);
-        if (validationError is not null)
+        var validationResult = ValidateLogsheet(logsheet);
+        if (validationResult.IsFailed)
         {
-            throw new ValidationException(validationError.Message);
+            return validationResult;
         }
 
         await InvokeLogsheetProcessing(logsheet, ct);
 
-        return mapper.Map<LogsheetDetailDto>(logsheet);
+        return Result.Ok(mapper.Map<LogsheetDetailDto>(logsheet));
     }
 
-    public async Task<IEnumerable<LogsheetDetailDto>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets,
+    public async Task<Result<IEnumerable<LogsheetDetailDto>>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets,
         CancellationToken ct)
     {
         var logsheetList = logsheets.ToList();
         logger.LogInformation("Processing batch of {Count} logsheets", logsheetList.Count);
-        
+
         var processedLogsheets = new List<LogsheetDetailDto>();
         foreach (var logsheet in logsheetList)
         {
-            try
+            var processedLogsheetResult = await ProcessLogsheetAsync(logsheet, ct);
+            if (processedLogsheetResult.IsSuccess)
             {
-                var processedLogsheet = await ProcessLogsheetAsync(logsheet, ct);
-                processedLogsheets.Add(processedLogsheet);
+                processedLogsheets.Add(processedLogsheetResult.Value);
             }
-            catch (ValidationException ex)
+            else
             {
-                logger.LogWarning(ex, "Validation error for Logsheet ID {LogsheetId}: {Message}", logsheet.Id, ex.Message);
+                logger.LogWarning("Validation error for Logsheet ID {LogsheetId}: {Message}", logsheet.Id,
+                    processedLogsheetResult.Errors.FirstOrDefault()?.Message);
             }
         }
 
-        return mapper.Map<IEnumerable<LogsheetDetailDto>>(processedLogsheets);
+        return Result.Ok(mapper.Map<IEnumerable<LogsheetDetailDto>>(processedLogsheets));
     }
 
     private void AdjustAfterSuccessfulProcessing(Logsheet logsheet, List<ExtractedValue> extractedData)
