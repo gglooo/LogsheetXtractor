@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
-using WebFormHTR.Domain.Enums;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
