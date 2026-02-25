@@ -36,7 +36,7 @@ public class LogsheetService(
         return Result.Ok();
     }
 
-    private async Task InvokeLogsheetProcessing(Logsheet logsheet, CancellationToken ct)
+    private async Task<Result> InvokeLogsheetProcessing(Logsheet logsheet, CancellationToken ct)
     {
         try
         {
@@ -49,7 +49,8 @@ public class LogsheetService(
                 logger.LogError("Script processing failed for Logsheet {LogsheetId}: {Error}", logsheet.Id,
                     errorMessage);
                 AdjustAfterFailedProcessing(logsheet, errorMessage);
-                return;
+
+                return outputResult.ToResult();
             }
 
             var output = outputResult.Value;
@@ -63,11 +64,15 @@ public class LogsheetService(
                 logsheet.Id, extractedData.Count);
 
             AdjustAfterSuccessfulProcessing(logsheet, extractedData);
+
+            return Result.Ok();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Script processing failed for Logsheet {LogsheetId}", logsheet.Id);
             AdjustAfterFailedProcessing(logsheet, ex.Message);
+
+            return Result.Fail(ex.Message);
         }
     }
 
@@ -80,7 +85,12 @@ public class LogsheetService(
             return validationResult;
         }
 
-        await InvokeLogsheetProcessing(logsheet, ct);
+        var result = await InvokeLogsheetProcessing(logsheet, ct);
+
+        if (result.IsFailed)
+        {
+            return Result.Fail<LogsheetDetailDto>(result.Errors);
+        }
 
         return Result.Ok(mapper.Map<LogsheetDetailDto>(logsheet));
     }
