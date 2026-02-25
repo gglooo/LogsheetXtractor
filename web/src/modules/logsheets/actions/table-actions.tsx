@@ -28,6 +28,7 @@ import {
 import { useIntl } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { LogsheetStateMachine } from "../state-machine";
 
 export type LogsheetTableActionsProps = {
     logsheet: LogsheetListType;
@@ -54,6 +55,8 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
         fileDownloadMutation.isPending ||
         deleteLogsheetMutation.isPending ||
         exportLogsheetMutation.isPending;
+
+    const stateMachine = LogsheetStateMachine.fromStatus(logsheet.status);
 
     return (
         <DropdownMenu>
@@ -106,7 +109,10 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
                 <DropdownMenuItem
                     onClick={handleDelete}
                     className="text-red-600 focus:text-red-600"
-                    disabled={deleteLogsheetMutation.isPending}
+                    disabled={
+                        deleteLogsheetMutation.isPending ||
+                        !stateMachine.canDelete()
+                    }
                 >
                     <TrashIcon className="mr-2 h-4 w-4" />
                     {intl.formatMessage({
@@ -130,6 +136,7 @@ export const LogsheetTableActions = ({
     const processLogsheetMutation = useProcessLogsheetMutation();
     const { data: credentialsStatus } = useCredentialsStatus();
     const isCredentialsMissing = credentialsStatus?.available === false;
+    const stateMachine = LogsheetStateMachine.fromStatus(logsheet.status);
 
     const noCredentialsTooltip = intl.formatMessage({
         id: "settings.credentials.missing.tooltip",
@@ -174,8 +181,7 @@ export const LogsheetTableActions = ({
                         defaultMessage: "Proofread",
                     })}
                     disabled={
-                        logsheet.status !== "NeedsReview" ||
-                        isCredentialsMissing
+                        !stateMachine.canProofread() || isCredentialsMissing
                     }
                     onClick={(e) => {
                         e.stopPropagation();
@@ -200,12 +206,7 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.align",
                         defaultMessage: "Align",
                     })}
-                    disabled={
-                        logsheet.status === "Completed" ||
-                        logsheet.status === "NeedsReview" ||
-                        logsheet.status === "Processing" ||
-                        isCredentialsMissing
-                    }
+                    disabled={!stateMachine.canAlign() || isCredentialsMissing}
                     onClick={(e) => {
                         e.stopPropagation();
                         navigate(
@@ -226,38 +227,37 @@ export const LogsheetTableActions = ({
 
                 <ActionsInDialog logsheet={logsheet} />
 
-                {logsheet.status === "Pending" ||
-                    (logsheet.status === "Failed" && (
-                        <Button
-                            variant="outline"
-                            disabled={
-                                processLogsheetMutation.isPending ||
-                                isCredentialsMissing
-                            }
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleProcess();
-                            }}
-                            title={intl.formatMessage({
-                                id: "logsheets.actions.process",
-                                defaultMessage: "Process",
-                            })}
-                            tooltip={
-                                isCredentialsMissing
-                                    ? noCredentialsTooltip
-                                    : intl.formatMessage({
-                                          id: "logsheets.actions.process",
-                                          defaultMessage: "Process",
-                                      })
-                            }
-                        >
-                            {processLogsheetMutation.isPending ? (
-                                <Spinner />
-                            ) : (
-                                <FileCog className="h-4 w-4" />
-                            )}
-                        </Button>
-                    ))}
+                {stateMachine.canProcess() && (
+                    <Button
+                        variant="outline"
+                        disabled={
+                            processLogsheetMutation.isPending ||
+                            isCredentialsMissing
+                        }
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleProcess();
+                        }}
+                        title={intl.formatMessage({
+                            id: "logsheets.actions.process",
+                            defaultMessage: "Process",
+                        })}
+                        tooltip={
+                            isCredentialsMissing
+                                ? noCredentialsTooltip
+                                : intl.formatMessage({
+                                      id: "logsheets.actions.process",
+                                      defaultMessage: "Process",
+                                  })
+                        }
+                    >
+                        {processLogsheetMutation.isPending ? (
+                            <Spinner />
+                        ) : (
+                            <FileCog className="h-4 w-4" />
+                        )}
+                    </Button>
+                )}
             </div>
             <Dialog open={processLogsheetMutation.isPending}>
                 <DialogContent>
