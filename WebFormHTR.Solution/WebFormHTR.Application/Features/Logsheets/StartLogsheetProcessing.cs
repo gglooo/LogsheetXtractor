@@ -1,6 +1,8 @@
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Enums;
 using Wolverine;
@@ -11,9 +13,10 @@ public sealed record StartLogsheetProcessingCommand(Guid LogsheetId);
 
 public static class StartLogsheetProcessingHandler
 {
-    public static async Task Handle(StartLogsheetProcessingCommand command,
+    public static async Task<Result> Handle(StartLogsheetProcessingCommand command,
         IAppDbContext dbContext,
         IMessageBus bus,
+        ICredentialCookieAccessor credentialCookieAccessor,
         ILogger<StartLogsheetProcessingCommand> logger, CancellationToken ct)
     {
         logger.LogInformation("Starting logsheet processing for logsheet {LogsheetId}", command.LogsheetId);
@@ -22,7 +25,7 @@ public static class StartLogsheetProcessingHandler
         if (logsheet == null)
         {
             logger.LogWarning("Logsheet {LogsheetId} not found", command.LogsheetId);
-            return;
+            return Result.Fail(new NotFoundError("Logsheet {LogsheetId} not found"));
         }
 
         if (!logsheet.CanBeProcessed())
@@ -30,12 +33,15 @@ public static class StartLogsheetProcessingHandler
             logger.LogWarning(
                 "Logsheet {LogsheetId} is not in a valid state for processing to be initiated. Status: {Status}",
                 command.LogsheetId, logsheet.Status);
-            return;
+            return Result.Fail(new InvalidStateError(
+                "Logsheet is not in a valid state for processing to be initiated."));
         }
 
         logsheet.Status = ELogSheetStatus.Processing;
-        await bus.PublishAsync(new ProcessLogsheetDataCommand(command.LogsheetId));
+        await bus.PublishWithContextAsync(new ProcessLogsheetDataCommand(command.LogsheetId), credentialCookieAccessor);
 
         await dbContext.SaveChangesAsync(ct);
+
+        return Result.Ok();
     }
 }

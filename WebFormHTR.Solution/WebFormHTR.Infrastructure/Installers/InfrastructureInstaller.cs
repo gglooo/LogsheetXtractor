@@ -62,6 +62,7 @@ public static class InfrastructureInstaller
         services.AddScoped<ILogsheetExportService, LogsheetExportService>();
         services.AddScoped<IExtractedValuesService, ExtractedValuesService>();
         services.AddScoped<IPdfQrCodeScanner, PdfQrCodeScanner>();
+        services.AddScoped<ICredentialCookieAccessor, CredentialCookieAccessor>();
 
         services.AddMemoryCache();
     }

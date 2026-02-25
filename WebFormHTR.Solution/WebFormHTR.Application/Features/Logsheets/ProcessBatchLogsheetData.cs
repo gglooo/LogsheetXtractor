@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Application.Features.Logsheets.Events;
 using Wolverine;
@@ -13,6 +14,7 @@ public static class ProcessBatchLogsheetDataHandler
         IAppDbContext dbContext,
         IMessageBus bus,
         ILogsheetService logsheetService,
+        ICredentialCookieAccessor credentialCookieAccessor,
         CancellationToken ct)
     {
         var logsheets = await dbContext.Logsheets
@@ -26,15 +28,17 @@ public static class ProcessBatchLogsheetDataHandler
             {
                 var errorMessages = processResult.Errors.Select(e => e.Message).ToList();
 
-                await bus.PublishAsync(new BatchProcessingFinishedEvent([], request.LogsheetIds,
-                    errorMessages));
+                await bus.PublishWithContextAsync(new BatchProcessingFinishedEvent([], request.LogsheetIds,
+                    errorMessages), credentialCookieAccessor);
             }
             else
             {
                 var processedLogsheets = processResult.Value.Select(l => l.Id).ToArray();
                 var failedLogsheets = request.LogsheetIds.Except(processedLogsheets).ToArray();
 
-                await bus.PublishAsync(new BatchProcessingFinishedEvent(processedLogsheets, failedLogsheets, []));
+                await bus.PublishWithContextAsync(
+                    new BatchProcessingFinishedEvent(processedLogsheets, failedLogsheets, []),
+                    credentialCookieAccessor);
             }
 
             await dbContext.SaveChangesAsync(ct);
@@ -43,8 +47,8 @@ public static class ProcessBatchLogsheetDataHandler
         {
             dbContext.ChangeTracker.Clear();
 
-            await bus.PublishAsync(new BatchProcessingFinishedEvent([], request.LogsheetIds,
-                [ex.Message]));
+            await bus.PublishWithContextAsync(new BatchProcessingFinishedEvent([], request.LogsheetIds,
+                [ex.Message]), credentialCookieAccessor);
 
             await dbContext.SaveChangesAsync(ct);
         }

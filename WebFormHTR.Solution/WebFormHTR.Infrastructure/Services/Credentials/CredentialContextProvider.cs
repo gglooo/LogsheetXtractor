@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using WebFormHTR.Application.Features.Credentials;
+using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Infrastructure.Services.Storage;
 
 namespace WebFormHTR.Infrastructure.Services.Credentials;
@@ -10,13 +11,13 @@ namespace WebFormHTR.Infrastructure.Services.Credentials;
 public class CredentialContextProvider(
     IOcrCredentialService ocrCredentialService,
     IFileStorageService fileStorageService,
-    IHttpContextAccessor httpContextAccessor,
+    ICredentialCookieAccessor cookieAccessor,
     ILogger<UserCredentialContext> userContextLogger,
     ILogger<CredentialContextProvider> logger) : ICredentialContextProvider
 {
     public async Task<ICredentialContext> GetCredentialContextAsync(CancellationToken ct = default)
     {
-        var cookie = httpContextAccessor.HttpContext?.Request.Cookies[CredentialsConstants.CookieName];
+        var cookie = cookieAccessor.GetCookie();
         var keys = CredentialCookieParser.ParseCredentials(cookie);
 
         if (keys != null)

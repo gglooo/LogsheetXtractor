@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Application.Features.Logsheets.Events;
 using Wolverine;
@@ -13,13 +14,15 @@ public static class ProcessLogsheetDataHandler
         IAppDbContext dbContext,
         IMessageBus bus,
         ILogsheetService logsheetService,
+        ICredentialCookieAccessor credentialCookieAccessor,
         CancellationToken ct)
     {
         var logsheet = await dbContext.Logsheets.FirstOrDefaultAsync(ls => ls.Id == request.LogsheetId, ct);
         if (logsheet is null)
         {
-            await bus.PublishAsync(
-                new LogsheetProcessingFinishedEvent(request.LogsheetId, false, "Logsheet not found"));
+            await bus.PublishWithContextAsync(
+                new LogsheetProcessingFinishedEvent(request.LogsheetId, false, "Logsheet not found"),
+                credentialCookieAccessor);
             await dbContext.SaveChangesAsync(ct);
             return;
         }
@@ -33,17 +36,18 @@ public static class ProcessLogsheetDataHandler
                 errorMsg = string.Join(", ", processResult.Errors.Select(e => e.Message));
             }
 
-            await bus.PublishAsync(
-                new LogsheetProcessingFinishedEvent(request.LogsheetId, processResult.IsSuccess, errorMsg));
+            await bus.PublishWithContextAsync(
+                new LogsheetProcessingFinishedEvent(request.LogsheetId, processResult.IsSuccess, errorMsg),
+                credentialCookieAccessor);
 
             await dbContext.SaveChangesAsync(ct);
         }
         catch (Exception ex)
         {
             dbContext.ChangeTracker.Clear();
-            await bus.PublishAsync(
+            await bus.PublishWithContextAsync(
                 new LogsheetProcessingFinishedEvent(request.LogsheetId, false,
-                    $"Exception during processing: {ex.Message}"));
+                    $"Exception during processing: {ex.Message}"), credentialCookieAccessor);
 
             await dbContext.SaveChangesAsync(ct);
         }

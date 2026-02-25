@@ -47,7 +47,7 @@ export const useDrawRectangle = (canDraw: boolean) => {
     };
 
     const handleStopDrawing = (
-        onFinishDrawing: (startPos: Position, currentPos: Position) => void
+        onFinishDrawing: (startPos: Position, currentPos: Position) => void,
     ) => {
         if (!canDraw) {
             return;
@@ -57,7 +57,7 @@ export const useDrawRectangle = (canDraw: boolean) => {
             startPos &&
             currentPos &&
             isRoiReasonablySized(
-                getCoordinatesFromPositions(startPos, currentPos)
+                getCoordinatesFromPositions(startPos, currentPos),
             )
         ) {
             onFinishDrawing(startPos, currentPos);

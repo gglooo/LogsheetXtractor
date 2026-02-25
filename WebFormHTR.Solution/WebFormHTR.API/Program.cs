@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.API.Middleware;
 using WebFormHTR.API.Notifications;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Infrastructure.Middleware;
 using Wolverine.FluentValidation;
 using Wolverine.EntityFrameworkCore;
 using Wolverine.Sqlite;
@@ -28,6 +29,8 @@ builder.Host.UseWolverine(opts =>
     opts.Policies.UseDurableLocalQueues();
     opts.Durability.Mode = DurabilityMode.Solo;
     opts.PersistMessagesWithSqlite(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+    opts.Policies.AddMiddleware(typeof(CredentialCookieMiddleware));
 });
 builder.Services.AddWolverineHttp();
 builder.Services.AddMapster();

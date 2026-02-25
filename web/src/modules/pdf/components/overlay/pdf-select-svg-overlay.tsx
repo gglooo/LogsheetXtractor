@@ -63,7 +63,7 @@ export const SelectSvgOverlay = ({
             const toReferenceScale = getScaleToReferenceScale(
                 pdfWidth,
                 scale,
-                width
+                width,
             );
 
             const coordinates: Coordinates = {
@@ -100,7 +100,7 @@ export const SelectSvgOverlay = ({
             interactionMode.current = "dragging";
             dragControlsRef.current.handleDragStart(e);
         },
-        [isSelectedRoi]
+        [isSelectedRoi],
     );
 
     const onResizeStart = useCallback((e: React.MouseEvent<Element>) => {
@@ -146,15 +146,15 @@ export const SelectSvgOverlay = ({
         const toReferenceScale = getScaleToReferenceScale(
             pdfWidth,
             scale,
-            width
+            width,
         );
         const scaledCoordinates = scaleCoordinatesToReference(
             coordinates,
-            toReferenceScale
+            toReferenceScale,
         );
 
         const selectedRois = rois.filter((roi) =>
-            areCoordinatesOverlapping(roi.coordinates, scaledCoordinates)
+            areCoordinatesOverlapping(roi.coordinates, scaledCoordinates),
         );
 
         setSelectedRoiIds(selectedRois.map((roi) => roi.id!));
@@ -180,14 +180,14 @@ export const SelectSvgOverlay = ({
                     roi,
                     onDragStart,
                     onResizeStart,
-                    dragControls.isDragging || dragControls.isResizing
+                    dragControls.isDragging || dragControls.isResizing,
                 );
             })}
             {drawStartPos && drawCurrentPos
                 ? (() => {
                       const coordinates = getCoordinatesFromPositions(
                           drawStartPos,
-                          drawCurrentPos
+                          drawCurrentPos,
                       );
                       return (
                           <rect

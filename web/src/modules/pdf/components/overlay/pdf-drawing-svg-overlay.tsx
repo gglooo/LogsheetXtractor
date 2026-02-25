@@ -39,11 +39,11 @@ export const PdfDrawingSvgOverlay = ({
         const referenceScale = getScaleToReferenceScale(
             pdfWidth,
             scale,
-            template!.width
+            template!.width,
         );
 
         const newId = addRoi(
-            scaleCoordinatesToReference(coordinates, referenceScale)
+            scaleCoordinatesToReference(coordinates, referenceScale),
         );
         if (newId) {
             setSelectedRoiIds([newId]);
@@ -63,7 +63,7 @@ export const PdfDrawingSvgOverlay = ({
                 ? (() => {
                       const coordinates = getCoordinatesFromPositions(
                           startPos,
-                          currentPos
+                          currentPos,
                       );
                       return (
                           <rect

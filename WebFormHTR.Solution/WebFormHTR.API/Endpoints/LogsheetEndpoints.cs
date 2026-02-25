@@ -116,24 +116,30 @@ public static class LogsheetEndpoints
 
     [WolverinePost("/api/logsheets/{id}/process")]
     [ProducesResponseType(202)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
     public static async Task<IResult> ProcessLogsheetData(
         Guid id,
         IMessageBus bus,
         CancellationToken ct)
     {
-        await bus.PublishAsync(new StartLogsheetProcessingCommand(id));
-        return Results.Accepted();
+        var result = await bus.InvokeAsync<Result>(new StartLogsheetProcessingCommand(id), ct);
+
+        return result.IsSuccess ? Results.Accepted() : result.ToHttpResult();
     }
 
     [WolverinePost("/api/logsheets/batch/process")]
     [ProducesResponseType(202)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(400)]
     public static async Task<IResult> ProcessBatchLogsheetData(
         BatchProcessLogsheetDataCommand request,
         IMessageBus bus,
         CancellationToken ct)
     {
-        await bus.PublishAsync(new StartBatchLogsheetProcessingCommand(request.LogsheetIds));
-        return Results.Accepted();
+        var result = await bus.InvokeAsync<Result>(new StartBatchLogsheetProcessingCommand(request.LogsheetIds), ct);
+
+        return result.IsSuccess ? Results.Accepted() : result.ToHttpResult();
     }
 
     [WolverinePost("/api/logsheets/{id}/align")]

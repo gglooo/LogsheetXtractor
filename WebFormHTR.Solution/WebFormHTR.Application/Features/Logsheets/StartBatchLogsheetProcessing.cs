@@ -2,6 +2,7 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Enums;
 using Wolverine;
@@ -12,8 +13,9 @@ public record StartBatchLogsheetProcessingCommand(Guid[] LogsheetIds);
 
 public static class StartBatchLogsheetProcessingHandler
 {
-    public static async Task Handle(StartBatchLogsheetProcessingCommand command, IAppDbContext dbContext,
+    public static async Task<Result> Handle(StartBatchLogsheetProcessingCommand command, IAppDbContext dbContext,
         IMessageBus bus,
+        ICredentialCookieAccessor credentialCookieAccessor,
         ILogger<StartBatchLogsheetProcessingCommand> logger, CancellationToken ct)
     {
         logger.LogInformation("Starting batch processing for {Count} logsheets", command.LogsheetIds.Length);
@@ -40,11 +42,14 @@ public static class StartBatchLogsheetProcessingHandler
         if (validLogsheetsToProcess.Count == 0)
         {
             logger.LogWarning("No valid logsheets found in the batch command to start processing.");
-            return;
+            return Result.Fail(new InvalidStateError("No valid logsheets found to start processing."));
         }
 
-        await bus.PublishAsync(new BatchProcessLogsheetDataCommand(validLogsheetsToProcess.ToArray()));
+        await bus.PublishWithContextAsync(new BatchProcessLogsheetDataCommand(validLogsheetsToProcess.ToArray()),
+            credentialCookieAccessor);
 
         await dbContext.SaveChangesAsync(ct);
+
+        return Result.Ok();
     }
 }
