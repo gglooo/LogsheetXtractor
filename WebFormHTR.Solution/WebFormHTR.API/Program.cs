@@ -6,7 +6,11 @@ using Mapster;
 using WebFormHTR.Infrastructure.Installers;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.API.Middleware;
+using WebFormHTR.API.Notifications;
+using WebFormHTR.Application.Interfaces;
 using Wolverine.FluentValidation;
+using Wolverine.EntityFrameworkCore;
+using Wolverine.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +23,11 @@ builder.Host.UseWolverine(opts =>
 {
     opts.Discovery.IncludeAssembly(typeof(ApplicationAssemblyReference).Assembly);
     opts.UseFluentValidation();
+
+    opts.UseEntityFrameworkCoreTransactions();
+    opts.Policies.UseDurableLocalQueues();
+    opts.Durability.Mode = DurabilityMode.Solo;
+    opts.PersistMessagesWithSqlite(builder.Configuration.GetConnectionString("DefaultConnection")!);
 });
 builder.Services.AddWolverineHttp();
 builder.Services.AddMapster();
@@ -31,6 +40,8 @@ TypeAdapterConfig.GlobalSettings.Scan(typeof(ApplicationAssemblyReference).Assem
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationService, WebSocketNotificationService>();
 
 var app = builder.Build();
 
@@ -46,6 +57,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapWolverineEndpoints(x => x.WarmUpRoutes = RouteWarmup.Eager);
+app.MapHub<WebFormHTR.API.Hubs.LogsheetHub>("/hubs/logsheets");
 
 using (var scope = app.Services.CreateScope())
 {

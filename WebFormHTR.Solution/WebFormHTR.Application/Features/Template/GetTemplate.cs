@@ -3,6 +3,7 @@ using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Features.Template.DTOs;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Application.Rules;
 
 namespace WebFormHTR.Application.Features.Template;
 

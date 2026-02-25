@@ -14,6 +14,7 @@ export const logsheetStatusSchema = z.enum([
     "Failed",
     "NeedsReview",
     "Completed",
+    "Processing",
 ]);
 
 export type LogsheetStatus = z.infer<typeof logsheetStatusSchema>;

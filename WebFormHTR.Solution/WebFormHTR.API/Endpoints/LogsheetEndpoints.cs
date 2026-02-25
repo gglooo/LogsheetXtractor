@@ -115,32 +115,25 @@ public static class LogsheetEndpoints
     }
 
     [WolverinePost("/api/logsheets/{id}/process")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(202)]
     public static async Task<IResult> ProcessLogsheetData(
         Guid id,
         IMessageBus bus,
         CancellationToken ct)
     {
-        var command = new ProcessLogsheetDataCommand(id);
-        var result = await bus.InvokeAsync<Result<LogsheetDetailDto>>(command, ct);
-
-        return result.ToHttpResult();
+        await bus.PublishAsync(new StartLogsheetProcessingCommand(id));
+        return Results.Accepted();
     }
 
     [WolverinePost("/api/logsheets/batch/process")]
-    [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(202)]
     public static async Task<IResult> ProcessBatchLogsheetData(
         BatchProcessLogsheetDataCommand request,
         IMessageBus bus,
         CancellationToken ct)
     {
-        var result = await bus.InvokeAsync<Result<IEnumerable<LogsheetDetailDto>>>(request, ct);
-
-        return result.ToHttpResult();
+        await bus.PublishAsync(new StartBatchLogsheetProcessingCommand(request.LogsheetIds));
+        return Results.Accepted();
     }
 
     [WolverinePost("/api/logsheets/{id}/align")]
@@ -234,6 +227,7 @@ public static class LogsheetEndpoints
 
         return result.ToHttpResult();
     }
+
     [WolverinePost("/api/logsheets/batch/export")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]

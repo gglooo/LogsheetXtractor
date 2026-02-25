@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Application.Rules;
 
 namespace WebFormHTR.Application.Features.ROIs;
 

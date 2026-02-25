@@ -34,6 +34,12 @@ public static class ResetLogsheetProofreadingHandler
             return Result.Fail(new NotFoundError("Logsheet not found"));
         }
 
+        if (!logsheet.CanBeReset())
+        {
+            logger.LogWarning("Cannot reset proofreading for Logsheet {LogsheetId} because it is currently processing.", request.LogsheetId);
+            return Result.Fail(new InvalidStateError("Logsheet must finish processing before resetting proofreading."));
+        }
+
         logsheet.Status = ELogSheetStatus.Pending;
         logsheet.ProcessedAt = null;
         logsheet.CompletedAt = null;

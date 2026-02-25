@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Domain.Enums;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
-public sealed record PatchLogsheetCommand
-(
+public sealed record PatchLogsheetCommand(
     Guid Id,
     PatchLogsheetDto PatchLogsheet
 );
@@ -27,6 +27,11 @@ public static class PatchLogsheetHandler
         if (logsheet is null)
         {
             return Result.Fail(new NotFoundError("Logsheet not found"));
+        }
+
+        if (!logsheet.CanBeEdited())
+        {
+            return Result.Fail(new InvalidStateError("Logsheet properties cannot be patched while it is processing, needs review or is completed."));
         }
 
         request.PatchLogsheet.Adapt(logsheet);

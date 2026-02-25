@@ -22,4 +22,19 @@ public class Logsheet : BaseEntity
 
     public virtual ICollection<ExtractedValue> ExtractedValues { get; set; } =
         new List<ExtractedValue>();
+
+    public bool CanBeProcessed()
+    {
+        return Status is ELogSheetStatus.Pending or ELogSheetStatus.Failed;
+    }
+
+    public bool CanBeEdited()
+    {
+        return Status is ELogSheetStatus.Pending or ELogSheetStatus.Failed;
+    }
+
+    public bool CanBeReset()
+    {
+        return Status != ELogSheetStatus.Processing;
+    }
 }

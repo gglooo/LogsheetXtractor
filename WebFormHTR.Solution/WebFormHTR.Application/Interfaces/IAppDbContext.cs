@@ -1,16 +1,19 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using WebFormHTR.Domain.Entities;
 
 namespace WebFormHTR.Application.Interfaces;
 
 public interface IAppDbContext
 {
-    public DbSet<Template> Templates { get; set; }
-    public DbSet<Domain.Entities.File> Files { get; set; }
-    public DbSet<Roi> Rois { get; set; }
-    public DbSet<Residual> Residuals { get; set; }
-    public DbSet<Logsheet> Logsheets { get; set; }
-    public DbSet<ExtractedValue> ExtractedValues { get; set; }
+    DbSet<Template> Templates { get; set; }
+    DbSet<Domain.Entities.File> Files { get; set; }
+    DbSet<Roi> Rois { get; set; }
+    DbSet<Residual> Residuals { get; set; }
+    DbSet<Logsheet> Logsheets { get; set; }
+    DbSet<ExtractedValue> ExtractedValues { get; set; }
+
+    ChangeTracker ChangeTracker { get; }
 
     int SaveChanges();
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);

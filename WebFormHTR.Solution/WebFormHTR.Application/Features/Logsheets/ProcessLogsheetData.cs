@@ -1,15 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-using FluentResults;
-using Mapster;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using WebFormHTR.Application.Errors;
-using WebFormHTR.Application.Features.Logsheets.DTOs;
-using WebFormHTR.Application.Features.Scripting;
-using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
-using WebFormHTR.Domain.Entities;
-using WebFormHTR.Domain.Enums;
+using WebFormHTR.Application.Features.Logsheets.Events;
+using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
@@ -17,32 +9,43 @@ public sealed record ProcessLogsheetDataCommand(Guid LogsheetId);
 
 public static class ProcessLogsheetDataHandler
 {
-    public static async Task<Result<LogsheetDetailDto>> Handle(ProcessLogsheetDataCommand request,
+    public static async Task Handle(ProcessLogsheetDataCommand request,
         IAppDbContext dbContext,
+        IMessageBus bus,
         ILogsheetService logsheetService,
         CancellationToken ct)
     {
         var logsheet = await dbContext.Logsheets.FirstOrDefaultAsync(ls => ls.Id == request.LogsheetId, ct);
         if (logsheet is null)
         {
-            return Result.Fail<LogsheetDetailDto>(new NotFoundError("Logsheet not found"));
+            await bus.PublishAsync(
+                new LogsheetProcessingFinishedEvent(request.LogsheetId, false, "Logsheet not found"));
+            await dbContext.SaveChangesAsync(ct);
+            return;
         }
 
         try
         {
             var processResult = await logsheetService.ProcessLogsheetAsync(logsheet, ct);
+            string? errorMsg = null;
             if (processResult.IsFailed)
             {
-                return processResult;
+                errorMsg = string.Join(", ", processResult.Errors.Select(e => e.Message));
             }
 
-            await dbContext.SaveChangesAsync(ct);
+            await bus.PublishAsync(
+                new LogsheetProcessingFinishedEvent(request.LogsheetId, processResult.IsSuccess, errorMsg));
 
-            return processResult;
+            await dbContext.SaveChangesAsync(ct);
         }
         catch (Exception ex)
         {
-            return Result.Fail<LogsheetDetailDto>($"Failed to process logsheet data: {ex.Message}");
+            dbContext.ChangeTracker.Clear();
+            await bus.PublishAsync(
+                new LogsheetProcessingFinishedEvent(request.LogsheetId, false,
+                    $"Exception during processing: {ex.Message}"));
+
+            await dbContext.SaveChangesAsync(ct);
         }
     }
 }

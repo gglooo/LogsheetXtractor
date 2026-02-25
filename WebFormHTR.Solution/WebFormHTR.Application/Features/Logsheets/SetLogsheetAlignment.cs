@@ -33,11 +33,11 @@ public static class SetLogsheetAlignmentHandler
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("Logsheet not found"));
         }
 
-        if (logsheet.Status == ELogSheetStatus.Completed || logsheet.Status == ELogSheetStatus.NeedsReview)
+        if (!logsheet.CanBeEdited())
         {
-            logger.LogWarning("Logsheet {LogsheetId} is already processed (Status: {Status}) and cannot be re-aligned.", command.LogsheetId, logsheet.Status);
+            logger.LogWarning("Logsheet {LogsheetId} is already processed or is currently processing (Status: {Status}) and cannot be re-aligned.", command.LogsheetId, logsheet.Status);
             return Result.Fail<LogsheetDetailDto>(
-                new InvalidStateError("Logsheet is already processed and cannot be re-aligned."));
+                new InvalidStateError("Logsheet is already processed or is currently processing and cannot be re-aligned."));
         }
 
         logsheet.AlignmentData = mapper.Map<AlignmentContainer>(command.AlignmentData);

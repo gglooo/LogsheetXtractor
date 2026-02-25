@@ -139,10 +139,10 @@ export const LogsheetTableActions = ({
     const handleProcess = async () => {
         try {
             await processLogsheetMutation.mutateAsync(logsheet.id);
-            toast.success("Logsheet was processed.");
+            toast.success("Logsheet was queued for processing.");
         } catch (error) {
             console.log("Error processing logsheet:", error);
-            toast.error("Failed to process logsheet.");
+            toast.error("Failed to queue logsheet for processing.");
         }
     };
 

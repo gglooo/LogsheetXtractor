@@ -2,8 +2,9 @@ namespace WebFormHTR.Domain.Enums;
 
 public enum ELogSheetStatus
 {
-    Pending,
-    Failed,
-    NeedsReview,
-    Completed
+    Pending = 0,
+    Processing = 4,
+    Failed = 1,
+    NeedsReview = 2,
+    Completed = 3
 }

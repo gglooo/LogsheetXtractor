@@ -17,8 +17,10 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1"/>
-        <PackageReference Include="WolverineFx" Version="5.2.0"/>
-        <PackageReference Include="WolverineFx.Http" Version="5.2.0"/>
+        <PackageReference Include="WolverineFx" Version="5.15.0"/>
+        <PackageReference Include="WolverineFx.Http" Version="5.15.0"/>
+        <PackageReference Include="WolverineFx.EntityFrameworkCore" Version="5.15.0"/>
+        <PackageReference Include="WolverineFx.SQLite" Version="5.15.0"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -29,7 +29,9 @@
         </PackageReference>
         <PackageReference Include="SkiaSharp" Version="3.119.1"/>
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1"/>
-        <PackageReference Include="WolverineFx.FluentValidation" Version="5.2.0"/>
+        <PackageReference Include="WolverineFx.FluentValidation" Version="5.15.0"/>
+        <PackageReference Include="WolverineFx.EntityFrameworkCore" Version="5.15.0"/>
+        <PackageReference Include="WolverineFx.SQLite" Version="5.15.0"/>
         <PackageReference Include="ZXing.Net" Version="0.16.11"/>
         <PackageReference Include="ZXing.Net.Bindings.SkiaSharp" Version="0.16.22"/>
     </ItemGroup>

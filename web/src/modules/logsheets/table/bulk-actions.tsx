@@ -57,7 +57,7 @@ export const LogsheetTableBulkActions = ({
             toast.success(
                 intl.formatMessage({
                     id: "logsheets.bulk.process.success",
-                    defaultMessage: "Logsheets were processed",
+                    defaultMessage: "Logsheets were queued for processing",
                 }),
             );
             onClearSelection();
@@ -66,7 +66,7 @@ export const LogsheetTableBulkActions = ({
             toast.error(
                 intl.formatMessage({
                     id: "logsheets.bulk.process.error",
-                    defaultMessage: "Failed to process logsheets",
+                    defaultMessage: "Failed to queue logsheets for processing",
                 }),
             );
         }

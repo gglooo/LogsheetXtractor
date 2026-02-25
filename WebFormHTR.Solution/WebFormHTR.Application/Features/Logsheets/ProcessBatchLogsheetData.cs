@@ -1,14 +1,7 @@
-using FluentResults;
-using Mapster;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using WebFormHTR.Application.Errors;
-using WebFormHTR.Application.Features.Logsheets.DTOs;
-using WebFormHTR.Application.Features.Scripting;
-using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Interfaces;
-using WebFormHTR.Domain.Entities;
-using WebFormHTR.Domain.Enums;
+using WebFormHTR.Application.Features.Logsheets.Events;
+using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
@@ -16,8 +9,9 @@ public sealed record BatchProcessLogsheetDataCommand(Guid[] LogsheetIds);
 
 public static class ProcessBatchLogsheetDataHandler
 {
-    public static async Task<Result<IEnumerable<LogsheetDetailDto>>> Handle(BatchProcessLogsheetDataCommand request,
+    public static async Task Handle(BatchProcessLogsheetDataCommand request,
         IAppDbContext dbContext,
+        IMessageBus bus,
         ILogsheetService logsheetService,
         CancellationToken ct)
     {
@@ -30,16 +24,29 @@ public static class ProcessBatchLogsheetDataHandler
             var processResult = await logsheetService.ProcessLogsheetsAsync(logsheets, ct);
             if (processResult.IsFailed)
             {
-                return processResult.ToResult();
+                var errorMessages = processResult.Errors.Select(e => e.Message).ToList();
+
+                await bus.PublishAsync(new BatchProcessingFinishedEvent([], request.LogsheetIds,
+                    errorMessages));
+            }
+            else
+            {
+                var processedLogsheets = processResult.Value.Select(l => l.Id).ToArray();
+                var failedLogsheets = request.LogsheetIds.Except(processedLogsheets).ToArray();
+
+                await bus.PublishAsync(new BatchProcessingFinishedEvent(processedLogsheets, failedLogsheets, []));
             }
 
             await dbContext.SaveChangesAsync(ct);
-
-            return processResult;
         }
         catch (Exception ex)
         {
-            return Result.Fail<IEnumerable<LogsheetDetailDto>>($"Failed to process batch logsheet data: {ex.Message}");
+            dbContext.ChangeTracker.Clear();
+
+            await bus.PublishAsync(new BatchProcessingFinishedEvent([], request.LogsheetIds,
+                [ex.Message]));
+
+            await dbContext.SaveChangesAsync(ct);
         }
     }
 }

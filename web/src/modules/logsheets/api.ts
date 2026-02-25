@@ -57,8 +57,6 @@ export const useProcessLogsheetMutation = () => {
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
-
-            return await response.json();
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
@@ -83,8 +81,6 @@ export const useProcessLogsheetsMutation = () => {
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
-
-            return await response.json();
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["logsheets"] });

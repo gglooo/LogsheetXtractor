@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using FluentResults;
 using Mapster;
 using MapsterMapper;
@@ -27,7 +26,7 @@ public class LogsheetService(
             return new NotFoundError("Logsheet not found");
         }
 
-        if (logsheet.Status == ELogSheetStatus.Completed || logsheet.ProcessedAt is not null)
+        if (logsheet.Status != ELogSheetStatus.Processing || logsheet.ProcessedAt is not null)
         {
             logger.LogWarning("Logsheet {LogsheetId} is not in a valid state for processing. Status: {Status}",
                 logsheet.Id, logsheet.Status);
