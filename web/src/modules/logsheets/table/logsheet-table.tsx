@@ -149,7 +149,10 @@ export const LogsheetTable = ({
                 <TableBody>
                     {table.getRowModel().rows.length ? (
                         table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
+                            <TableRow
+                                key={row.id}
+                                onClick={row.getToggleSelectedHandler()}
+                            >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id} className="p-2">
                                         {flexRender(

@@ -61,6 +61,7 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
                 <Button
                     variant="ghost"
                     className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
                     title={intl.formatMessage({
                         id: "common.actions.more",
                         defaultMessage: "More actions",
@@ -155,7 +156,10 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.preview",
                         defaultMessage: "Preview",
                     })}
-                    onClick={() => onPreview(logsheet.id)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onPreview(logsheet.id);
+                    }}
                     tooltip={intl.formatMessage({
                         id: "logsheets.actions.preview",
                         defaultMessage: "Preview",
@@ -173,11 +177,12 @@ export const LogsheetTableActions = ({
                         logsheet.status !== "NeedsReview" ||
                         isCredentialsMissing
                     }
-                    onClick={() =>
+                    onClick={(e) => {
+                        e.stopPropagation();
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/proofread`,
-                        )
-                    }
+                        );
+                    }}
                     tooltip={
                         isCredentialsMissing
                             ? noCredentialsTooltip
@@ -198,13 +203,15 @@ export const LogsheetTableActions = ({
                     disabled={
                         logsheet.status === "Completed" ||
                         logsheet.status === "NeedsReview" ||
+                        logsheet.status === "Processing" ||
                         isCredentialsMissing
                     }
-                    onClick={() =>
+                    onClick={(e) => {
+                        e.stopPropagation();
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/align`,
-                        )
-                    }
+                        );
+                    }}
                     tooltip={
                         isCredentialsMissing
                             ? noCredentialsTooltip
@@ -219,15 +226,18 @@ export const LogsheetTableActions = ({
 
                 <ActionsInDialog logsheet={logsheet} />
 
-                {logsheet.status !== "Completed" &&
-                    logsheet.status !== "NeedsReview" && (
+                {logsheet.status === "Pending" ||
+                    (logsheet.status === "Failed" && (
                         <Button
                             variant="outline"
                             disabled={
                                 processLogsheetMutation.isPending ||
                                 isCredentialsMissing
                             }
-                            onClick={handleProcess}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleProcess();
+                            }}
                             title={intl.formatMessage({
                                 id: "logsheets.actions.process",
                                 defaultMessage: "Process",
@@ -247,7 +257,7 @@ export const LogsheetTableActions = ({
                                 <FileCog className="h-4 w-4" />
                             )}
                         </Button>
-                    )}
+                    ))}
             </div>
             <Dialog open={processLogsheetMutation.isPending}>
                 <DialogContent>
