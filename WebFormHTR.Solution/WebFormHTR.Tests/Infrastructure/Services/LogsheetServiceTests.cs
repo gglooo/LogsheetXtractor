@@ -30,7 +30,7 @@ public class LogsheetServiceTests
     [Fact]
     public async Task ProcessLogsheetAsync_ShouldProcess_WhenStateIsValid()
     {
-        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
+        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Processing };
         var processOutput = new ProcessLogsheetOutputDto(new Dictionary<string, string>());
 
         _scriptEngineMock.Setup(x =>
@@ -80,7 +80,7 @@ public class LogsheetServiceTests
     [Fact]
     public async Task ProcessLogsheetAsync_ShouldSetFailedStatus_WhenEngineFails()
     {
-        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
+        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Processing };
         var errorMessage = "Engine failure";
 
         _scriptEngineMock.Setup(x =>
