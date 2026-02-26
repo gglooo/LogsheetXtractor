@@ -58,7 +58,7 @@ public class CreateLogsheetCommandHandlerTests : IDisposable
 
         var command = new CreateLogsheetCommand(templateId, null, fileId);
 
-        var templateDto = new TemplateListDto(templateId, "Test Template", null, null, null, 0, 0, 0,
+        var templateDto = new TemplateListDto(templateId, "Test Template", null, null, null, 0, 0, 0, 0,
             DateTime.UtcNow);
         var fileDto = new FileDto(fileId, "test.jpg", "image/jpeg", 100, DateTime.UtcNow);
         var expectedDto = new LogsheetDetailDto(Guid.NewGuid(), templateDto, fileDto, ELogSheetStatus.Pending,

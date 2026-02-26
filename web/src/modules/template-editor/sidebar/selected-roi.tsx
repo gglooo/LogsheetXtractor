@@ -14,7 +14,13 @@ import { useIntl } from "react-intl";
 
 export const VARIABLE_NAME_INPUT_ID = "variableNameInput";
 
-const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
+const SelectedRoiContent = ({
+    selectedRois,
+    editable,
+}: {
+    selectedRois: RoiType[];
+    editable: boolean;
+}) => {
     const { setRois, roiInputRef } = useTemplateEditor();
     const intl = useIntl();
 
@@ -23,7 +29,7 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
     }
     if (selectedRois.length === 0) {
         return (
-            <div>
+            <div className="text-center">
                 {intl.formatMessage({
                     id: "selectedRoi.noRoiSelected",
                     defaultMessage: "No ROI selected",
@@ -55,6 +61,7 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
                 onFocus={(e) => e.currentTarget.select()}
                 ref={roiInputRef}
                 labelClassname="font-bold"
+                disabled={!editable}
             />
             <FormSelect
                 name="type"
@@ -64,6 +71,7 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
                 })}
                 options={roiTypeSelectOptions}
                 labelClassName="font-bold"
+                disabled={!editable}
             />
             <FormAutoSubmit onSubmit={handleSubmit} />
         </div>
@@ -73,7 +81,7 @@ const SelectedRoiContent = ({ selectedRois }: { selectedRois: RoiType[] }) => {
 export const SelectedRoiSidebarGroup = () => {
     const intl = useIntl();
     const { isSelectedRoi } = useSelectedRois();
-    const { rois } = useTemplateEditor();
+    const { rois, template } = useTemplateEditor();
 
     const selectedRois = rois.filter((roi) => isSelectedRoi(roi.id ?? ""));
 
@@ -95,7 +103,10 @@ export const SelectedRoiSidebarGroup = () => {
                     type: selectedRoi?.type || "Handwritten",
                 }}
             >
-                <SelectedRoiContent selectedRois={selectedRois} />
+                <SelectedRoiContent
+                    selectedRois={selectedRois}
+                    editable={!!template?.isEditable}
+                />
             </Form>
         </SidebarGroup>
     );

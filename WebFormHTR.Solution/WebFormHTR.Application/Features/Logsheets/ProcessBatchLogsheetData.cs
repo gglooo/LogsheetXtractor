@@ -6,7 +6,7 @@ using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
-public sealed record BatchProcessLogsheetDataCommand(Guid[] LogsheetIds);
+public sealed record BatchProcessLogsheetDataCommand(Guid[] LogsheetIds, ProcessLogsheetDataOptions? Options);
 
 public static class ProcessBatchLogsheetDataHandler
 {
@@ -23,7 +23,7 @@ public static class ProcessBatchLogsheetDataHandler
 
         try
         {
-            var processResult = await logsheetService.ProcessLogsheetsAsync(logsheets, ct);
+            var processResult = await logsheetService.ProcessLogsheetsAsync(logsheets, request.Options, ct);
             if (processResult.IsFailed)
             {
                 var errorMessages = processResult.Errors.Select(e => e.Message).ToList();

@@ -7,8 +7,10 @@ namespace WebFormHTR.Application.Features.Logsheets;
 
 public interface ILogsheetService
 {
-    Task<Result<LogsheetDetailDto>> ProcessLogsheetAsync(Logsheet logsheet, CancellationToken ct);
+    Task<Result<LogsheetDetailDto>> ProcessLogsheetAsync(Logsheet logsheet, ProcessLogsheetDataOptions? options,
+        CancellationToken ct);
 
     Task<Result<IEnumerable<LogsheetDetailDto>>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets,
+        ProcessLogsheetDataOptions? options,
         CancellationToken ct);
 }

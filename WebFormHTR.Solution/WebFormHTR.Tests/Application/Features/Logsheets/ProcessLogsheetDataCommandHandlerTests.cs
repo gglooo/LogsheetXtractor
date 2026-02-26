@@ -27,7 +27,7 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
     [Fact]
     public async Task Handle_ShouldFail_WhenLogsheet_NotFound()
     {
-        var command = new ProcessLogsheetDataCommand(Guid.NewGuid());
+        var command = new ProcessLogsheetDataCommand(Guid.NewGuid(), null);
 
         await ProcessLogsheetDataHandler.Handle(command, _dbContext, _busMock.Object, _logsheetServiceMock.Object,
             _accessorMock.Object,

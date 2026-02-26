@@ -1,5 +1,5 @@
 import {
-    SHORTCUT_REGISTRY,
+    useShortcutRegistry,
     type ShortcutKey,
     type ShortcutWhitelist,
 } from "@/modules/template-editor/hooks/shortcuts/types";
@@ -21,7 +21,7 @@ const getEventString = (event: KeyboardEvent): ShortcutKey => {
 
 const isKeyWhiteListed = (
     event: KeyboardEvent,
-    shortcutWhitelist: ShortcutWhitelist
+    shortcutWhitelist: ShortcutWhitelist,
 ) => {
     const activeElement = document.activeElement;
     if (!activeElement) {
@@ -50,8 +50,9 @@ export const useKeyboardShortcuts = (
         browse: () => void;
         focusRoiInput: () => void;
     },
-    shortcutWhitelist: ShortcutWhitelist = {}
+    shortcutWhitelist: ShortcutWhitelist = {},
 ) => {
+    const shortcutRegistry = useShortcutRegistry();
     const handleKeyDown = useCallback(
         (event: KeyboardEvent) => {
             const isInput =
@@ -64,10 +65,10 @@ export const useKeyboardShortcuts = (
 
             const eventString = getEventString(event);
 
-            const matchedShortcut = SHORTCUT_REGISTRY.find(
+            const matchedShortcut = shortcutRegistry.find(
                 (s) =>
                     s.keys.includes(eventString as ShortcutKey) ||
-                    s.keys.includes(eventString.toLowerCase() as ShortcutKey)
+                    s.keys.includes(eventString.toLowerCase() as ShortcutKey),
             );
 
             if (matchedShortcut) {
@@ -79,7 +80,7 @@ export const useKeyboardShortcuts = (
                 }
             }
         },
-        [shortcutWhitelist, actions]
+        [shortcutWhitelist, shortcutRegistry, actions],
     );
 
     useEffect(() => {

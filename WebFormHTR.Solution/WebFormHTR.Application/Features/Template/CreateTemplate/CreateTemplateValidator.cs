@@ -27,6 +27,10 @@ public class CreateTemplateValidator : AbstractValidator<CreateTemplateCommand>
                 return await BeUniqueNameAsync(backside.Name, cancellationToken);
             })
             .WithMessage("A template with the backside name already exists.");
+
+        RuleFor(x => x).Must(command => command.Name != command.Backside?.Name)
+            .WithMessage("The template name and backside name cannot be the same.");
+        ;
     }
 
     private async Task<bool> BeUniqueNameAsync(string name, CancellationToken cancellationToken)

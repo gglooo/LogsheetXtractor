@@ -36,12 +36,15 @@ public class LogsheetService(
         return Result.Ok();
     }
 
-    private async Task<Result> InvokeLogsheetProcessing(Logsheet logsheet, CancellationToken ct)
+    private async Task<Result> InvokeLogsheetProcessing(Logsheet logsheet, ProcessLogsheetDataOptions? options,
+        CancellationToken ct)
     {
         try
         {
             logger.LogInformation("Invoking script engine for Logsheet {LogsheetId}", logsheet.Id);
-            var outputResult = await scriptEngine.ProcessLogsheetAsync(new ProcessLogsheetInputDto(logsheet), ct);
+            var processingOptions = new ProcessLogsheetInputOptionsDto(options?.UglyCheckboxes);
+            var outputResult = await scriptEngine.ProcessLogsheetAsync(
+                new ProcessLogsheetInputDto(logsheet, processingOptions), ct);
 
             if (outputResult.IsFailed)
             {
@@ -77,6 +80,7 @@ public class LogsheetService(
     }
 
     public async Task<Result<LogsheetDetailDto>> ProcessLogsheetAsync(Logsheet logsheet,
+        ProcessLogsheetDataOptions? options,
         CancellationToken ct)
     {
         var validationResult = ValidateLogsheet(logsheet);
@@ -85,7 +89,7 @@ public class LogsheetService(
             return validationResult;
         }
 
-        var result = await InvokeLogsheetProcessing(logsheet, ct);
+        var result = await InvokeLogsheetProcessing(logsheet, options, ct);
 
         if (result.IsFailed)
         {
@@ -96,6 +100,7 @@ public class LogsheetService(
     }
 
     public async Task<Result<IEnumerable<LogsheetDetailDto>>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets,
+        ProcessLogsheetDataOptions? options,
         CancellationToken ct)
     {
         var logsheetList = logsheets.ToList();
@@ -104,7 +109,7 @@ public class LogsheetService(
         var processedLogsheets = new List<LogsheetDetailDto>();
         foreach (var logsheet in logsheetList)
         {
-            var processedLogsheetResult = await ProcessLogsheetAsync(logsheet, ct);
+            var processedLogsheetResult = await ProcessLogsheetAsync(logsheet, options, ct);
             if (processedLogsheetResult.IsSuccess)
             {
                 processedLogsheets.Add(processedLogsheetResult.Value);

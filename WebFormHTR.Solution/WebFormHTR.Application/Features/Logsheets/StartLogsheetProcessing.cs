@@ -9,7 +9,7 @@ using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
-public sealed record StartLogsheetProcessingCommand(Guid LogsheetId);
+public sealed record StartLogsheetProcessingCommand(Guid LogsheetId, ProcessLogsheetDataOptions? Options);
 
 public static class StartLogsheetProcessingHandler
 {
@@ -38,7 +38,8 @@ public static class StartLogsheetProcessingHandler
         }
 
         logsheet.Status = ELogSheetStatus.Processing;
-        await bus.PublishWithContextAsync(new ProcessLogsheetDataCommand(command.LogsheetId), credentialCookieAccessor);
+        await bus.PublishWithContextAsync(new ProcessLogsheetDataCommand(command.LogsheetId, command.Options),
+            credentialCookieAccessor);
 
         await dbContext.SaveChangesAsync(ct);
 

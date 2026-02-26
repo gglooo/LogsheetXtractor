@@ -173,6 +173,10 @@ public class PythonHtrAdapter(
         argsList.AddRange(alignmentArgument);
         argsList.AddRange(backsideArgument);
         argsList.Add("--store_csv");
+        if (input?.Options?.UglyCheckboxes == true)
+        {
+            argsList.Add("--ugly_checkboxes");
+        }
 
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet, argsList, ct);
 

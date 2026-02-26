@@ -34,7 +34,7 @@ public class LogsheetServiceTests
         var processOutput = new ProcessLogsheetOutputDto(new Dictionary<string, string>());
 
         _scriptEngineMock.Setup(x =>
-                x.ProcessLogsheetAsync(It.IsAny<ProcessLogsheetInputDto>(), It.IsAny<CancellationToken>()))
+                x.ProcessLogsheetAsync(It.Is<ProcessLogsheetInputDto>(dto => dto.Options != null && dto.Options.UglyCheckboxes == true), It.IsAny<CancellationToken>()))
             .ReturnsAsync(processOutput);
 
         var expectedDto = new LogsheetDetailDto(
@@ -52,7 +52,8 @@ public class LogsheetServiceTests
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(logsheet))
             .Returns(expectedDto);
 
-        var result = await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
+        var options = new WebFormHTR.Application.Features.Logsheets.ProcessLogsheetDataOptions(UglyCheckboxes: true);
+        var result = await _service.ProcessLogsheetAsync(logsheet, options, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
@@ -63,7 +64,7 @@ public class LogsheetServiceTests
     [Fact]
     public async Task ProcessLogsheetAsync_ShouldReturnFail_WhenLogsheetIsNull()
     {
-        var result = await _service.ProcessLogsheetAsync(null!, CancellationToken.None);
+        var result = await _service.ProcessLogsheetAsync(null!, null, CancellationToken.None);
         result.IsFailed.Should().BeTrue();
         result.Errors.First().Message.Should().Be("Logsheet not found");
     }
@@ -72,7 +73,7 @@ public class LogsheetServiceTests
     public async Task ProcessLogsheetAsync_ShouldReturnFail_WhenStatusIsInvalid()
     {
         var logsheet = new Logsheet { Status = ELogSheetStatus.Completed };
-        var result = await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
+        var result = await _service.ProcessLogsheetAsync(logsheet, null, CancellationToken.None);
         result.IsFailed.Should().BeTrue();
         result.Errors.First().Message.Should().Be("Logsheet is not in a valid state for processing");
     }
@@ -94,7 +95,7 @@ public class LogsheetServiceTests
         );
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(logsheet)).Returns(expectedDto);
 
-        var result = await _service.ProcessLogsheetAsync(logsheet, CancellationToken.None);
+        var result = await _service.ProcessLogsheetAsync(logsheet, null, CancellationToken.None);
 
         logsheet.Status.Should().Be(ELogSheetStatus.Failed);
         logsheet.ErrorMessage.Should().Be(errorMessage);

@@ -1,6 +1,7 @@
 import { downloadFile, fileQueryFn } from "@/modules/files/api";
 import { logsheetListSchema, logsheetSchema } from "@/modules/logsheets/schema";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
+import { useProcessingSettings } from "@/modules/settings/hooks/useProcessingSettings";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useLogsheets = (templateId: string) =>
@@ -43,6 +44,7 @@ export const useDeleteLogsheetMutation = () => {
 
 export const useProcessLogsheetMutation = () => {
     const queryClient = useQueryClient();
+    const { processingSettings } = useProcessingSettings();
 
     return useMutation({
         mutationKey: ["processLogsheet"],
@@ -51,6 +53,12 @@ export const useProcessLogsheetMutation = () => {
                 `/api/logsheets/${logsheetId}/process`,
                 {
                     method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        options: processingSettings,
+                    }),
                 },
             );
 
@@ -66,6 +74,7 @@ export const useProcessLogsheetMutation = () => {
 
 export const useProcessLogsheetsMutation = () => {
     const queryClient = useQueryClient();
+    const { processingSettings } = useProcessingSettings();
 
     return useMutation({
         mutationKey: ["processLogsheets"],
@@ -75,7 +84,10 @@ export const useProcessLogsheetsMutation = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ logsheetIds }),
+                body: JSON.stringify({
+                    logsheetIds,
+                    options: processingSettings,
+                }),
             });
 
             if (!response.ok) {

@@ -55,7 +55,7 @@ export const EditorNavbar = () => {
     };
 
     const handleCancel = () => {
-        if (isDirty && !isCancelDialogOpen) {
+        if (isDirty && !isCancelDialogOpen && template?.isEditable) {
             setCancelDialogOpen(true);
             return;
         }
@@ -65,7 +65,7 @@ export const EditorNavbar = () => {
     return (
         <NavbarContainer
             AsideContent={
-                isDirty ? (
+                isDirty && template?.isEditable ? (
                     <CancelDialog
                         open={isCancelDialogOpen}
                         onCancel={handleCancel}

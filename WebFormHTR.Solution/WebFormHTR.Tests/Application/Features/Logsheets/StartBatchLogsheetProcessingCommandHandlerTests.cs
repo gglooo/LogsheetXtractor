@@ -35,7 +35,8 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         _dbContext.Logsheets.AddRange(logsheet1, logsheet2, logsheet3);
         await _dbContext.SaveChangesAsync();
 
-        var command = new StartBatchLogsheetProcessingCommand(new[] { logsheet1.Id, logsheet2.Id, logsheet3.Id });
+        var options = new WebFormHTR.Application.Features.Logsheets.ProcessLogsheetDataOptions(UglyCheckboxes: true);
+        var command = new StartBatchLogsheetProcessingCommand(new[] { logsheet1.Id, logsheet2.Id, logsheet3.Id }, options);
 
         var result = await StartBatchLogsheetProcessingHandler.Handle(command, _dbContext, _busMock.Object, _accessorMock.Object, _loggerMock.Object, CancellationToken.None);
 
@@ -51,7 +52,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         notUpdatedLogsheet3.Status.Should().Be(ELogSheetStatus.Completed);
 
         _busMock.Verify(b => b.PublishAsync(
-            It.Is<BatchProcessLogsheetDataCommand>(c => c.LogsheetIds.Contains(logsheet1.Id) && c.LogsheetIds.Contains(logsheet2.Id) && !c.LogsheetIds.Contains(logsheet3.Id)), 
+            It.Is<BatchProcessLogsheetDataCommand>(c => c.LogsheetIds.Contains(logsheet1.Id) && c.LogsheetIds.Contains(logsheet2.Id) && !c.LogsheetIds.Contains(logsheet3.Id) && c.Options == options), 
             It.IsAny<DeliveryOptions>()), Times.Once);
     }
 
@@ -62,7 +63,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         _dbContext.Logsheets.Add(logsheet);
         await _dbContext.SaveChangesAsync();
 
-        var command = new StartBatchLogsheetProcessingCommand(new[] { logsheet.Id });
+        var command = new StartBatchLogsheetProcessingCommand(new[] { logsheet.Id }, null);
 
         var result = await StartBatchLogsheetProcessingHandler.Handle(command, _dbContext, _busMock.Object, _accessorMock.Object, _loggerMock.Object, CancellationToken.None);
 

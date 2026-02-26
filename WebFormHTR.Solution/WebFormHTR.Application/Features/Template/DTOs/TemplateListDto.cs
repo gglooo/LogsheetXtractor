@@ -7,6 +7,7 @@ public record TemplateListDto(
     Guid? ParentId,
     Guid? FileId,
     int RoiCount,
+    int LogsheetCount,
     int Width,
     int Height,
     DateTime CreatedAt

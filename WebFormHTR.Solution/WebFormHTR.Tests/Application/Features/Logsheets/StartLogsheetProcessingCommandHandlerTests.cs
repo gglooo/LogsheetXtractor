@@ -32,7 +32,8 @@ public class StartLogsheetProcessingCommandHandlerTests : IDisposable
         _dbContext.Logsheets.Add(logsheet);
         await _dbContext.SaveChangesAsync();
 
-        var command = new StartLogsheetProcessingCommand(logsheet.Id);
+        var options = new WebFormHTR.Application.Features.Logsheets.ProcessLogsheetDataOptions(UglyCheckboxes: true);
+        var command = new StartLogsheetProcessingCommand(logsheet.Id, options);
 
         var result = await StartLogsheetProcessingHandler.Handle(command, _dbContext, _busMock.Object, _accessorMock.Object, _loggerMock.Object, CancellationToken.None);
 
@@ -41,13 +42,13 @@ public class StartLogsheetProcessingCommandHandlerTests : IDisposable
         var updatedLogsheet = await _dbContext.Logsheets.FirstAsync(l => l.Id == logsheet.Id);
         updatedLogsheet.Status.Should().Be(ELogSheetStatus.Processing);
 
-        _busMock.Verify(b => b.PublishAsync(It.Is<ProcessLogsheetDataCommand>(c => c.LogsheetId == logsheet.Id), It.IsAny<DeliveryOptions>()), Times.Once);
+        _busMock.Verify(b => b.PublishAsync(It.Is<ProcessLogsheetDataCommand>(c => c.LogsheetId == logsheet.Id && c.Options == options), It.IsAny<DeliveryOptions>()), Times.Once);
     }
 
     [Fact]
     public async Task Handle_ShouldFail_WhenLogsheetNotFound()
     {
-        var command = new StartLogsheetProcessingCommand(Guid.NewGuid());
+        var command = new StartLogsheetProcessingCommand(Guid.NewGuid(), null);
 
         var result = await StartLogsheetProcessingHandler.Handle(command, _dbContext, _busMock.Object, _accessorMock.Object, _loggerMock.Object, CancellationToken.None);
 
@@ -64,7 +65,7 @@ public class StartLogsheetProcessingCommandHandlerTests : IDisposable
         _dbContext.Logsheets.Add(logsheet);
         await _dbContext.SaveChangesAsync();
 
-        var command = new StartLogsheetProcessingCommand(logsheet.Id);
+        var command = new StartLogsheetProcessingCommand(logsheet.Id, null);
 
         var result = await StartLogsheetProcessingHandler.Handle(command, _dbContext, _busMock.Object, _accessorMock.Object, _loggerMock.Object, CancellationToken.None);
 

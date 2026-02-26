@@ -37,7 +37,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { useDateFnsLocale } from "@/lib/hooks/useDateFnsLocale";
 import { TemplatePreviewImage } from "@/modules/dashboard/components/template-preview-image";
+import { baseTemplateEditorPath } from "@/modules/template-editor/routes";
 
 export const TemplateListItem = ({
     template,
@@ -45,6 +47,7 @@ export const TemplateListItem = ({
     template: TemplateListItemType;
 }) => {
     const intl = useIntl();
+    const locale = useDateFnsLocale();
     const navigate = useNavigate();
 
     const deleteTemplateMutation = useDeleteTemplateMutation();
@@ -98,15 +101,33 @@ export const TemplateListItem = ({
         navigate(`/templates/${template.id}${baseLogsheetsPath}/upload`);
     };
 
+    const handleCardClick = (e: React.MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const isInteractive = target.closest(
+            'button, a, [role="menuitem"], [role="menu"]',
+        );
+
+        if (isInteractive) {
+            return;
+        }
+
+        navigate(`${baseTemplateEditorPath}/${template.id}`);
+    };
+
     return (
-        <Card className="flex flex-col overflow-hidden">
+        <Card
+            className="flex flex-col overflow-hidden hover:bg-card/20 transition-colors duration-200 cursor-pointer"
+            onClick={handleCardClick}
+        >
             <TemplatePreviewImage
                 templateId={template.id}
                 templateName={template.name}
                 fileId={template.fileId}
             />
             <CardHeader className="flex-none">
-                <CardTitle className="hyphens-auto">{template.name}</CardTitle>
+                <CardTitle className="hyphens-auto text-lg font-bold">
+                    {template.name}
+                </CardTitle>
                 <CardDescription className="mt-1 gap-2 flex flex-col">
                     <div className="flex gap-2">
                         <Badge>
@@ -132,7 +153,9 @@ export const TemplateListItem = ({
                             </Badge>
                         ) : null}
                     </div>
-                    {format(new Date(template.createdAt), "PPP p")}
+                    {format(new Date(template.createdAt), "PPP p", {
+                        locale,
+                    })}
                 </CardDescription>
                 <CardAction>
                     <DropdownMenu>
@@ -208,7 +231,7 @@ export const TemplateListItem = ({
                     </DropdownMenu>
                 </CardAction>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col justify-end flex-1">
                 <div className="flex flex-row lg:flex-row gap-2 w-full">
                     <Button
                         variant="outline"
@@ -234,7 +257,8 @@ export const TemplateListItem = ({
                         {intl.formatMessage({
                             id: "templates.actions.logsheets",
                             defaultMessage: "Logsheets",
-                        })}
+                        })}{" "}
+                        ({template.logsheetCount})
                     </Button>
                     <TemplateEditButton template={template} />
                 </div>

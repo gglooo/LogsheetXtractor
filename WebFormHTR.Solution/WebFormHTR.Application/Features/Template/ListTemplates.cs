@@ -11,8 +11,9 @@ public sealed record ListTemplatesQuery(string? Search);
 
 public static class ListTemplatesHandler
 {
-    public static Task<Result<IEnumerable<TemplateListDto>>> Handle(ListTemplatesQuery request, IAppDbContext dbContext,
-        IMapper mapper)
+    public static async Task<Result<IEnumerable<TemplateListDto>>> Handle(ListTemplatesQuery request,
+        IAppDbContext dbContext
+    )
     {
         var query = dbContext.Templates.AsQueryable();
 
@@ -21,14 +22,23 @@ public static class ListTemplatesHandler
             query = query.Where(t => t.Name.Contains(request.Search));
         }
 
-        var templates = query
+        var templates = await query
             .Where(t => t.FrontsideTemplate == null)
-            .Include(t => t.Parent)
-            .Include(t => t.File)
-            .Include(t => t.Rois)
             .OrderByDescending(t => t.CreatedAt)
-            .AsNoTracking().ToList();
+            .Select(t => new TemplateListDto(
+                t.Id,
+                t.Name,
+                t.BacksideTemplateId,
+                t.ParentId,
+                t.FileId,
+                t.Rois.Count(),
+                t.Logsheets.Count(),
+                t.Width ?? 0,
+                t.Height ?? 0,
+                t.CreatedAt
+            ))
+            .ToListAsync();
 
-        return Task.FromResult(Result.Ok(mapper.Map<IEnumerable<TemplateListDto>>(templates)));
+        return Result.Ok(templates.AsEnumerable());
     }
 }

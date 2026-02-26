@@ -9,7 +9,7 @@ using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
-public record StartBatchLogsheetProcessingCommand(Guid[] LogsheetIds);
+public record StartBatchLogsheetProcessingCommand(Guid[] LogsheetIds, ProcessLogsheetDataOptions? options);
 
 public static class StartBatchLogsheetProcessingHandler
 {
@@ -45,7 +45,8 @@ public static class StartBatchLogsheetProcessingHandler
             return Result.Fail(new InvalidStateError("No valid logsheets found to start processing."));
         }
 
-        await bus.PublishWithContextAsync(new BatchProcessLogsheetDataCommand(validLogsheetsToProcess.ToArray()),
+        await bus.PublishWithContextAsync(
+            new BatchProcessLogsheetDataCommand(validLogsheetsToProcess.ToArray(), command.options),
             credentialCookieAccessor);
 
         await dbContext.SaveChangesAsync(ct);

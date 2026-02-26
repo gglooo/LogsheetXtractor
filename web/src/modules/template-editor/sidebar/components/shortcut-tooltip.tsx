@@ -6,7 +6,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-    SHORTCUT_REGISTRY,
+    useShortcutRegistry,
     type ShortcutKey,
 } from "@/modules/template-editor/hooks/shortcuts/types";
 import { InfoIcon } from "lucide-react";
@@ -31,6 +31,8 @@ export const ShortcutBadge = ({
 
 export const ShortcutTooltip = () => {
     const intl = useIntl();
+
+    const shortcutRegistry = useShortcutRegistry();
     return (
         <Tooltip>
             <TooltipTrigger asChild>
@@ -60,14 +62,14 @@ export const ShortcutTooltip = () => {
                         })}
                     </p>
                     <div className="divide-y divide-border/40">
-                        {SHORTCUT_REGISTRY.map((shortcut) =>
+                        {shortcutRegistry.map((shortcut) =>
                             shortcut.keys.map((keyCombination) => (
                                 <ShortcutBadge
                                     key={`${shortcut.actionKey}-${keyCombination}`}
                                     description={shortcut.description}
                                     keyCombination={keyCombination}
                                 />
-                            ))
+                            )),
                         )}
                     </div>
                 </div>

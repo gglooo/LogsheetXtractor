@@ -13,6 +13,10 @@ public sealed record SetLogsheetAlignmentRequest(
     AlignmentDataDto Alignment
 );
 
+public sealed record ProcessLogsheetDataRequest(
+    ProcessLogsheetDataOptions? Options
+);
+
 public static class LogsheetEndpoints
 {
     [WolverineGet("/api/logsheets/{id}")]
@@ -120,10 +124,11 @@ public static class LogsheetEndpoints
     [ProducesResponseType(400)]
     public static async Task<IResult> ProcessLogsheetData(
         Guid id,
+        ProcessLogsheetDataRequest request,
         IMessageBus bus,
         CancellationToken ct)
     {
-        var result = await bus.InvokeAsync<Result>(new StartLogsheetProcessingCommand(id), ct);
+        var result = await bus.InvokeAsync<Result>(new StartLogsheetProcessingCommand(id, request.Options), ct);
 
         return result.IsSuccess ? Results.Accepted() : result.ToHttpResult();
     }
@@ -137,7 +142,9 @@ public static class LogsheetEndpoints
         IMessageBus bus,
         CancellationToken ct)
     {
-        var result = await bus.InvokeAsync<Result>(new StartBatchLogsheetProcessingCommand(request.LogsheetIds), ct);
+        var result =
+            await bus.InvokeAsync<Result>(new StartBatchLogsheetProcessingCommand(request.LogsheetIds, request.Options),
+                ct);
 
         return result.IsSuccess ? Results.Accepted() : result.ToHttpResult();
     }

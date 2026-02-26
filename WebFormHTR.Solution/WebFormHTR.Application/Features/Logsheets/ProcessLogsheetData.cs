@@ -6,7 +6,9 @@ using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
-public sealed record ProcessLogsheetDataCommand(Guid LogsheetId);
+public sealed record ProcessLogsheetDataOptions(bool? UglyCheckboxes);
+
+public sealed record ProcessLogsheetDataCommand(Guid LogsheetId, ProcessLogsheetDataOptions? Options);
 
 public static class ProcessLogsheetDataHandler
 {
@@ -29,7 +31,7 @@ public static class ProcessLogsheetDataHandler
 
         try
         {
-            var processResult = await logsheetService.ProcessLogsheetAsync(logsheet, ct);
+            var processResult = await logsheetService.ProcessLogsheetAsync(logsheet, request.Options, ct);
             string? errorMsg = null;
             if (processResult.IsFailed)
             {

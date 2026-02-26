@@ -28,7 +28,7 @@ export const ReadonlyRoiPdfViewer = ({
     const referenceScale = getScaleFromReferenceScale(
         width,
         scale,
-        template.width
+        template.width,
     );
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -41,7 +41,7 @@ export const ReadonlyRoiPdfViewer = ({
 
             onRoiClick?.(roiId);
         },
-        [onRoiClick, setSelectedRoiIds]
+        [onRoiClick, setSelectedRoiIds],
     );
 
     const shouldRenderRoiFn = useCallback(
@@ -51,7 +51,7 @@ export const ReadonlyRoiPdfViewer = ({
             }
             return true;
         },
-        [customShouldRenderRoiFn]
+        [customShouldRenderRoiFn],
     );
 
     const renderRoi = useCallback(
@@ -65,7 +65,7 @@ export const ReadonlyRoiPdfViewer = ({
                     isSelected={isSelectedRoi(roi.id ?? "")}
                 />
             ) : null,
-        [shouldRenderRoiFn, referenceScale, handleRoiClick, isSelectedRoi]
+        [shouldRenderRoiFn, referenceScale, handleRoiClick, isSelectedRoi],
     );
 
     return (
