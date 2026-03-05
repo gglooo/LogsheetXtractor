@@ -104,7 +104,7 @@ export const TemplateListItem = ({
     const handleCardClick = (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         const isInteractive = target.closest(
-            'button, a, [role="menuitem"], [role="menu"]',
+            'button, a, input, [role="menuitem"], [role="menu"], [role="dialog"]',
         );
 
         if (isInteractive) {

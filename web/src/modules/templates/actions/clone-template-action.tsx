@@ -32,7 +32,11 @@ export const CloneTemplateAction = ({ templateId }: { templateId: string }) => {
                 })}
             </DropdownMenuItem>
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="sm:max-w-125">
+                <DialogContent
+                    className="sm:max-w-125"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDownOutside={(e) => e.stopPropagation()}
+                >
                     <DialogHeader>
                         <DialogTitle>
                             {intl.formatMessage({
