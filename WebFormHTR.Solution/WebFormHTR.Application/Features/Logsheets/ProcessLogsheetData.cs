@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Application.Features.Logsheets.Events;
+using WebFormHTR.Domain.Enums;
 using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
@@ -47,11 +48,20 @@ public static class ProcessLogsheetDataHandler
         catch (Exception ex)
         {
             dbContext.ChangeTracker.Clear();
+
+            var failedLogsheet = await dbContext.Logsheets
+                .FirstOrDefaultAsync(ls => ls.Id == request.LogsheetId, CancellationToken.None);
+            if (failedLogsheet is not null)
+            {
+                failedLogsheet.Status = ELogSheetStatus.Failed;
+                failedLogsheet.ErrorMessage = $"Exception during processing: {ex.Message}";
+            }
+
             await bus.PublishWithContextAsync(
                 new LogsheetProcessingFinishedEvent(request.LogsheetId, false,
                     $"Exception during processing: {ex.Message}"), credentialCookieAccessor);
 
-            await dbContext.SaveChangesAsync(ct);
+            await dbContext.SaveChangesAsync(CancellationToken.None);
         }
     }
 }
