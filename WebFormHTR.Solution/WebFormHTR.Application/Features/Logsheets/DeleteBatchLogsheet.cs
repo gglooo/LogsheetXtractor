@@ -22,7 +22,7 @@ public static class DeleteBatchLogsheetHandler
         IAppDbContext dbContext)
     {
         var existingLogsheets = await dbContext.Logsheets
-            .Where(l => request.LogsheetIds.Contains(l.Id))
+            .Where(l => request.LogsheetIds.AsEnumerable().Contains(l.Id))
             .ToListAsync(ct);
 
         if (existingLogsheets.Count != request.LogsheetIds.Length)
@@ -31,7 +31,7 @@ public static class DeleteBatchLogsheetHandler
         }
 
         dbContext.Logsheets.RemoveRange(existingLogsheets);
-        await fileService.DeleteFilesAsync(request.LogsheetIds);
+        await fileService.DeleteFilesAsync(existingLogsheets.Select(l => l.FileId));
 
         await dbContext.SaveChangesAsync(ct);
 
