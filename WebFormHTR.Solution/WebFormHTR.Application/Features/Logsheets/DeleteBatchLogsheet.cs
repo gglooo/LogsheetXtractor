@@ -2,6 +2,7 @@ using FluentResults;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
@@ -16,6 +17,7 @@ public static class DeleteBatchLogsheetHandler
 {
     public static async Task<Result> Handle(
         BatchDeleteLogsheetCommand request,
+        IFileService fileService,
         CancellationToken ct,
         IAppDbContext dbContext)
     {
@@ -29,6 +31,8 @@ public static class DeleteBatchLogsheetHandler
         }
 
         dbContext.Logsheets.RemoveRange(existingLogsheets);
+        await fileService.DeleteFilesAsync(request.LogsheetIds);
+
         await dbContext.SaveChangesAsync(ct);
 
         return Result.Ok();

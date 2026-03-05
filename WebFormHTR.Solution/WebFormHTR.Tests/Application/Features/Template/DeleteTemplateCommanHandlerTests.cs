@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Template;
 using WebFormHTR.Infrastructure.Persistence;
 using WebFormHTR.Tests.Common;
@@ -9,6 +11,7 @@ namespace WebFormHTR.Tests.Application.Features.Template;
 public class DeleteTemplateCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
+    private readonly Mock<IFileService> _fileServiceMock = new();
 
     [Fact]
     public async Task Handle_ShouldDeleteTemplate_WhenExists()
@@ -20,7 +23,7 @@ public class DeleteTemplateCommandHandlerTests : IDisposable
 
         var command = new DeleteTemplateCommand(templateId);
 
-        var result = await DeleteTemplateHandler.Handle(command, _dbContext, CancellationToken.None);
+        var result = await DeleteTemplateHandler.Handle(command, _dbContext, _fileServiceMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         var deletedTemplate = await _dbContext.Templates.FindAsync(templateId);
@@ -33,7 +36,7 @@ public class DeleteTemplateCommandHandlerTests : IDisposable
     {
         var command = new DeleteTemplateCommand(Guid.NewGuid());
 
-        var result = await DeleteTemplateHandler.Handle(command, _dbContext, CancellationToken.None);
+        var result = await DeleteTemplateHandler.Handle(command, _dbContext, _fileServiceMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Template not found");

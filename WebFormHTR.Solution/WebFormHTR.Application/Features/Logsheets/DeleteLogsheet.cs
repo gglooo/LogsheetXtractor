@@ -1,5 +1,6 @@
 using FluentResults;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Interfaces;
 
 namespace WebFormHTR.Application.Features.Logsheets;
@@ -8,7 +9,8 @@ public sealed record DeleteLogsheetCommand(Guid Id);
 
 public static class DeleteLogsheetHandler
 {
-    public static async Task<Result> Handle(DeleteLogsheetCommand request, IAppDbContext dbContext, CancellationToken ct)
+    public static async Task<Result> Handle(DeleteLogsheetCommand request, IFileService fileService,
+        IAppDbContext dbContext, CancellationToken ct)
     {
         var logsheet = dbContext.Logsheets.FirstOrDefault(l => l.Id == request.Id);
         if (logsheet is null)
@@ -17,6 +19,8 @@ public static class DeleteLogsheetHandler
         }
 
         dbContext.Logsheets.Remove(logsheet);
+        await fileService.DeleteFileAsync(logsheet.FileId);
+
         await dbContext.SaveChangesAsync(ct);
 
         return Result.Ok();

@@ -77,6 +77,51 @@ public class FileService(
         return await UploadFileAsync(fileBytes, file.OriginalFileName, file.ContentType);
     }
 
+    private void DeleteFileFromStorage(Domain.Entities.File file)
+    {
+        try
+        {
+            fileStorageService.DeleteFile(file.StoragePath);
+            logger.LogInformation("Deleted file from storage. StoragePath: {StoragePath}, FileId: {FileId}",
+                file.StoragePath, file.Id);
+        }
+        catch (FileNotFoundException)
+        {
+            logger.LogError("File not found in storage during deletion. StoragePath: {StoragePath}, FileId: {FileId}",
+                file.StoragePath, file.Id);
+        }
+    }
+
+    public async Task DeleteFileAsync(Guid id)
+    {
+        logger.LogInformation("Deleting file {FileId}", id);
+        var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == id);
+        if (file is null)
+        {
+            logger.LogWarning("Attempted to delete non-existent file. FileId: {FileId}", id);
+            return;
+        }
+
+        DeleteFileFromStorage(file);
+
+        dbContext.Files.Remove(file);
+    }
+
+    public Task DeleteFilesAsync(IEnumerable<Guid> ids)
+    {
+        var idsList = ids.ToList();
+        logger.LogInformation("Deleting multiple files. FileIds: {FileIds}", string.Join(", ", idsList));
+        var files = dbContext.Files.Where(f => idsList.Contains(f.Id)).ToList();
+
+        foreach (var file in files)
+        {
+            DeleteFileFromStorage(file);
+        }
+
+        dbContext.Files.RemoveRange(files);
+        return Task.CompletedTask;
+    }
+
     public async Task<GetFileDto?> GetFileFromContentAsync(byte[] content, string fileName, string contentType,
         CancellationToken cancellationToken)
     {

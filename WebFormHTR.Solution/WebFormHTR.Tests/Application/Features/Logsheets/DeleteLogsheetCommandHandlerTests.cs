@@ -1,7 +1,9 @@
 using FluentAssertions;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.File.Interfaces;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
@@ -13,6 +15,7 @@ namespace WebFormHTR.Tests.Application.Features.Logsheets;
 public class DeleteLogsheetCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
+    private readonly Mock<IFileService> _fileServiceMock = new();
 
     public DeleteLogsheetCommandHandlerTests()
     {
@@ -29,7 +32,7 @@ public class DeleteLogsheetCommandHandlerTests : IDisposable
 
         var command = new DeleteLogsheetCommand(logsheetId);
 
-        var result = await DeleteLogsheetHandler.Handle(command, _dbContext, CancellationToken.None);
+        var result = await DeleteLogsheetHandler.Handle(command, _fileServiceMock.Object, _dbContext, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         var deletedLogsheet = await _dbContext.Logsheets.FindAsync(logsheetId);
@@ -43,7 +46,7 @@ public class DeleteLogsheetCommandHandlerTests : IDisposable
     {
         var command = new DeleteLogsheetCommand(Guid.NewGuid());
 
-        var result = await DeleteLogsheetHandler.Handle(command, _dbContext, CancellationToken.None);
+        var result = await DeleteLogsheetHandler.Handle(command, _fileServiceMock.Object, _dbContext, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Logsheet not found");
