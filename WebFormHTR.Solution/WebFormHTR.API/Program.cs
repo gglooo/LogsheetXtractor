@@ -87,6 +87,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "An error occurred during startup initialization.");
+        throw;
     }
 }
 
