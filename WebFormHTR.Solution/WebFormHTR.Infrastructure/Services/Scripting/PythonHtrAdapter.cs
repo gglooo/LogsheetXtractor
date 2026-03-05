@@ -18,6 +18,7 @@ using WebFormHTR.Application.Extensions;
 using WebFormHTR.Application.Features.File.Interfaces;
 using FluentResults;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.Credentials;
 
 namespace WebFormHTR.Infrastructure.Services.Scripting;
 
@@ -40,10 +41,10 @@ public class PythonHtrAdapter(
 
         await using var context = await credentialContextProvider.GetCredentialContextAsync(ct);
         var credentials = context.CredentialPaths.ToList();
-        if (credentials.Count == 0)
+        var areGoogleCredentialsAvailable = credentials.Any(c => c.Item1 == ECredentialType.Google);
+        if (!areGoogleCredentialsAvailable)
         {
-            logger.LogError("No credentials available for ROI selection.");
-            return Result.Fail(new InvalidStateError("No credentials available for ROI selection."));
+            logger.LogError("No credentials available for ROI selection. Skipping residual detection.");
         }
 
         var uniqueStoragePath = $"{Guid.NewGuid()}_{_selectRoisOutputPath}";
@@ -51,16 +52,21 @@ public class PythonHtrAdapter(
         var inputFilePath = fileStorageService.GetResolvedPath(input.Template.File.StoragePath);
         var outputFilePath = fileStorageService.GetTemporaryFilePath(uniqueStoragePath);
 
-        var usedCredentials = credentials[0].Item2;
+        var usedCredentials = credentials.FirstOrDefault(c => c.Item1 == ECredentialType.Google).Item2;
         var args = new List<string>
         {
             "--pdf_file", inputFilePath,
             "--output_file", outputFilePath,
             "--autodetect",
-            "--detect_residuals",
-            "--credentials", usedCredentials,
             "--headless"
         };
+
+        if (usedCredentials != null)
+        {
+            args.Add("--detect_residuals");
+            args.AddRange(["--credentials", usedCredentials]);
+        }
+
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois, args, ct);
 
         var rois = await outputParser.ParseSelectRoisJsonAsync(outputFilePath, input.Template.Id, ct);

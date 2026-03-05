@@ -10,12 +10,6 @@ export type LogsheetProcessingFinishedEvent = {
     errorMessage?: string;
 };
 
-export type BatchProcessingFinishedEvent = {
-    processedLogsheetIds: string[];
-    failedLogsheetIds: string[];
-    errorMessages: string[];
-};
-
 export const LogsheetEventHandler = () => {
     const { connection } = useSignalR();
     const queryClient = useQueryClient();
@@ -34,6 +28,9 @@ export const LogsheetEventHandler = () => {
                         defaultMessage:
                             "Logsheet processing completed successfully",
                     }),
+                    {
+                        id: "logsheet-processing-success",
+                    },
                 );
             } else {
                 toast.error(
@@ -42,49 +39,8 @@ export const LogsheetEventHandler = () => {
                         defaultMessage: "Logsheet processing failed",
                     }),
                     {
+                        id: `logsheet-processing-error-${event.logsheetId}`,
                         description: event.errorMessage,
-                    },
-                );
-            }
-            await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
-        };
-
-        const onBatchProcessingFinished = async (
-            event: BatchProcessingFinishedEvent,
-        ) => {
-            if (event.failedLogsheetIds.length === 0) {
-                toast.success(
-                    intl.formatMessage({
-                        id: "logsheets.batchProcessing.success",
-                        defaultMessage:
-                            "Batch processing completed successfully",
-                    }),
-                );
-            } else if (event.processedLogsheetIds.length > 0) {
-                toast.warning(
-                    intl.formatMessage(
-                        {
-                            id: "logsheets.batchProcessing.partialSuccess",
-                            defaultMessage:
-                                "Batch processing finished with {errors} errors",
-                        },
-                        { errors: event.failedLogsheetIds.length },
-                    ),
-                    {
-                        description: event.errorMessages[0],
-                    },
-                );
-            } else {
-                toast.error(
-                    intl.formatMessage({
-                        id: "logsheets.batchProcessing.error",
-                        defaultMessage: "Batch processing failed",
-                    }),
-                    {
-                        description:
-                            event.errorMessages.length > 0
-                                ? event.errorMessages[0]
-                                : undefined,
                     },
                 );
             }
@@ -95,16 +51,11 @@ export const LogsheetEventHandler = () => {
             "LogsheetProcessingFinished",
             onLogsheetProcessingFinished,
         );
-        connection.on("BatchProcessingFinished", onBatchProcessingFinished);
 
         return () => {
             connection.off(
                 "LogsheetProcessingFinished",
                 onLogsheetProcessingFinished,
-            );
-            connection.off(
-                "BatchProcessingFinished",
-                onBatchProcessingFinished,
             );
         };
     }, [connection, queryClient, intl]);

@@ -24,8 +24,7 @@ public static class StartBatchLogsheetProcessingHandler
             .Where(ls => command.LogsheetIds.AsEnumerable().Contains(ls.Id))
             .ToListAsync(ct);
 
-        var validLogsheetsToProcess = new List<Guid>();
-
+        var anyLogsheetsProcessed = false;
         foreach (var logsheet in logsheetsToProcess)
         {
             if (!logsheet.CanBeProcessed())
@@ -36,18 +35,19 @@ public static class StartBatchLogsheetProcessingHandler
             }
 
             logsheet.Status = ELogSheetStatus.Processing;
-            validLogsheetsToProcess.Add(logsheet.Id);
+
+            await bus.PublishWithContextAsync(
+                new ProcessLogsheetDataCommand(logsheet.Id, command.options),
+                credentialCookieAccessor);
+
+            anyLogsheetsProcessed = true;
         }
 
-        if (validLogsheetsToProcess.Count == 0)
+        if (!anyLogsheetsProcessed)
         {
             logger.LogWarning("No valid logsheets found in the batch command to start processing.");
             return Result.Fail(new InvalidStateError("No valid logsheets found to start processing."));
         }
-
-        await bus.PublishWithContextAsync(
-            new BatchProcessLogsheetDataCommand(validLogsheetsToProcess.ToArray(), command.options),
-            credentialCookieAccessor);
 
         await dbContext.SaveChangesAsync(ct);
 

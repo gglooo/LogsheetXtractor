@@ -74,7 +74,7 @@ public class PythonHtrAdapterTests
         var contextMock = new Mock<ICredentialContext>();
         contextMock.Setup(c => c.CredentialPaths)
             .Returns(new List<(ECredentialType, string)> { (ECredentialType.Google, credentialsPath) });
-            
+
         _credentialContextProviderMock.Setup(x => x.GetCredentialContextAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(contextMock.Object);
 
@@ -145,21 +145,46 @@ public class PythonHtrAdapterTests
     }
 
     [Fact]
-    public async Task SelectRoisAsync_ShouldReturnFail_WhenCredentialsMissing()
+    public async Task SelectRoisAsync_ShouldNotDetectResiduals_WhenCredentialsMissing()
     {
         var template = new Domain.Entities.Template { File = new Domain.Entities.File { StoragePath = "input.pdf" } };
         var input = new SelectRoisInputDto(template);
+        var resolvedInputPath = "/resolved/input.pdf";
+        var resolvedOutputPath = "/resolved/selected_rois.json";
 
         var contextMock = new Mock<ICredentialContext>();
         contextMock.Setup(c => c.CredentialPaths)
             .Returns(new List<(ECredentialType, string)>());
-            
+
         _credentialContextProviderMock.Setup(x => x.GetCredentialContextAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(contextMock.Object);
 
+        _fileStorageServiceMock.Setup(x => x.GetResolvedPath(template.File.StoragePath))
+            .Returns(resolvedInputPath);
+        _fileStorageServiceMock.Setup(x => x.GetTemporaryFilePath(It.Is<string>(s => s.EndsWith("selected_rois.json"))))
+            .Returns(resolvedOutputPath);
+
+        var expectedOutput = new SelectRoisOutputDto(
+            new List<RoiDto>(),
+            new List<ResidualDto>()
+        );
+
+        _outputParserMock.Setup(x =>
+                x.ParseSelectRoisJsonAsync(resolvedOutputPath, template.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedOutput);
+
         var result = await _adapter.SelectRoisAsync(input, CancellationToken.None);
 
-        result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be("No credentials available for ROI selection.");
+        result.IsFailed.Should().BeFalse();
+        _scriptExecutorMock.Verify(x => x.ExecuteScriptAsync(
+                "select_rois.py",
+                It.Is<IEnumerable<string>>(args =>
+                    args.Contains("--pdf_file") && args.Contains(resolvedInputPath) &&
+                    args.Contains("--output_file") && args.Contains(resolvedOutputPath) &&
+                    args.Contains("--autodetect") &&
+                    args.Contains("--headless") &&
+                    !args.Contains("--credentials") && !args.Contains("--detect_residuals")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }

@@ -12,10 +12,4 @@ public class WebSocketNotificationService(IHubContext<LogsheetHub> hubContext) :
     {
         await hubContext.Clients.All.SendAsync("LogsheetProcessingFinished", notificationEvent, ct);
     }
-
-    public async Task NotifyBatchProcessingFinishedAsync(BatchProcessingFinishedEvent notificationEvent,
-        CancellationToken ct)
-    {
-        await hubContext.Clients.All.SendAsync("BatchProcessingFinished", notificationEvent, ct);
-    }
 }

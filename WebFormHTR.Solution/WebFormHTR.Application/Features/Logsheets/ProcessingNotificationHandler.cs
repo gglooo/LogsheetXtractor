@@ -12,12 +12,4 @@ public static class ProcessingNotificationHandler
     {
         await notificationService.NotifyLogsheetProcessingFinishedAsync(message, ct);
     }
-
-    public static async Task Handle(
-        BatchProcessingFinishedEvent message,
-        INotificationService notificationService,
-        CancellationToken ct)
-    {
-        await notificationService.NotifyBatchProcessingFinishedAsync(message, ct);
-    }
 }

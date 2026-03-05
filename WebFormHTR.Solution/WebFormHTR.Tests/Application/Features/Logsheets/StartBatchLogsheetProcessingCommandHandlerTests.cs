@@ -52,7 +52,11 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         notUpdatedLogsheet3.Status.Should().Be(ELogSheetStatus.Completed);
 
         _busMock.Verify(b => b.PublishAsync(
-            It.Is<BatchProcessLogsheetDataCommand>(c => c.LogsheetIds.Contains(logsheet1.Id) && c.LogsheetIds.Contains(logsheet2.Id) && !c.LogsheetIds.Contains(logsheet3.Id) && c.Options == options), 
+            It.Is<ProcessLogsheetDataCommand>(c => c.LogsheetId == logsheet1.Id && c.Options == options), 
+            It.IsAny<DeliveryOptions>()), Times.Once);
+            
+        _busMock.Verify(b => b.PublishAsync(
+            It.Is<ProcessLogsheetDataCommand>(c => c.LogsheetId == logsheet2.Id && c.Options == options), 
             It.IsAny<DeliveryOptions>()), Times.Once);
     }
 
@@ -73,7 +77,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         var notUpdatedLogsheet = await _dbContext.Logsheets.FirstAsync(l => l.Id == logsheet.Id);
         notUpdatedLogsheet.Status.Should().Be(ELogSheetStatus.Completed);
 
-        _busMock.Verify(b => b.PublishAsync(It.IsAny<BatchProcessLogsheetDataCommand>(), It.IsAny<DeliveryOptions>()), Times.Never);
+        _busMock.Verify(b => b.PublishAsync(It.IsAny<ProcessLogsheetDataCommand>(), It.IsAny<DeliveryOptions>()), Times.Never);
     }
 
     public void Dispose()

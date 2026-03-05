@@ -138,12 +138,12 @@ public static class LogsheetEndpoints
     [ProducesResponseType(404)]
     [ProducesResponseType(400)]
     public static async Task<IResult> ProcessBatchLogsheetData(
-        BatchProcessLogsheetDataCommand request,
+        StartBatchLogsheetProcessingCommand request,
         IMessageBus bus,
         CancellationToken ct)
     {
         var result =
-            await bus.InvokeAsync<Result>(new StartBatchLogsheetProcessingCommand(request.LogsheetIds, request.Options),
+            await bus.InvokeAsync<Result>(request,
                 ct);
 
         return result.IsSuccess ? Results.Accepted() : result.ToHttpResult();

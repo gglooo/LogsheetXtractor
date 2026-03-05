@@ -99,37 +99,13 @@ public class LogsheetService(
         return Result.Ok(mapper.Map<LogsheetDetailDto>(logsheet));
     }
 
-    public async Task<Result<IEnumerable<LogsheetDetailDto>>> ProcessLogsheetsAsync(IEnumerable<Logsheet> logsheets,
-        ProcessLogsheetDataOptions? options,
-        CancellationToken ct)
-    {
-        var logsheetList = logsheets.ToList();
-        logger.LogInformation("Processing batch of {Count} logsheets", logsheetList.Count);
-
-        var processedLogsheets = new List<LogsheetDetailDto>();
-        foreach (var logsheet in logsheetList)
-        {
-            var processedLogsheetResult = await ProcessLogsheetAsync(logsheet, options, ct);
-            if (processedLogsheetResult.IsSuccess)
-            {
-                processedLogsheets.Add(processedLogsheetResult.Value);
-            }
-            else
-            {
-                logger.LogWarning("Validation error for Logsheet ID {LogsheetId}: {Message}", logsheet.Id,
-                    processedLogsheetResult.Errors.FirstOrDefault()?.Message);
-            }
-        }
-
-        return Result.Ok(mapper.Map<IEnumerable<LogsheetDetailDto>>(processedLogsheets));
-    }
-
-    private void AdjustAfterSuccessfulProcessing(Logsheet logsheet, List<ExtractedValue> extractedData)
+    private static void AdjustAfterSuccessfulProcessing(Logsheet logsheet, List<ExtractedValue> extractedData)
     {
         logsheet!.ExtractedValues.Clear();
         extractedData.ForEach(logsheet.ExtractedValues.Add);
         logsheet.ProcessedAt = DateTime.UtcNow;
         logsheet.Status = ELogSheetStatus.NeedsReview;
+        logsheet.ErrorMessage = string.Empty;
     }
 
     private void AdjustAfterFailedProcessing(Logsheet logsheet, string errorMessage)

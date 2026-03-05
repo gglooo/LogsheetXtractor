@@ -18,6 +18,7 @@ public static class ListLogsheetsByTemplateHandler
         var logsheets = await dbContext.Logsheets
             .Include(l => l.File)
             .Where(ls => ls.TemplateId == request.TemplateId)
+            .OrderByDescending(ls => ls.CreatedAt)
             .ToListAsync();
 
         return Result.Ok(mapper.Map<IEnumerable<LogsheetListDto>>(logsheets));
