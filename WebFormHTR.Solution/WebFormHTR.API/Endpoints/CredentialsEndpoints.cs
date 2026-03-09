@@ -49,8 +49,9 @@ public static class CredentialsEndpoints
         var options = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
+            // TODO: will the app always run behind HTTP?
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddYears(1)
         };
 
