@@ -13,4 +13,12 @@ services:
       - ./app_data:/app/app_data
       - ./credentials:/app/credentials
 
-
+  frontend:
+    build:
+      context: ./web
+    ports:
+      - "3000:80"
+    environment:
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
