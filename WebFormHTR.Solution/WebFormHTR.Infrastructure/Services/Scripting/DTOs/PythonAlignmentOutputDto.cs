@@ -14,4 +14,8 @@ public class PythonAlignmentData
     [JsonPropertyName("templatePoints")] public List<PointCoordinate> TemplatePoints { get; init; } = [];
 
     [JsonPropertyName("targetPoints")] public List<PointCoordinate> TargetPoints { get; init; } = [];
+
+    [JsonPropertyName("imageWidth")] public int ImageWidth { get; init; }
+
+    [JsonPropertyName("imageHeight")] public int ImageHeight { get; init; }
 }

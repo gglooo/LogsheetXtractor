@@ -58,12 +58,13 @@ public class ScriptOutputParser(
         }
 
         var frontAlignmentPoints = coordinateTransformerService.NormalizeAlignmentPoints(
-            rawAlignment!.Frontside.TemplatePoints, rawAlignment.Frontside.TargetPoints, templateWidth, templateHeight);
+            rawAlignment!.Frontside.TemplatePoints, rawAlignment.Frontside.TargetPoints, templateWidth, templateHeight,
+            rawAlignment.Frontside.ImageWidth, rawAlignment.Frontside.ImageHeight);
 
         var backAlignmentPoints = rawAlignment.Backside != null
             ? coordinateTransformerService.NormalizeAlignmentPoints(
                 rawAlignment.Backside.TemplatePoints, rawAlignment.Backside.TargetPoints, backsideTemplateWidth!.Value,
-                backsideTemplateHeight!.Value)
+                backsideTemplateHeight!.Value, rawAlignment.Backside.ImageWidth, rawAlignment.Backside.ImageHeight)
             : null;
 
         return new AlignmentContainer(frontAlignmentPoints, backAlignmentPoints);

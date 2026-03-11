@@ -112,8 +112,10 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
             setFrontCoordinates(
                 getDefaultCoords(templateWidth, templateHeight),
             );
+            setIsFrontDirty(true);
         } else {
             setBackCoordinates(getDefaultCoords(templateWidth, templateHeight));
+            setIsBackDirty(true);
         }
     };
 

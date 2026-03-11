@@ -14,5 +14,7 @@ public interface ICoordinateTransformerService
         List<PointCoordinate> rawTemplatePoints,
         List<PointCoordinate> rawTargetPoints,
         int templateWidth,
-        int templateHeight);
+        int templateHeight,
+        int imageWidth,
+        int imageHeight);
 }

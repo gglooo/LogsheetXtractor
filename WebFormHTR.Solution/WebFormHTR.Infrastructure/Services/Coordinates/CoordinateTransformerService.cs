@@ -97,7 +97,7 @@ public class CoordinateTransformerService(
     }
 
     public List<PointCoordinate> NormalizeAlignmentPoints(List<PointCoordinate> rawTemplatePoints,
-        List<PointCoordinate> rawTargetPoints, int templateWidth, int templateHeight)
+        List<PointCoordinate> rawTargetPoints, int templateWidth, int templateHeight, int imageWidth, int imageHeight)
     {
         var matrix = perspectiveMatrixComputer.ComputePerspectiveMatrix(
             rawTemplatePoints.Select(p => new SKPoint(p.X, p.Y)).ToArray(),
@@ -106,13 +106,16 @@ public class CoordinateTransformerService(
         var standardCorners = new SKPoint[]
         {
             new(0, 0),
-            new(templateWidth, 0),
-            new(templateWidth, templateHeight),
-            new(0, templateHeight)
+            new(imageWidth, 0),
+            new(imageWidth, imageHeight),
+            new(0, imageHeight)
         };
 
+        var scaleX = (double)templateWidth / imageWidth;
+        var scaleY = (double)templateHeight / imageHeight;
+
         var normalizedPoints = matrix.MapPoints(standardCorners)
-            .Select(p => new PointCoordinate((int)p.X, (int)p.Y))
+            .Select(p => new PointCoordinate((int)Math.Round(p.X * scaleX), (int)Math.Round(p.Y * scaleY)))
             .ToList();
 
         return normalizedPoints;
