@@ -20,17 +20,17 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useLanguage } from "@/components/use-language";
+import { useNavigateUp } from "@/hooks/use-navigate-up";
 import { useProcessingSettings } from "@/modules/settings/hooks/useProcessingSettings";
 import { ArrowLeft, Info, Trash2 } from "lucide-react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CredentialsAction } from "./actions/credentials-action";
 import { useCredentialsStatus, useDeleteCredentialsMutation } from "./api";
 
 export const SettingsPage = () => {
     const intl = useIntl();
-    const navigate = useNavigate();
+    const navigateUp = useNavigateUp();
     const { locale, setLocale } = useLanguage();
     const { data: status, isLoading } = useCredentialsStatus();
     const deleteMutation = useDeleteCredentialsMutation();
@@ -64,7 +64,7 @@ export const SettingsPage = () => {
                 <Button
                     variant="ghost"
                     className="mb-6 -ml-4 text-muted-foreground"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigateUp()}
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     {intl.formatMessage({

@@ -10,12 +10,14 @@ export const TemplateInfoItem = ({
     loading?: boolean;
 }) => {
     return (
-        <div>
+        <div className="min-w-0">
             <p className="text-muted-foreground">{label}</p>
             {loading ? (
                 <Skeleton className="w-32 h-6" />
             ) : (
-                <p className="font-medium text-foreground">{value}</p>
+                <p className="font-medium text-foreground break-words hyphens-auto">
+                    {value}
+                </p>
             )}
         </div>
     );

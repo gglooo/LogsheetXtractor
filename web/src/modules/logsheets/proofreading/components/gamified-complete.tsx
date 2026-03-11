@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { useNavigateUp } from "@/hooks/use-navigate-up";
 import { CheckCircle2 } from "lucide-react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 
 export const GamifiedComplete = () => {
     const intl = useIntl();
-    const navigate = useNavigate();
+    const navigateUp = useNavigateUp();
 
     return (
         <div className="flex flex-col items-center justify-center h-full gap-6 p-8 text-center">
@@ -28,7 +28,7 @@ export const GamifiedComplete = () => {
                     })}
                 </p>
             </div>
-            <Button onClick={() => navigate(-1)}>
+            <Button onClick={() => navigateUp()}>
                 {intl.formatMessage({
                     id: "gamified.complete.back",
                     defaultMessage: "Back to logsheets",

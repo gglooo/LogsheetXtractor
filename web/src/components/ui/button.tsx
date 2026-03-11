@@ -67,7 +67,15 @@ function Button({
 
     return props.tooltip ? (
         <Tooltip>
-            <TooltipTrigger asChild>{BaseComponent}</TooltipTrigger>
+            <TooltipTrigger asChild>
+                {props.disabled ? (
+                    <span className="inline-flex cursor-not-allowed">
+                        {BaseComponent}
+                    </span>
+                ) : (
+                    BaseComponent
+                )}
+            </TooltipTrigger>
             <TooltipContent>{props.tooltip}</TooltipContent>
         </Tooltip>
     ) : (

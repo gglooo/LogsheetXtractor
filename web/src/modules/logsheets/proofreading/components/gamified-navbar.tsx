@@ -1,8 +1,8 @@
 import { NavbarContainer } from "@/components/navbar-container";
 import { Button } from "@/components/ui/button";
+import { useNavigateUp } from "@/hooks/use-navigate-up";
 import { ArrowDownUp, ArrowLeft, Shuffle } from "lucide-react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 
 type GamifiedMode = "random" | "sequential";
 
@@ -18,7 +18,7 @@ export const GamifiedNavbar = ({
     verifiedCount,
 }: GamifiedNavbarProps) => {
     const intl = useIntl();
-    const navigate = useNavigate();
+    const navigateUp = useNavigateUp();
 
     return (
         <NavbarContainer>
@@ -26,7 +26,7 @@ export const GamifiedNavbar = ({
                 <div className="flex items-center gap-3 sm:gap-4">
                     <ArrowLeft
                         className="cursor-pointer shrink-0"
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigateUp()}
                     />
                     <span className="text-base sm:text-lg font-bold truncate">
                         {intl.formatMessage({

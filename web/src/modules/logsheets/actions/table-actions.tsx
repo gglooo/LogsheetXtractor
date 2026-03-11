@@ -213,14 +213,10 @@ export const LogsheetTableActions = ({
                             `/templates/${templateId}/logsheets/${logsheet.id}/align`,
                         );
                     }}
-                    tooltip={
-                        isCredentialsMissing
-                            ? noCredentialsTooltip
-                            : intl.formatMessage({
-                                  id: "logsheets.actions.align",
-                                  defaultMessage: "Align",
-                              })
-                    }
+                    tooltip={intl.formatMessage({
+                        id: "logsheets.actions.align",
+                        defaultMessage: "Align",
+                    })}
                 >
                     <ScanLine className="h-4 w-4" />
                 </Button>

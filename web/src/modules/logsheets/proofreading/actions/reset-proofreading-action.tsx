@@ -6,10 +6,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { useNavigateUp } from "@/hooks/use-navigate-up";
 import { useResetProofreadingMutation } from "@/modules/logsheets/proofreading/api";
 import { useState } from "react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const ResetProofreadingAction = ({
@@ -22,7 +22,7 @@ export const ResetProofreadingAction = ({
     const [isOpen, setIsOpen] = useState(false);
 
     const resetProofreadingMutation = useResetProofreadingMutation();
-    const navigate = useNavigate();
+    const navigateUp = useNavigateUp();
 
     const handleResetProofreading = async () => {
         try {
@@ -34,7 +34,7 @@ export const ResetProofreadingAction = ({
                     defaultMessage: "Proofreading has been reset.",
                 }),
             );
-            navigate(-1);
+            navigateUp();
         } catch (error) {
             console.error("Error resetting proofreading:", error);
             toast.error(

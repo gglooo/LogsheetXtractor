@@ -1,11 +1,11 @@
 import { NavbarContainer } from "@/components/navbar-container";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useNavigateUp } from "@/hooks/use-navigate-up";
 import { ResetProofreadingAction } from "@/modules/logsheets/proofreading/actions/reset-proofreading-action";
 import { useCompleteProofreadingMutation } from "@/modules/logsheets/proofreading/api";
 import { ArrowLeft } from "lucide-react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const ProofreadingNavbar = ({
@@ -17,7 +17,7 @@ export const ProofreadingNavbar = ({
 }) => {
     const intl = useIntl();
 
-    const navigate = useNavigate();
+    const navigateUp = useNavigateUp();
 
     const completeProofReadingMutation =
         useCompleteProofreadingMutation(logsheetId);
@@ -25,7 +25,7 @@ export const ProofreadingNavbar = ({
     const handleCompleteProofreading = async () => {
         try {
             await completeProofReadingMutation.mutateAsync();
-            navigate(-1);
+            navigateUp();
 
             toast.success(
                 intl.formatMessage({
@@ -50,7 +50,7 @@ export const ProofreadingNavbar = ({
             <div className="flex flex-row items-center gap-4">
                 <ArrowLeft
                     className="cursor-pointer"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigateUp()}
                 />
                 <div className="flex justify-between w-full">
                     <div className="p-4 text-lg font-bold">

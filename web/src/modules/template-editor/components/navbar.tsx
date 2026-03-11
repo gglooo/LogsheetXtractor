@@ -2,6 +2,7 @@ import { NavbarContainer } from "@/components/navbar-container";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useNavigateUp } from "@/hooks/use-navigate-up";
 import { useSetRoisMutation } from "@/modules/rois/api";
 import { CancelDialog } from "@/modules/template-editor/components/cancel-dialog";
 import { TemplateSideToggle } from "@/modules/template-editor/components/template-side-toggle";
@@ -9,11 +10,10 @@ import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export const EditorNavbar = () => {
-    const navigate = useNavigate();
+    const navigateUp = useNavigateUp();
 
     const intl = useIntl();
 
@@ -59,7 +59,7 @@ export const EditorNavbar = () => {
             setCancelDialogOpen(true);
             return;
         }
-        navigate(-1);
+        navigateUp();
     };
 
     return (

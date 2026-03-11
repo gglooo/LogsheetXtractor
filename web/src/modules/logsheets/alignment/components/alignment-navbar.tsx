@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { useNavigateUp } from "@/hooks/use-navigate-up";
 import { ArrowLeftIcon } from "lucide-react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 
 export const AlignmentNavbar = ({ logsheetId }: { logsheetId?: string }) => {
-    const navigate = useNavigate();
+    const navigateUp = useNavigateUp();
     const intl = useIntl();
 
     return (
@@ -13,7 +13,7 @@ export const AlignmentNavbar = ({ logsheetId }: { logsheetId?: string }) => {
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigateUp()}
                 >
                     <ArrowLeftIcon className="h-4 w-4" />
                 </Button>
