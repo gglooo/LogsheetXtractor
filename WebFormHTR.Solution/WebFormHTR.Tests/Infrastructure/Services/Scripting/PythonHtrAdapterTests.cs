@@ -84,7 +84,7 @@ public class PythonHtrAdapterTests
             .Returns(resolvedOutputPath);
 
         _scriptExecutorMock.Setup(x => x.ExecuteScriptAsync(
-                "select_rois.py",
+                "select_ROIs.py",
                 It.Is<IEnumerable<string>>(args =>
                     args.Contains("--pdf_file") && args.Contains(resolvedInputPath) &&
                     args.Contains("--output_file") && args.Contains(resolvedOutputPath) &&
@@ -177,7 +177,7 @@ public class PythonHtrAdapterTests
 
         result.IsFailed.Should().BeFalse();
         _scriptExecutorMock.Verify(x => x.ExecuteScriptAsync(
-                "select_rois.py",
+                "select_ROIs.py",
                 It.Is<IEnumerable<string>>(args =>
                     args.Contains("--pdf_file") && args.Contains(resolvedInputPath) &&
                     args.Contains("--output_file") && args.Contains(resolvedOutputPath) &&
