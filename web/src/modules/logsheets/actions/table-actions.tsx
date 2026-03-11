@@ -206,7 +206,7 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.align",
                         defaultMessage: "Align",
                     })}
-                    disabled={!stateMachine.canAlign() || isCredentialsMissing}
+                    disabled={!stateMachine.canAlign()}
                     onClick={(e) => {
                         e.stopPropagation();
                         navigate(
