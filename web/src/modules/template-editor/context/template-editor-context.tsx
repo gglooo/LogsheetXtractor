@@ -13,6 +13,7 @@ import { sortRoisByPosition } from "@/modules/template-editor/utils/roi";
 import type { TemplateType } from "@/modules/templates/schema";
 import type { Coordinates } from "@/schema";
 import { useMemo, useRef, useState, type ReactNode } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 type EditorStateWithHistory = {
     rois: RoiType[];
@@ -30,7 +31,7 @@ const roundCoordinates = (coords: Coordinates): Coordinates => ({
 const addRequiredParamsToRoi = (roi: DetectedRoiType): RoiType => {
     return {
         ...roi,
-        id: roi.id ?? crypto.randomUUID(),
+        id: roi.id ?? uuidv4(),
         type: roi.type ?? "Handwritten",
         coordinates: roundCoordinates(roi.coordinates),
     };
@@ -41,7 +42,7 @@ const addRequiredParamsToResidual = (
 ): ResidualType => {
     return {
         ...residual,
-        id: residual.id ?? crypto.randomUUID(),
+        id: residual.id ?? uuidv4(),
     };
 };
 
@@ -107,7 +108,7 @@ export const TemplateEditorProvider = ({
         }
 
         const baseName = name ?? "unnamed_roi";
-        const uniqueId = crypto.randomUUID();
+        const uniqueId = uuidv4();
 
         const newRoi: RoiType = {
             id: uniqueId,
