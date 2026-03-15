@@ -57,7 +57,14 @@ public static class CreateTemplateHandler
 
         try
         {
-            return await templateService.CreateTemplateAsync(request, ct);
+            var result = await templateService.CreateTemplateAsync(request, ct);
+            if (result.IsFailed)
+            {
+                return result.ToResult();
+            }
+
+            await dbContext.SaveChangesAsync(ct);
+            return Result.Ok(result.Value);
         }
         catch (Exception e)
         {

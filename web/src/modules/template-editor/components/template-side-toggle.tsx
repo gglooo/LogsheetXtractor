@@ -30,7 +30,7 @@ export const TemplateSideToggle = () => {
     return (
         <Button variant="outline" size="sm" onClick={handleToggle}>
             <ArrowLeftRight className="mr-2 h-4 w-4" />
-            {hasFrontside
+            {!hasFrontside
                 ? intl.formatMessage({
                       id: "templateSideToggle.switchToBack",
                       defaultMessage: "Switch to back",

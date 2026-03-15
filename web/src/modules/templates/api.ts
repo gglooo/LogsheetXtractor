@@ -59,6 +59,39 @@ export const useCloneTemplateMutation = () => {
     });
 };
 
+export const useAddTemplateBacksideMutation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["addTemplateBackside"],
+        mutationFn: async ({
+            templateId,
+            name,
+            fileId,
+        }: {
+            templateId: string;
+            name: string;
+            fileId: string;
+        }) => {
+            const response = await fetch(`/api/templates/${templateId}/backside`, {
+                method: "POST",
+                body: JSON.stringify({ name, fileId }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            return await templateSchema.parseAsync(await response.json());
+        },
+        onSuccess: async (_, variables) => {
+            await queryClient.invalidateQueries({ queryKey: ["templates"] });
+            await queryClient.invalidateQueries({
+                queryKey: ["template", variables.templateId],
+            });
+        },
+    });
+};
+
 export const useDeleteTemplateMutation = () => {
     const queryClient = useQueryClient();
 

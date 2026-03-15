@@ -27,6 +27,33 @@ public class TemplateService(
     ILogger<TemplateService> logger
 ) : ITemplateService
 {
+    public async Task<Result<TemplateDetailDto>> AddBacksideTemplateAsync(
+        Guid templateId,
+        string name,
+        Guid fileId,
+        CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Adding backside template for template {TemplateId}", templateId);
+
+        var template = await dbContext.Templates
+            .FirstAsync(t => t.Id == templateId, cancellationToken);
+        var backsideParentId = await GetBacksideParentIdAsync(template.ParentId, cancellationToken);
+
+        var backsideTemplateResult = await GetTemplateAsync(name, fileId, backsideParentId);
+        if (backsideTemplateResult.IsFailed)
+        {
+            return backsideTemplateResult.ToResult();
+        }
+
+        var backsideTemplate = backsideTemplateResult.Value;
+        await dbContext.Templates.AddAsync(backsideTemplate, cancellationToken);
+        template.SetBacksideTemplate(backsideTemplate);
+
+        logger.LogInformation("Backside template {BacksideTemplateId} linked to template {TemplateId}",
+            backsideTemplate.Id, template.Id);
+        return Result.Ok(mapper.Map<TemplateDetailDto>(template));
+    }
+
     public async Task<Result<TemplateDetailDto>> CreateTemplateAsync(CreateTemplateCommand command,
         CancellationToken cancellationToken)
     {
@@ -64,19 +91,9 @@ public class TemplateService(
 
         template.SetBacksideTemplate(backsideTemplate);
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-
         logger.LogInformation("Template {TemplateId} ('{TemplateName}') created successfully", template.Id,
             template.Name);
-
-        var createdTemplate = await dbContext.Templates
-            .AsNoTracking()
-            .Include(t => t.File)
-            .Include(t => t.Parent)
-            .Include(t => t.BacksideTemplate)
-            .FirstAsync(t => t.Id == template.Id, cancellationToken);
-
-        return Result.Ok(mapper.Map<TemplateDetailDto>(createdTemplate));
+        return Result.Ok(mapper.Map<TemplateDetailDto>(template));
     }
 
     public async Task<Result<TemplateDetailDto>> CloneTemplateAsync(Guid templateId, string newTemplateName,
@@ -254,4 +271,18 @@ public class TemplateService(
             return Result.Fail(new ValidationError("Invalid imported configuration format"));
         }
     }
+
+    private async Task<Guid?> GetBacksideParentIdAsync(Guid? templateParentId, CancellationToken cancellationToken)
+    {
+        if (!templateParentId.HasValue)
+        {
+            return null;
+        }
+
+        return await dbContext.Templates
+            .Where(t => t.Id == templateParentId.Value)
+            .Select(t => t.BacksideTemplateId)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
 }

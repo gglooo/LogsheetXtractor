@@ -94,3 +94,15 @@ export const cloneTemplateSchema = baseCloneTemplateSchema
     });
 
 export type CloneTemplateFormValues = z.infer<typeof cloneTemplateSchema>;
+
+export const addTemplateBacksideSchema = z.object({
+    backside: z.object({
+        file: pdfFileSchema,
+        name: z.string().min(1).trim(),
+        importedConfig: z.instanceof(File).optional(),
+    }),
+});
+
+export type AddTemplateBacksideFormValues = z.infer<
+    typeof addTemplateBacksideSchema
+>;

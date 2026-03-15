@@ -6,6 +6,9 @@ namespace WebFormHTR.Application.Features.Template.Interfaces;
 
 public interface ITemplateService
 {
+    Task<Result<TemplateDetailDto>> AddBacksideTemplateAsync(Guid templateId, string name, Guid fileId,
+        CancellationToken cancellationToken);
+
     Task<Result<TemplateDetailDto>> CloneTemplateAsync(Guid templateId, string newTemplateName, Guid fileId,
         CloneTemplateBacksideCommand? backside, CancellationToken cancellationToken);
 

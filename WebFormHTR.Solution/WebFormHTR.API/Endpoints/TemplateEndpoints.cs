@@ -16,6 +16,7 @@ namespace WebFormHTR.API.Endpoints;
 public sealed record CloneTemplateBacksideRequest(string Name, Guid FileId);
 
 public sealed record CloneTemplateRequest(string NewName, Guid FileId, CloneTemplateBacksideRequest? Backside);
+public sealed record AddTemplateBacksideRequest(string Name, Guid FileId);
 
 public static class TemplateEndpoints
 {
@@ -93,6 +94,22 @@ public static class TemplateEndpoints
             : null;
         var command = new CloneTemplateCommand(id, request.NewName, request.FileId, backsideCommand);
 
+        var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
+
+        return result.ToHttpResult();
+    }
+
+    [WolverinePost("/api/templates/{id}/backside")]
+    [ProducesResponseType(200, Type = typeof(TemplateDetailDto))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
+    public static async Task<IResult> AddTemplateBackside(
+        Guid id,
+        AddTemplateBacksideRequest request,
+        IMessageBus bus,
+        CancellationToken ct)
+    {
+        var command = new AddTemplateBacksideCommand(id, request.Name, request.FileId);
         var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
 
         return result.ToHttpResult();

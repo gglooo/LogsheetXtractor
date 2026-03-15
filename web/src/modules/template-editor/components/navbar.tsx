@@ -7,6 +7,7 @@ import { useSetRoisMutation } from "@/modules/rois/api";
 import { CancelDialog } from "@/modules/template-editor/components/cancel-dialog";
 import { TemplateSideToggle } from "@/modules/template-editor/components/template-side-toggle";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { AddTemplateBacksideAction } from "@/modules/templates/actions/add-template-backside-action";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useIntl } from "react-intl";
@@ -22,6 +23,10 @@ export const EditorNavbar = () => {
     const { rois, template, duplicateRoiNames, isDirty, markAsSaved } =
         useTemplateEditor();
     const setRoisMutation = useSetRoisMutation(template?.id);
+    const canAddBacksideTemplate =
+        !!template?.isEditable &&
+        !template.backsideTemplate &&
+        !template.frontsideTemplate;
 
     const isSavingChanges = setRoisMutation.isPending;
 
@@ -99,6 +104,9 @@ export const EditorNavbar = () => {
             </div>
             <div className="flex items-center gap-2 p-4">
                 <TemplateSideToggle />
+                {canAddBacksideTemplate ? (
+                    <AddTemplateBacksideAction templateId={template!.id} />
+                ) : null}
                 <Button size="sm" variant="outline" onClick={handleCancel}>
                     {intl.formatMessage({
                         id: "template-editor.navbar.cancel",
