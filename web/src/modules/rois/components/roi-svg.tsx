@@ -110,7 +110,7 @@ export const RoiSvg = React.memo(
                         <text
                             filter="url(#solid)"
                             x={scaledX}
-                            y={scaledY - 5}
+                            y={scaledY + scaledHeight + 14}
                             className="text-[12px] font-bold select-none pointer-events-none"
                         >
                             {" "}
@@ -118,7 +118,7 @@ export const RoiSvg = React.memo(
                         </text>
                         <text
                             x={scaledX}
-                            y={scaledY - 5}
+                            y={scaledY + scaledHeight + 14}
                             className="text-[12px] font-bold select-none pointer-events-none"
                         >
                             {roi.variableName}
