@@ -35,7 +35,7 @@ public class LogsheetExportService(IAppDbContext dbContext, IHtrScriptEngine scr
         List<ExportLogsheetDataDto> exportData = [];
         exportData.AddRange(logsheet.ExtractedValues.Select(extractedValue => new ExportLogsheetDataDto
         {
-            VariableName = extractedValue.Roi.VariableName, Value = extractedValue.Value,
+            VariableName = extractedValue.Roi.VariableName, Value = extractedValue.CorrectedValue ?? extractedValue.Value,
             Coordinates = mapper.Map<ExportCoordinateDto>(extractedValue.Roi.Coordinates),
             Page = extractedValue.IsBackside ? 1 : 0
         }));
