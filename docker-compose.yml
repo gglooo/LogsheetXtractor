@@ -22,3 +22,11 @@ services:
       - BACKEND_URL=http://backend:8080
     depends_on:
       - backend
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    ports:
+      - "8978:8978"
+    volumes:
+      - ./app_data:/data
+      - ./cloudbeaver:/opt/cloudbeaver/workspace
