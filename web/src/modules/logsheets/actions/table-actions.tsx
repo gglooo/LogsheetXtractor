@@ -64,7 +64,6 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
                 <Button
                     variant="ghost"
                     className="h-8 w-8 p-0"
-                    onClick={(e) => e.stopPropagation()}
                     title={intl.formatMessage({
                         id: "common.actions.more",
                         defaultMessage: "More actions",
@@ -79,11 +78,11 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                    onClick={async () =>
-                        fileDownloadMutation.mutateAsync({
+                    onClick={async () => {
+                        await fileDownloadMutation.mutateAsync({
                             fileId: logsheet.file.id,
-                        })
-                    }
+                        });
+                    }}
                     disabled={fileDownloadMutation.isPending}
                 >
                     <DownloadIcon className="mr-2 h-4 w-4" />
@@ -93,11 +92,11 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
                     })}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                    onClick={async () =>
-                        exportLogsheetMutation.mutateAsync({
+                    onClick={async () => {
+                        await exportLogsheetMutation.mutateAsync({
                             logsheetId: logsheet.id,
-                        })
-                    }
+                        });
+                    }}
                     disabled={exportLogsheetMutation.isPending}
                 >
                     <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
@@ -107,7 +106,9 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
                     })}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                    onClick={handleDelete}
+                    onClick={async () => {
+                        await handleDelete();
+                    }}
                     className="text-red-600 focus:text-red-600"
                     disabled={
                         deleteLogsheetMutation.isPending ||
@@ -163,10 +164,7 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.preview",
                         defaultMessage: "Preview",
                     })}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onPreview(logsheet.id);
-                    }}
+                    onClick={() => onPreview(logsheet.id)}
                     tooltip={intl.formatMessage({
                         id: "logsheets.actions.preview",
                         defaultMessage: "Preview",
@@ -183,8 +181,7 @@ export const LogsheetTableActions = ({
                     disabled={
                         !stateMachine.canProofread() || isCredentialsMissing
                     }
-                    onClick={(e) => {
-                        e.stopPropagation();
+                    onClick={() => {
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/proofread`,
                         );
@@ -207,8 +204,7 @@ export const LogsheetTableActions = ({
                         defaultMessage: "Align",
                     })}
                     disabled={!stateMachine.canAlign()}
-                    onClick={(e) => {
-                        e.stopPropagation();
+                    onClick={() => {
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/align`,
                         );
@@ -230,10 +226,7 @@ export const LogsheetTableActions = ({
                             processLogsheetMutation.isPending ||
                             isCredentialsMissing
                         }
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleProcess();
-                        }}
+                        onClick={handleProcess}
                         title={intl.formatMessage({
                             id: "logsheets.actions.process",
                             defaultMessage: "Process",

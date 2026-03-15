@@ -31,6 +31,19 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 import { useIntl } from "react-intl";
 
+const INTERACTIVE_ROW_SELECTOR =
+    'button, a, input, select, textarea, [role="button"], [role="menuitem"], [data-row-click-ignore]';
+
+const isInteractiveTarget = (target: EventTarget | null): boolean => {
+    if (target instanceof Element) {
+        return Boolean(target.closest(INTERACTIVE_ROW_SELECTOR));
+    }
+    if (target instanceof Node) {
+        return Boolean(target.parentElement?.closest(INTERACTIVE_ROW_SELECTOR));
+    }
+    return false;
+};
+
 export function TableSkeleton(props: ComponentProps<typeof Table>) {
     const columns = useLogsheetsColumns();
     return (
@@ -151,7 +164,12 @@ export const LogsheetTable = ({
                         table.getRowModel().rows.map((row) => (
                             <TableRow
                                 key={row.id}
-                                onClick={row.getToggleSelectedHandler()}
+                                onClick={(event) => {
+                                    if (isInteractiveTarget(event.target)) {
+                                        return;
+                                    }
+                                    row.toggleSelected();
+                                }}
                             >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id} className="p-2">
