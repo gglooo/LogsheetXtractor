@@ -74,6 +74,7 @@ const FormContent = ({
                 <div className="flex-1">
                     <ExtractedValueCorrectedField
                         roiType={extractedValue.roiType}
+                        ocrValue={extractedValue.value}
                     />
                 </div>
             </div>
