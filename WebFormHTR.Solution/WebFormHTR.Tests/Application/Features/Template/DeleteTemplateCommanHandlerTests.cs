@@ -14,11 +14,30 @@ public class DeleteTemplateCommandHandlerTests : IDisposable
     private readonly Mock<IFileService> _fileServiceMock = new();
 
     [Fact]
-    public async Task Handle_ShouldDeleteTemplate_WhenExists()
+    public async Task Handle_ShouldDeleteTemplateAndBackside_WhenDeletingFrontside()
     {
         var templateId = Guid.NewGuid();
-        var template = new Domain.Entities.Template { Id = templateId, File = null! };
-        _dbContext.Templates.Add(template);
+        var templateFileId = Guid.NewGuid();
+        var backsideId = Guid.NewGuid();
+        var backsideFileId = Guid.NewGuid();
+
+        var backside = new Domain.Entities.Template
+        {
+            Id = backsideId,
+            FileId = backsideFileId,
+            File = null!
+        };
+
+        var template = new Domain.Entities.Template
+        {
+            Id = templateId,
+            FileId = templateFileId,
+            File = null!
+        };
+
+        template.ForceSetBacksideTemplate(backside);
+
+        _dbContext.Templates.AddRange(template, backside);
         await _dbContext.SaveChangesAsync();
 
         var command = new DeleteTemplateCommand(templateId);
@@ -26,9 +45,70 @@ public class DeleteTemplateCommandHandlerTests : IDisposable
         var result = await DeleteTemplateHandler.Handle(command, _dbContext, _fileServiceMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        var deletedTemplate = await _dbContext.Templates.FindAsync(templateId);
-        deletedTemplate.Should().NotBeNull();
-        deletedTemplate.DeletedAt.Should().NotBeNull();
+
+        var deletedTemplates = await _dbContext.Templates
+            .IgnoreQueryFilters()
+            .Where(t => t.Id == templateId || t.Id == backsideId)
+            .ToListAsync();
+
+        deletedTemplates.Should().HaveCount(2);
+        deletedTemplates.Should().OnlyContain(t => t.DeletedAt.HasValue);
+
+        _fileServiceMock.Verify(
+            x => x.DeleteFilesAsync(It.Is<IEnumerable<Guid>>(ids =>
+                ids.Contains(templateFileId) &&
+                ids.Contains(backsideFileId) &&
+                ids.Count() == 2)),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldDeleteTemplateAndBackside_WhenDeletingBackside()
+    {
+        var templateId = Guid.NewGuid();
+        var templateFileId = Guid.NewGuid();
+        var backsideId = Guid.NewGuid();
+        var backsideFileId = Guid.NewGuid();
+
+        var backside = new Domain.Entities.Template
+        {
+            Id = backsideId,
+            FileId = backsideFileId,
+            File = null!
+        };
+
+        var template = new Domain.Entities.Template
+        {
+            Id = templateId,
+            FileId = templateFileId,
+            File = null!
+        };
+
+        template.ForceSetBacksideTemplate(backside);
+
+        _dbContext.Templates.AddRange(template, backside);
+        await _dbContext.SaveChangesAsync();
+
+        var command = new DeleteTemplateCommand(backsideId);
+
+        var result = await DeleteTemplateHandler.Handle(command, _dbContext, _fileServiceMock.Object, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+
+        var deletedTemplates = await _dbContext.Templates
+            .IgnoreQueryFilters()
+            .Where(t => t.Id == templateId || t.Id == backsideId)
+            .ToListAsync();
+
+        deletedTemplates.Should().HaveCount(2);
+        deletedTemplates.Should().OnlyContain(t => t.DeletedAt.HasValue);
+
+        _fileServiceMock.Verify(
+            x => x.DeleteFilesAsync(It.Is<IEnumerable<Guid>>(ids =>
+                ids.Contains(templateFileId) &&
+                ids.Contains(backsideFileId) &&
+                ids.Count() == 2)),
+            Times.Once);
     }
 
     [Fact]
@@ -40,6 +120,7 @@ public class DeleteTemplateCommandHandlerTests : IDisposable
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Template not found");
+        _fileServiceMock.Verify(x => x.DeleteFilesAsync(It.IsAny<IEnumerable<Guid>>()), Times.Never);
     }
 
     public void Dispose()
