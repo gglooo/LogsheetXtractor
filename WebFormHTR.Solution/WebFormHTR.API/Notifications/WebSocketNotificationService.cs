@@ -12,4 +12,10 @@ public class WebSocketNotificationService(IHubContext<LogsheetHub> hubContext) :
     {
         await hubContext.Clients.All.SendAsync("LogsheetProcessingFinished", notificationEvent, ct);
     }
+
+    public async Task NotifyLogsheetAutomaticallyAlignedAsync(LogsheetAutomaticallyAlignedEvent notificationEvent,
+        CancellationToken ct)
+    {
+        await hubContext.Clients.All.SendAsync("LogsheetAutomaticAlignmentFinished", notificationEvent, ct);
+    }
 }

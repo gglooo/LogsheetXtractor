@@ -1,7 +1,11 @@
 import { downloadFile, fileQueryFn } from "@/modules/files/api";
-import { logsheetListSchema, logsheetSchema } from "@/modules/logsheets/schema";
+import {
+    logsheetListSchema,
+    logsheetSchema,
+    uploadLogsheetsRequestSchema,
+} from "@/modules/logsheets/schema";
 import type { Position } from "@/modules/pdf/hooks/use-draw-rectangle";
-import { useProcessingSettings } from "@/modules/settings/hooks/useProcessingSettings";
+import { useUserSettings } from "@/modules/settings/hooks/useUserSettings";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useLogsheets = (templateId: string) =>
@@ -44,7 +48,7 @@ export const useDeleteLogsheetMutation = () => {
 
 export const useProcessLogsheetMutation = () => {
     const queryClient = useQueryClient();
-    const { processingSettings } = useProcessingSettings();
+    const { userSettings } = useUserSettings();
 
     return useMutation({
         mutationKey: ["processLogsheet"],
@@ -57,7 +61,9 @@ export const useProcessLogsheetMutation = () => {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        options: processingSettings,
+                        options: {
+                            uglyCheckboxes: userSettings.uglyCheckboxes,
+                        },
                     }),
                 },
             );
@@ -74,7 +80,7 @@ export const useProcessLogsheetMutation = () => {
 
 export const useProcessLogsheetsMutation = () => {
     const queryClient = useQueryClient();
-    const { processingSettings } = useProcessingSettings();
+    const { userSettings } = useUserSettings();
 
     return useMutation({
         mutationKey: ["processLogsheets"],
@@ -86,7 +92,9 @@ export const useProcessLogsheetsMutation = () => {
                 },
                 body: JSON.stringify({
                     logsheetIds,
-                    options: processingSettings,
+                    options: {
+                        uglyCheckboxes: userSettings.uglyCheckboxes,
+                    },
                 }),
             });
 
@@ -124,8 +132,10 @@ export const useDeleteLogsheetsMutation = () => {
     });
 };
 
-export const useUploadLogsheetsMutation = () =>
-    useMutation({
+export const useUploadLogsheetsMutation = () => {
+    const { userSettings } = useUserSettings();
+
+    return useMutation({
         mutationKey: ["uploadLogsheets"],
         mutationFn: async ({
             templateId,
@@ -136,16 +146,20 @@ export const useUploadLogsheetsMutation = () =>
             backsideTemplateId?: string;
             fileIds: string[];
         }) => {
+            const payload = uploadLogsheetsRequestSchema.parse({
+                templateId,
+                backsideTemplateId,
+                fileIds,
+                performAutomaticAlignment:
+                    userSettings.automaticAlignmentOnUpload,
+            });
+
             const response = await fetch(`/api/logsheets/batch`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    templateId,
-                    backsideTemplateId,
-                    fileIds,
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
@@ -157,6 +171,7 @@ export const useUploadLogsheetsMutation = () =>
                 .parseAsync(await response.json());
         },
     });
+};
 
 export const useAlignLogsheetMutation = () => {
     const queryClient = useQueryClient();

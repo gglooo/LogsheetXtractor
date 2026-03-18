@@ -11,6 +11,7 @@ import z from "zod";
 
 export const logsheetStatusSchema = z.enum([
     "Pending",
+    "Aligning",
     "Failed",
     "NeedsReview",
     "Completed",
@@ -94,4 +95,15 @@ export const createExtractedValueFormSchema = (
 
 export type ExtractedValueFormValues = z.infer<
     ReturnType<typeof createExtractedValueFormSchema>
+>;
+
+export const uploadLogsheetsRequestSchema = z.object({
+    templateId: z.guid(),
+    backsideTemplateId: z.guid().optional(),
+    fileIds: z.array(z.guid()),
+    performAutomaticAlignment: z.boolean(),
+});
+
+export type UploadLogsheetsRequest = z.infer<
+    typeof uploadLogsheetsRequestSchema
 >;

@@ -1,11 +1,11 @@
 using FluentAssertions;
 using FluentResults;
+using Wolverine;
 using Moq;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
-using WebFormHTR.Application.Features.Scripting;
-using WebFormHTR.Application.Features.Scripting.DTOs;
+using WebFormHTR.Application.Features.Logsheets.Events;
 using WebFormHTR.Application.Features.ExtractedValues.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Infrastructure.Persistence;
@@ -20,7 +20,8 @@ namespace WebFormHTR.Tests.Application.Features.Logsheets;
 public class AlignLogsheetCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
-    private readonly Mock<IHtrScriptEngine> _scriptEngineMock = new();
+    private readonly Mock<ILogsheetService> _logsheetServiceMock = new();
+    private readonly Mock<IMessageBus> _busMock = new();
     private readonly Mock<ILogger<AlignLogsheetCommand>> _loggerMock = new();
 
     [Fact]
@@ -52,18 +53,23 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
             DateTime.UtcNow,
             null);
 
-        _scriptEngineMock.Setup(x =>
-                x.AutomaticAlignAsync(It.IsAny<AutomaticAlignmentInputDto>(), It.IsAny<CancellationToken>()))
+        _logsheetServiceMock.Setup(x =>
+                x.AlignLogsheetAsync(It.IsAny<Logsheet>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedDto);
 
         var result =
-            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, _loggerMock.Object, CancellationToken.None);
+            await AlignLogsheetHandler.Handle(command, _dbContext, _logsheetServiceMock.Object, _busMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(expectedDto);
-        _scriptEngineMock.Verify(
-            x => x.AutomaticAlignAsync(It.Is<AutomaticAlignmentInputDto>(i => i.Logsheet.Id == logsheet.Id),
+        _logsheetServiceMock.Verify(
+            x => x.AlignLogsheetAsync(It.Is<Logsheet>(l => l.Id == logsheet.Id),
                 It.IsAny<CancellationToken>()), Times.Once);
+        _busMock.Verify(
+            b => b.PublishAsync(
+                It.Is<LogsheetAutomaticallyAlignedEvent>(e => e.LogsheetId == logsheet.Id),
+                It.IsAny<DeliveryOptions>()),
+            Times.Once);
         _dbContext.ChangeTracker.HasChanges().Should().BeFalse();
     }
 
@@ -73,15 +79,18 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         var command = new AlignLogsheetCommand(Guid.NewGuid());
 
         var result =
-            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, _loggerMock.Object, CancellationToken.None);
+            await AlignLogsheetHandler.Handle(command, _dbContext, _logsheetServiceMock.Object, _busMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
         result.Errors.First().Message.Should().Be("Logsheet not found");
+        _busMock.Verify(
+            b => b.PublishAsync(It.IsAny<LogsheetAutomaticallyAlignedEvent>(), It.IsAny<DeliveryOptions>()),
+            Times.Never);
     }
 
     [Fact]
-    public async Task Handle_ShouldFail_WhenScriptEngineThrowsException()
+    public async Task Handle_ShouldFail_WhenAlignmentFails()
     {
         var template = new Domain.Entities.Template
             { Id = Guid.NewGuid(), Name = "Template", File = new Domain.Entities.File { StoredFileName = "t.pdf" } };
@@ -100,15 +109,18 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         var command = new AlignLogsheetCommand(logsheet.Id);
         var errorMessage = "Script engine failure";
 
-        _scriptEngineMock.Setup(x =>
-                x.AutomaticAlignAsync(It.IsAny<AutomaticAlignmentInputDto>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception(errorMessage));
+        _logsheetServiceMock.Setup(x =>
+                x.AlignLogsheetAsync(It.IsAny<Logsheet>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Fail<LogsheetDetailDto>($"Failed to align logsheet: {errorMessage}"));
 
         var result =
-            await AlignLogsheetHandler.Handle(command, _dbContext, _scriptEngineMock.Object, _loggerMock.Object, CancellationToken.None);
+            await AlignLogsheetHandler.Handle(command, _dbContext, _logsheetServiceMock.Object, _busMock.Object, _loggerMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.First().Message.Should().Be($"Failed to align logsheet: {errorMessage}");
+        _busMock.Verify(
+            b => b.PublishAsync(It.IsAny<LogsheetAutomaticallyAlignedEvent>(), It.IsAny<DeliveryOptions>()),
+            Times.Never);
     }
 
     public void Dispose()

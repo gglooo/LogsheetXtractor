@@ -57,6 +57,14 @@ export const LogsheetStatusBadge = ({
                 defaultMessage: "Processing",
             }),
         },
+        Aligning: {
+            className:
+                "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/20",
+            label: intl.formatMessage({
+                id: "logsheets.status.aligning",
+                defaultMessage: "Aligning",
+            }),
+        },
     };
 
     const config = statusStyles[status] ?? {

@@ -1,7 +1,7 @@
 using WebFormHTR.Application.Features.Logsheets.Events;
 using WebFormHTR.Application.Interfaces;
 
-namespace WebFormHTR.Application.Features.Logsheets;
+namespace WebFormHTR.Application.Features.Logsheets.Notifications;
 
 public static class ProcessingNotificationHandler
 {

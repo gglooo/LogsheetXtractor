@@ -2,22 +2,26 @@ using FluentResults;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using WebFormHTR.Application.Errors;
-using WebFormHTR.Application.Features.File.Interfaces;
+using WebFormHTR.Application.Features.Logsheets.Create.Events;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
+using Wolverine;
 
-namespace WebFormHTR.Application.Features.Logsheets;
+namespace WebFormHTR.Application.Features.Logsheets.Create;
 
 public sealed record CreateLogsheetCommand(
     Guid TemplateId,
     Guid? BacksideTemplateId,
-    Guid FileId
+    Guid FileId,
+    bool PerformAutomaticAlignment = true
 );
 
 public static class CreateLogsheetHandler
 {
     public static async Task<Result<LogsheetDetailDto>> Handle(CreateLogsheetCommand request, CancellationToken ct,
-        IAppDbContext dbContext, IMapper mapper, IPdfQrCodeScanner pdfQrCodeScanner, IFileService fileService)
+        IAppDbContext dbContext,
+        IMapper mapper,
+        IMessageBus bus)
     {
         var file = await dbContext.Files.FirstOrDefaultAsync(f => f.Id == request.FileId, ct);
         if (file is null)
@@ -42,7 +46,10 @@ public static class CreateLogsheetHandler
         var logsheet = mapper.Map<Domain.Entities.Logsheet>(request);
 
         await dbContext.Logsheets.AddAsync(logsheet, ct);
+        await bus.PublishAsync(new LogsheetCreatedEvent(logsheet.Id, request.PerformAutomaticAlignment));
+
         await dbContext.SaveChangesAsync(ct);
+
 
         return Result.Ok(mapper.Map<LogsheetDetailDto>(logsheet));
     }

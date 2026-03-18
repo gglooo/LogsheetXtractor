@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useLanguage } from "@/components/use-language";
 import { useNavigateUp } from "@/hooks/use-navigate-up";
-import { useProcessingSettings } from "@/modules/settings/hooks/useProcessingSettings";
+import { useUserSettings } from "@/modules/settings/hooks/useUserSettings";
 import { ArrowLeft, Info, Trash2 } from "lucide-react";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
@@ -35,8 +35,7 @@ export const SettingsPage = () => {
     const { data: status, isLoading } = useCredentialsStatus();
     const deleteMutation = useDeleteCredentialsMutation();
 
-    const { processingSettings, setProcessingSettings } =
-        useProcessingSettings();
+    const { userSettings, setUserSettings } = useUserSettings();
 
     const handleClear = async () => {
         try {
@@ -185,33 +184,35 @@ export const SettingsPage = () => {
             <div className="flex flex-col gap-4 border p-6 rounded-lg bg-card text-card-foreground shadow-sm">
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-2">
-                        <h2 className="text-xl font-semibold">
-                            {intl.formatMessage({
-                                id: "settings.processing.title",
-                                defaultMessage: "Logsheet processing",
-                            })}
-                        </h2>
-                        <span className="text-sm text-muted-foreground mb-2">
-                            {intl.formatMessage({
-                                id: "settings.processing.description",
-                                defaultMessage: "Configure logsheet processing",
-                            })}
-                        </span>
+                                <h2 className="text-xl font-semibold">
+                                    {intl.formatMessage({
+                                        id: "settings.user.title",
+                                        defaultMessage: "User settings",
+                                    })}
+                                </h2>
+                                <span className="text-sm text-muted-foreground mb-2">
+                                    {intl.formatMessage({
+                                        id: "settings.user.description",
+                                        defaultMessage:
+                                            "Configure personal behavior preferences",
+                                    })}
+                                </span>
 
                         <div className="w-full max-w-xs flex flex-col gap-4">
                             <div className="flex items-center gap-6">
                                 <Switch
-                                    checked={processingSettings.uglyCheckboxes}
+                                    id="uglyCheckboxes"
+                                    checked={userSettings.uglyCheckboxes}
                                     onCheckedChange={(checked) =>
-                                        setProcessingSettings({
-                                            ...processingSettings,
+                                        setUserSettings({
+                                            ...userSettings,
                                             uglyCheckboxes: checked,
                                         })
                                     }
                                 />
                                 <Label htmlFor="uglyCheckboxes">
                                     {intl.formatMessage({
-                                        id: "settings.processing.uglyCheckboxes",
+                                        id: "settings.user.uglyCheckboxes",
                                         defaultMessage: "Ugly checkboxes",
                                     })}
                                 </Label>
@@ -222,9 +223,44 @@ export const SettingsPage = () => {
                                     <TooltipContent className="max-w-xs">
                                         <p>
                                             {intl.formatMessage({
-                                                id: "settings.processing.uglyCheckboxes.desc",
+                                                id: "settings.user.uglyCheckboxes.desc",
                                                 defaultMessage:
                                                     "Enable when processing logsheets with checkboxes of irregular shape or large edges. Disabled by default.",
+                                            })}
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
+                            <div className="flex items-center gap-6">
+                                <Switch
+                                    id="automaticAlignmentOnUpload"
+                                    checked={
+                                        userSettings.automaticAlignmentOnUpload
+                                    }
+                                    onCheckedChange={(checked) =>
+                                        setUserSettings({
+                                            ...userSettings,
+                                            automaticAlignmentOnUpload: checked,
+                                        })
+                                    }
+                                />
+                                <Label htmlFor="automaticAlignmentOnUpload">
+                                    {intl.formatMessage({
+                                        id: "settings.user.automaticAlignmentOnUpload",
+                                        defaultMessage:
+                                            "Automatic alignment on upload",
+                                    })}
+                                </Label>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Info className="h-4 w-4" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        <p>
+                                            {intl.formatMessage({
+                                                id: "settings.user.automaticAlignmentOnUpload.desc",
+                                                defaultMessage:
+                                                    "Automatically align logsheets right after upload. Enabled by default.",
                                             })}
                                         </p>
                                     </TooltipContent>

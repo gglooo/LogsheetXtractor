@@ -1,10 +1,11 @@
 using FluentResults;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
-using WebFormHTR.Application.Features.Scripting;
-using WebFormHTR.Application.Features.Scripting.DTOs;
+using WebFormHTR.Application.Features.Logsheets.Events;
 using WebFormHTR.Application.Interfaces;
+using WebFormHTR.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using Wolverine;
 
 namespace WebFormHTR.Application.Features.Logsheets;
 
@@ -15,7 +16,7 @@ public record AlignLogsheetCommand(
 public static class AlignLogsheetHandler
 {
     public static async Task<Result<LogsheetDetailDto>> Handle(AlignLogsheetCommand request, IAppDbContext dbContext,
-        IHtrScriptEngine scriptEngine, ILogger<AlignLogsheetCommand> logger, CancellationToken ct)
+        ILogsheetService logsheetService, IMessageBus bus, ILogger<AlignLogsheetCommand> logger, CancellationToken ct)
     {
         logger.LogInformation("Starting automatic alignment for Logsheet {LogsheetId}", request.LogsheetId);
 
@@ -26,25 +27,30 @@ public static class AlignLogsheetHandler
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("Logsheet not found"));
         }
 
-        try
+        var shouldResetStatus = logsheet.Status == ELogSheetStatus.Aligning;
+
+        var alignmentResult = await logsheetService.AlignLogsheetAsync(logsheet, ct);
+        if (shouldResetStatus)
         {
-            var alignmentResult = await scriptEngine.AutomaticAlignAsync(new AutomaticAlignmentInputDto(logsheet), ct);
-            if (alignmentResult.IsFailed)
+            logsheet.Status = ELogSheetStatus.Pending;
+        }
+
+        if (alignmentResult.IsFailed)
+        {
+            if (shouldResetStatus)
             {
-                return alignmentResult.ToResult();
+                await dbContext.SaveChangesAsync(ct);
             }
-
-            await dbContext.SaveChangesAsync(ct);
-
-            logger.LogInformation("Automatic alignment completed successfully for Logsheet {LogsheetId}",
-                request.LogsheetId);
 
             return alignmentResult;
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Automatic alignment failed for Logsheet {LogsheetId}", request.LogsheetId);
-            return Result.Fail<LogsheetDetailDto>($"Failed to align logsheet: {ex.Message}");
-        }
+
+        await bus.PublishAsync(new LogsheetAutomaticallyAlignedEvent(request.LogsheetId));
+        await dbContext.SaveChangesAsync(ct);
+
+        logger.LogInformation("Automatic alignment completed successfully for Logsheet {LogsheetId}",
+            request.LogsheetId);
+
+        return alignmentResult;
     }
 }

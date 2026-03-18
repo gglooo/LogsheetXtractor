@@ -10,6 +10,10 @@ export type LogsheetProcessingFinishedEvent = {
     errorMessage?: string;
 };
 
+export type LogsheetAutomaticAlignmentFinishedEvent = {
+    logsheetId: string;
+};
+
 export const LogsheetEventHandler = () => {
     const { connection } = useSignalR();
     const queryClient = useQueryClient();
@@ -47,15 +51,30 @@ export const LogsheetEventHandler = () => {
             await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
         };
 
+        const onLogsheetAutomaticAlignmentFinished = async (
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            _: LogsheetAutomaticAlignmentFinishedEvent,
+        ) => {
+            await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
+        };
+
         connection.on(
             "LogsheetProcessingFinished",
             onLogsheetProcessingFinished,
+        );
+        connection.on(
+            "LogsheetAutomaticAlignmentFinished",
+            onLogsheetAutomaticAlignmentFinished,
         );
 
         return () => {
             connection.off(
                 "LogsheetProcessingFinished",
                 onLogsheetProcessingFinished,
+            );
+            connection.off(
+                "LogsheetAutomaticAlignmentFinished",
+                onLogsheetAutomaticAlignmentFinished,
             );
         };
     }, [connection, queryClient, intl]);

@@ -1,19 +1,21 @@
 using FluentResults;
-using Microsoft.Extensions.Logging;
-using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using WebFormHTR.Application.Errors;
+using WebFormHTR.Application.Features.Logsheets.Create.Events;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
+using Wolverine;
 
-namespace WebFormHTR.Application.Features.Logsheets;
+namespace WebFormHTR.Application.Features.Logsheets.Create;
 
 public sealed record BatchCreateLogsheetCommand(
     Guid TemplateId,
     Guid? BacksideTemplateId,
-    Guid[] FileIds
+    Guid[] FileIds,
+    bool PerformAutomaticAlignment = true
 );
 
 public static class CreateBatchLogsheetsHandler
@@ -23,10 +25,12 @@ public static class CreateBatchLogsheetsHandler
         CancellationToken ct,
         IAppDbContext dbContext,
         IMapper mapper,
+        IMessageBus bus,
         ILogger<BatchCreateLogsheetCommand> logger)
     {
         var fileIds = request.FileIds.ToList();
-        logger.LogInformation("Starting batch logsheet creation for {Count} files with Template {TemplateId}", fileIds.Count, request.TemplateId);
+        logger.LogInformation("Starting batch logsheet creation for {Count} files with Template {TemplateId}",
+            fileIds.Count, request.TemplateId);
 
         if (!fileIds.Any())
         {
@@ -70,17 +74,17 @@ public static class CreateBatchLogsheetsHandler
             new CreateLogsheetCommand(
                 request.TemplateId,
                 request.BacksideTemplateId,
-                fileId
+                fileId,
+                request.PerformAutomaticAlignment
             )));
-            
-        if (logsheets is null)
-        {
-            logger.LogError("Failed to map logsheets from command");
-            return Result.Fail(new Error("Failed to map logsheets"));
-        }
 
         await dbContext.Logsheets.AddRangeAsync(logsheets, ct);
         await dbContext.SaveChangesAsync(ct);
+
+        foreach (var createdLogsheet in logsheets)
+        {
+            await bus.PublishAsync(new LogsheetCreatedEvent(createdLogsheet.Id, request.PerformAutomaticAlignment));
+        }
 
         var newIds = logsheets.Select(x => x.Id).ToList();
 
@@ -94,9 +98,9 @@ public static class CreateBatchLogsheetsHandler
             .Where(l => newIds.Contains(l.Id))
             .ToListAsync(ct);
 
-        var resultDtos = mapper.Map<IEnumerable<LogsheetDetailDto>>(resultEntities);
+        var resultDtos = mapper.Map<IEnumerable<LogsheetDetailDto>>(resultEntities).ToList();
 
-        logger.LogInformation("Successfully created {Count} logsheets", resultDtos.Count());
+        logger.LogInformation("Successfully created {Count} logsheets", resultDtos.Count);
         return Result.Ok<IEnumerable<LogsheetDetailDto>>(resultDtos);
     }
 }

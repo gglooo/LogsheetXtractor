@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebFormHTR.API.Extensions;
 using WebFormHTR.Application.DTOs;
 using WebFormHTR.Application.Features.Logsheets;
+using WebFormHTR.Application.Features.Logsheets.Create;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using Wolverine;
 using Wolverine.Http;

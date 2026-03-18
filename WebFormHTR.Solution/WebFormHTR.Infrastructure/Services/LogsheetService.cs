@@ -18,7 +18,30 @@ public class LogsheetService(
     ILogger<LogsheetService> logger
 ) : ILogsheetService
 {
-    private Result ValidateLogsheet(Logsheet? logsheet)
+    public async Task<Result<LogsheetDetailDto>> AlignLogsheetAsync(Logsheet logsheet, CancellationToken ct)
+    {
+        try
+        {
+            logger.LogInformation("Invoking automatic alignment for Logsheet {LogsheetId}", logsheet.Id);
+            var alignmentResult = await scriptEngine.AutomaticAlignAsync(new AutomaticAlignmentInputDto(logsheet), ct);
+
+            if (alignmentResult.IsFailed)
+            {
+                var errorMessage = alignmentResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
+                logger.LogError("Automatic alignment failed for Logsheet {LogsheetId}: {Error}", logsheet.Id,
+                    errorMessage);
+            }
+
+            return alignmentResult;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Automatic alignment failed for Logsheet {LogsheetId}", logsheet.Id);
+            return Result.Fail<LogsheetDetailDto>($"Failed to align logsheet: {ex.Message}");
+        }
+    }
+
+    private Result ValidateLogsheetForProcessing(Logsheet? logsheet)
     {
         if (logsheet is null)
         {
@@ -83,7 +106,7 @@ public class LogsheetService(
         ProcessLogsheetDataOptions? options,
         CancellationToken ct)
     {
-        var validationResult = ValidateLogsheet(logsheet);
+        var validationResult = ValidateLogsheetForProcessing(logsheet);
         if (validationResult.IsFailed)
         {
             return validationResult;

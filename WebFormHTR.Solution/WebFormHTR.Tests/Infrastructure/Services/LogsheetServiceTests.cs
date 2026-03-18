@@ -28,13 +28,58 @@ public class LogsheetServiceTests
     }
 
     [Fact]
+    public async Task AlignLogsheetAsync_ShouldAlign_WhenLogsheetExists()
+    {
+        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
+        var expectedDto = new LogsheetDetailDto(
+            logsheet.Id,
+            null!,
+            null!,
+            ELogSheetStatus.Pending,
+            null,
+            null,
+            new List<ExtractedValueDto>(),
+            DateTime.UtcNow,
+            null
+        );
+
+        _scriptEngineMock.Setup(x =>
+                x.AutomaticAlignAsync(It.Is<AutomaticAlignmentInputDto>(i => i.Logsheet.Id == logsheet.Id),
+                    It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedDto);
+
+        var result = await _service.AlignLogsheetAsync(logsheet, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(expectedDto);
+    }
+
+    [Fact]
+    public async Task AlignLogsheetAsync_ShouldReturnFail_WhenScriptEngineThrowsException()
+    {
+        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
+        var errorMessage = "Script engine failure";
+
+        _scriptEngineMock.Setup(x =>
+                x.AutomaticAlignAsync(It.IsAny<AutomaticAlignmentInputDto>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception(errorMessage));
+
+        var result = await _service.AlignLogsheetAsync(logsheet, CancellationToken.None);
+
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be($"Failed to align logsheet: {errorMessage}");
+    }
+
+    [Fact]
     public async Task ProcessLogsheetAsync_ShouldProcess_WhenStateIsValid()
     {
         var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Processing };
         var processOutput = new ProcessLogsheetOutputDto(new Dictionary<string, string>());
 
         _scriptEngineMock.Setup(x =>
-                x.ProcessLogsheetAsync(It.Is<ProcessLogsheetInputDto>(dto => dto.Options != null && dto.Options.UglyCheckboxes == true), It.IsAny<CancellationToken>()))
+                x.ProcessLogsheetAsync(
+                    It.Is<ProcessLogsheetInputDto>(dto => dto.Options != null && dto.Options.UglyCheckboxes == true),
+                    It.IsAny<CancellationToken>()))
             .ReturnsAsync(processOutput);
 
         var expectedDto = new LogsheetDetailDto(
@@ -52,7 +97,7 @@ public class LogsheetServiceTests
         _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(logsheet))
             .Returns(expectedDto);
 
-        var options = new WebFormHTR.Application.Features.Logsheets.ProcessLogsheetDataOptions(UglyCheckboxes: true);
+        var options = new WebFormHTR.Application.Features.Logsheets.ProcessLogsheetDataOptions(true);
         var result = await _service.ProcessLogsheetAsync(logsheet, options, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
