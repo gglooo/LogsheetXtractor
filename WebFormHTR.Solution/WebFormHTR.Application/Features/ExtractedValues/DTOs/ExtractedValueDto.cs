@@ -1,4 +1,5 @@
 using WebFormHTR.Domain.Enums;
+using WebFormHTR.Application.Features.RoiValidation.DTOs;
 
 namespace WebFormHTR.Application.Features.ExtractedValues.DTOs;
 
@@ -12,5 +13,7 @@ public record ExtractedValueDto(
     string? CorrectedValue,
     EVerificationStatus Status,
     DateTime CreatedAt,
-    DateTime? UpdatedAt
+    DateTime? UpdatedAt,
+    IReadOnlyList<RoiValidationWarningDto>? ValidationWarnings = null,
+    string? ValidationRulesVersion = null
 );

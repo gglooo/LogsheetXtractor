@@ -1,5 +1,6 @@
 using WebFormHTR.Domain.Entities.Base;
 using WebFormHTR.Domain.Enums;
+using WebFormHTR.Domain.ValueObjects.RoiValidation;
 
 namespace WebFormHTR.Domain.Entities;
 
@@ -13,6 +14,8 @@ public class ExtractedValue : BaseEntity
 
     public string Value { get; set; } = string.Empty;
     public string? CorrectedValue { get; set; }
+    public IReadOnlyList<RoiValidationWarningSnapshot> ValidationWarnings { get; set; } = [];
+    public string? ValidationRulesVersion { get; set; }
 
     // maybe add this if possible?
     // public float Confidence { get; set; }

@@ -58,7 +58,7 @@ public class GetLogsheetQueryHandlerTests : IDisposable
         var result = await GetLogsheetHandler.Handle(query, _dbContext, _mapperMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(expectedDto);
+        result.Value.Should().BeEquivalentTo(expectedDto);
     }
 
     [Fact]

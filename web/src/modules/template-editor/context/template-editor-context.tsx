@@ -116,6 +116,7 @@ export const TemplateEditorProvider = ({
             variableName: `${baseName}-${uniqueId.slice(0, 4)}`,
             type: "Handwritten",
             coordinates: roundCoordinates(coordinates),
+            validationCondition: null,
             createdAt: new Date().toISOString(),
         };
 

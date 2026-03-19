@@ -1,4 +1,4 @@
-import { roiTypeSchema } from "@/modules/rois/schema";
+import { roiTypeSchema } from "@/modules/rois/roi-type-schema";
 import z from "zod";
 
 export const editRoiSchema = z.object({

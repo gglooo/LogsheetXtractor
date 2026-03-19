@@ -97,7 +97,6 @@ const GamifiedCardForm = ({
             />
             <ExtractedValueCorrectedField
                 roiType={extractedValue.roiType}
-                ocrValue={extractedValue.value}
             />
             <SubmitButton
                 onSubmit={() => handleSubmit(onSubmit)()}

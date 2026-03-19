@@ -1,5 +1,5 @@
 import { fileSchema } from "@/modules/files/schema";
-import { roiTypeSchema } from "@/modules/rois/schema";
+import { roiTypeSchema } from "@/modules/rois/roi-type-schema";
 import { templateListSchema } from "@/modules/templates/schema";
 import {
     baseSchema,
@@ -24,6 +24,16 @@ export const verificationStatusSchema = z.enum(["Unverified", "Verified"]);
 
 export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
 
+export const roiValidationWarningSchema = z.object({
+    code: z.string(),
+    message: z.string(),
+    path: z.string(),
+});
+
+export type RoiValidationWarningType = z.infer<
+    typeof roiValidationWarningSchema
+>;
+
 export const extractedValueSchema = baseSchema.extend({
     logsheetId: z.guid(),
     roiId: z.guid(),
@@ -32,6 +42,8 @@ export const extractedValueSchema = baseSchema.extend({
     value: z.string(),
     correctedValue: z.string().nullable(),
     status: verificationStatusSchema,
+    validationWarnings: z.array(roiValidationWarningSchema).default([]),
+    validationRulesVersion: z.string().nullable().optional(),
 });
 
 export type ExtractedValueType = z.infer<typeof extractedValueSchema>;

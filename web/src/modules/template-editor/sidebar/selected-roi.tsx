@@ -6,6 +6,7 @@ import { roiTypeSelectOptions, type RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { MultipleSelectedRois } from "@/modules/template-editor/sidebar/multiple-selected-rois";
+import { RoiValidationConditionSheet } from "@/modules/template-editor/sidebar/roi-validation/roi-validation-condition-sheet";
 import {
     editRoiSchema,
     type EditRoiFormValues,
@@ -43,7 +44,16 @@ const SelectedRoiContent = ({
     const handleSubmit = async (values: EditRoiFormValues) => {
         setRois((prevRois) =>
             prevRois.map((roi) =>
-                roi.id === selectedRoi.id ? { ...roi, ...values } : roi,
+                roi.id === selectedRoi.id
+                    ? {
+                          ...roi,
+                          ...values,
+                          validationCondition:
+                              values.type !== selectedRoi.type
+                                  ? null
+                                  : roi.validationCondition,
+                      }
+                    : roi,
             ),
         );
     };
@@ -72,6 +82,22 @@ const SelectedRoiContent = ({
                 options={roiTypeSelectOptions}
                 labelClassName="font-bold"
                 disabled={!editable}
+            />
+            <RoiValidationConditionSheet
+                selectedRoi={selectedRoi}
+                editable={editable}
+                onChangeValidationCondition={(validationCondition) =>
+                    setRois((prevRois) =>
+                        prevRois.map((roi) =>
+                            roi.id === selectedRoi.id
+                                ? {
+                                      ...roi,
+                                      validationCondition,
+                                  }
+                                : roi,
+                        ),
+                    )
+                }
             />
             <FormAutoSubmit onSubmit={handleSubmit} />
         </div>

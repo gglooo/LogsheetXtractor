@@ -1,6 +1,7 @@
 import {
     detectRoisResponseSchema,
     roiSchema,
+    setRoisRequestSchema,
     type DetectedRoiType,
 } from "@/modules/rois/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,11 +15,11 @@ export const useDetectRoisMutation = () => {
                 `/api/templates/${templateId}/detect-rois`,
                 {
                     method: "POST",
-                }
+                },
             );
 
             return await detectRoisResponseSchema.parseAsync(
-                await response.json()
+                await response.json(),
             );
         },
         onSuccess: () => {
@@ -34,6 +35,9 @@ export const useSetRoisMutation = (templateId?: string) => {
 
     return useMutation({
         mutationFn: async ({ rois }: { rois: DetectedRoiType[] }) => {
+            const parsedRequest = await setRoisRequestSchema.parseAsync({
+                rois,
+            });
             const response = await fetch(
                 `/api/templates/${templateId}/rois/set`,
                 {
@@ -41,8 +45,8 @@ export const useSetRoisMutation = (templateId?: string) => {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ rois }),
-                }
+                    body: JSON.stringify(parsedRequest),
+                },
             );
 
             return await roiSchema.array().parseAsync(await response.json());

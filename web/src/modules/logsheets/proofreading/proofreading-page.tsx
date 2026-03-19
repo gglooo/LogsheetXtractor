@@ -16,10 +16,11 @@ import { ProofreadingLogsheetViewer } from "@/modules/logsheets/proofreading/com
 import { ProofreadingNavbar } from "@/modules/logsheets/proofreading/components/proofreading-navbar";
 import { useExtractedValues } from "@/modules/logsheets/proofreading/hooks/use-extracted-values";
 import type { RoiType } from "@/modules/rois/schema";
+import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
 import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
 import { useTemplate } from "@/modules/templates/api";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
 import { useParams } from "react-router-dom";
 
@@ -66,6 +67,22 @@ export const ProofreadingPage = () => {
         },
         [unverifiedExtractedValuesMap],
     );
+
+    const validationConditionsByRoiId = useMemo<
+        Record<string, RoiValidationConditionType>
+    >(() => {
+        const map: Record<string, RoiValidationConditionType> = {};
+
+        (template?.rois ?? []).forEach((roi) => {
+            map[roi.id] = roi.validationCondition;
+        });
+
+        (backsideTemplate?.rois ?? []).forEach((roi) => {
+            map[roi.id] = roi.validationCondition;
+        });
+
+        return map;
+    }, [template?.rois, backsideTemplate?.rois]);
 
     if (
         isLogsheetLoading ||
@@ -187,6 +204,9 @@ export const ProofreadingPage = () => {
                                                         extractedValues={
                                                             unverifiedExtractedValues
                                                         }
+                                                        validationConditionsByRoiId={
+                                                            validationConditionsByRoiId
+                                                        }
                                                         onRoiClick={
                                                             handleListRoiClick
                                                         }
@@ -201,6 +221,9 @@ export const ProofreadingPage = () => {
                                                     className="h-full"
                                                     extractedValues={
                                                         verifiedExtractedValues
+                                                    }
+                                                    validationConditionsByRoiId={
+                                                        validationConditionsByRoiId
                                                     }
                                                     onRoiClick={
                                                         handleListRoiClick

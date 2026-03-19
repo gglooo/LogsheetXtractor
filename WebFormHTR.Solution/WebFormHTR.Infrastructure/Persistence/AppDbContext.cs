@@ -3,12 +3,19 @@ using System.Text.Json;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.ValueObjects;
+using WebFormHTR.Domain.ValueObjects.RoiValidation;
 using File = WebFormHTR.Domain.Entities.File;
 
 namespace WebFormHTR.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IAppDbContext
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+
     public DbSet<Template> Templates { get; set; }
     public DbSet<File> Files { get; set; }
     public DbSet<Roi> Rois { get; set; }
@@ -26,6 +33,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.HasQueryFilter(e => e.DeletedAt == null);
             entity.OwnsOne(r => r.Coordinates);
+            entity.Property(r => r.ValidationCondition)
+                .HasConversion(
+                    v => v == null ? null : JsonSerializer.Serialize(v, JsonOptions),
+                    v => string.IsNullOrWhiteSpace(v)
+                        ? null
+                        : JsonSerializer.Deserialize<RoiValidationConditionNode>(v, JsonOptions));
             entity.HasOne<Template>(r => r.Template)
                 .WithMany(t => t.Rois)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -94,6 +107,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                           new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                       ?? new AlignmentContainer(null, null)
             );
+
+        modelBuilder.Entity<ExtractedValue>()
+            .HasQueryFilter(e => e.DeletedAt == null)
+            .Property(e => e.ValidationWarnings)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                v => string.IsNullOrWhiteSpace(v)
+                    ? new List<RoiValidationWarningSnapshot>()
+                    : JsonSerializer.Deserialize<List<RoiValidationWarningSnapshot>>(v, JsonOptions) ??
+                      new List<RoiValidationWarningSnapshot>());
+
+        modelBuilder.Entity<ExtractedValue>()
+            .Property(e => e.ValidationRulesVersion);
 
         modelBuilder.Entity<ExtractedValue>()
             .HasQueryFilter(e => e.DeletedAt == null)

@@ -2,6 +2,8 @@ using FluentAssertions;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using WebFormHTR.Application.Features.RoiValidation;
+using WebFormHTR.Application.Features.RoiValidation.DTOs;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
@@ -19,12 +21,28 @@ public class LogsheetServiceTests
 {
     private readonly Mock<IMapper> _mapperMock = new();
     private readonly Mock<IHtrScriptEngine> _scriptEngineMock = new();
+    private readonly Mock<IRoiValidationConditionEvaluator> _conditionEvaluatorMock = new();
+    private readonly Mock<IRoiValidationRuleCatalogProvider> _catalogProviderMock = new();
     private readonly Mock<ILogger<LogsheetService>> _loggerMock = new();
     private readonly LogsheetService _service;
 
     public LogsheetServiceTests()
     {
-        _service = new LogsheetService(_mapperMock.Object, _scriptEngineMock.Object, _loggerMock.Object);
+        _conditionEvaluatorMock
+            .Setup(x => x.Evaluate(It.IsAny<ERoiType>(), It.IsAny<string?>(),
+                It.IsAny<WebFormHTR.Domain.ValueObjects.RoiValidation.RoiValidationConditionNode?>()))
+            .Returns([]);
+
+        _catalogProviderMock
+            .Setup(x => x.GetCatalog())
+            .Returns(new RoiValidationRuleCatalogDto("v1", []));
+
+        _service = new LogsheetService(
+            _mapperMock.Object,
+            _scriptEngineMock.Object,
+            _conditionEvaluatorMock.Object,
+            _catalogProviderMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]

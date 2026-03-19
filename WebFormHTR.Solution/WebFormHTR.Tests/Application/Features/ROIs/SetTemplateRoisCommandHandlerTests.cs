@@ -2,6 +2,7 @@ using FluentAssertions;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using WebFormHTR.Application.Features.RoiValidation;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Domain.Entities;
@@ -17,6 +18,14 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IRoiService> _roiServiceMock = new();
+    private readonly Mock<IRoiValidationConditionTreeValidator> _conditionValidatorMock = new();
+
+    public SetTemplateRoisCommandHandlerTests()
+    {
+        _conditionValidatorMock
+            .Setup(x => x.Validate(It.IsAny<ERoiType>(), It.IsAny<WebFormHTR.Domain.ValueObjects.RoiValidation.RoiValidationConditionNode>()))
+            .Returns(Result.Ok());
+    }
 
     [Fact]
     public async Task Handle_ShouldSetRois_WhenTemplateExists()
@@ -39,7 +48,8 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
             .ReturnsAsync(expectedResult);
 
         var result =
-            await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext, CancellationToken.None);
+            await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext,
+                _conditionValidatorMock.Object, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeEquivalentTo(expectedResult);
@@ -77,7 +87,8 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
             .ReturnsAsync(expectedResult);
 
         var result =
-            await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext, CancellationToken.None);
+            await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext,
+                _conditionValidatorMock.Object, CancellationToken.None);
         await _dbContext.SaveChangesAsync();
 
         result.IsSuccess.Should().BeTrue();
@@ -92,13 +103,46 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
         var command = new SetTemplateRoisCommand(Guid.NewGuid(), new List<SetRoiDto>());
 
         var result =
-            await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext, CancellationToken.None);
+            await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext,
+                _conditionValidatorMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Template not found");
         _roiServiceMock.Verify(
             x => x.SetRoisForTemplateAsync(It.IsAny<Guid>(), It.IsAny<IEnumerable<SetRoiDto>>(),
                 It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFail_WhenValidationConditionIsInvalid()
+    {
+        var templateId = Guid.NewGuid();
+        _dbContext.Templates.Add(new Domain.Entities.Template { Id = templateId, Name = "Template" });
+        await _dbContext.SaveChangesAsync();
+
+        var invalidCondition = new WebFormHTR.Domain.ValueObjects.RoiValidation.RoiValidationConditionNode
+        {
+            Type = "group",
+            Operator = "AND",
+            Children = []
+        };
+
+        var rois = new List<SetRoiDto>
+        {
+            new(null, "Value", ERoiType.Handwritten, new Coordinates(0, 0, 10, 10), invalidCondition)
+        };
+        var command = new SetTemplateRoisCommand(templateId, rois);
+
+        _conditionValidatorMock
+            .Setup(x => x.Validate(ERoiType.Handwritten, invalidCondition))
+            .Returns(Result.Fail("Invalid condition tree"));
+
+        var result = await SetTemplateRoisHandler.Handle(command, _roiServiceMock.Object, _dbContext,
+            _conditionValidatorMock.Object, CancellationToken.None);
+
+        result.IsFailed.Should().BeTrue();
+        _roiServiceMock.Verify(x => x.SetRoisForTemplateAsync(It.IsAny<Guid>(), It.IsAny<IEnumerable<SetRoiDto>>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
 
     public void Dispose()

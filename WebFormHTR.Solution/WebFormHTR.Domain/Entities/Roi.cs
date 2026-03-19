@@ -1,6 +1,7 @@
 using WebFormHTR.Domain.Entities.Base;
 using WebFormHTR.Domain.Enums;
 using WebFormHTR.Domain.ValueObjects;
+using WebFormHTR.Domain.ValueObjects.RoiValidation;
 
 namespace WebFormHTR.Domain.Entities;
 
@@ -12,5 +13,6 @@ public class Roi : BaseEntity
     public ERoiType Type { get; set; }
 
     public Coordinates Coordinates { get; set; }
+    public RoiValidationConditionNode? ValidationCondition { get; set; }
 
 }

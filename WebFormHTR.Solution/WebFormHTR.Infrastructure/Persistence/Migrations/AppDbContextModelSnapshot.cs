@@ -44,6 +44,13 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ValidationRulesVersion")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ValidationWarnings")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -191,6 +198,9 @@ namespace WebFormHTR.Infrastructure.Persistence.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ValidationCondition")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("VariableName")

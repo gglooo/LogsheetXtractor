@@ -2,17 +2,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ExtractedValueForm } from "@/modules/logsheets/proofreading/components/extracted-value-form";
 import { ExtractedValueImage } from "@/modules/logsheets/proofreading/components/extracted-value-image";
+import { ExtractedValueValidationWarnings } from "@/modules/logsheets/proofreading/components/extracted-value-validation-warnings";
 import type { ExtractedValueType } from "@/modules/logsheets/schema";
+import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { memo } from "react";
 
 type ExtractedValueCardProps = {
     extractedValue: ExtractedValueType;
+    validationCondition: RoiValidationConditionType;
     isSelected: boolean;
     onSelect: (roiId: string) => void;
 };
 
 export const ExtractedValueCard = memo(
-    ({ extractedValue, isSelected, onSelect }: ExtractedValueCardProps) => {
+    ({
+        extractedValue,
+        validationCondition,
+        isSelected,
+        onSelect,
+    }: ExtractedValueCardProps) => {
         return (
             <Card
                 onClick={() => onSelect(extractedValue.roiId)}
@@ -30,6 +38,10 @@ export const ExtractedValueCard = memo(
                             {extractedValue.variableName}
                         </div>
                         <ExtractedValueForm extractedValue={extractedValue} />
+                        <ExtractedValueValidationWarnings
+                            warnings={extractedValue.validationWarnings}
+                            validationCondition={validationCondition}
+                        />
                     </div>
                     <div className="flex flex-col justify-end"></div>
                 </CardContent>

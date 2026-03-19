@@ -4,10 +4,12 @@ using MapsterMapper;
 using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
+using WebFormHTR.Application.Features.RoiValidation;
 using WebFormHTR.Application.Features.Scripting;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Domain.Entities;
 using WebFormHTR.Domain.Enums;
+using WebFormHTR.Domain.ValueObjects.RoiValidation;
 using Microsoft.Extensions.Logging;
 
 namespace WebFormHTR.Infrastructure.Services;
@@ -15,6 +17,8 @@ namespace WebFormHTR.Infrastructure.Services;
 public class LogsheetService(
     IMapper mapper,
     IHtrScriptEngine scriptEngine,
+    IRoiValidationConditionEvaluator roiValidationConditionEvaluator,
+    IRoiValidationRuleCatalogProvider roiValidationRuleCatalogProvider,
     ILogger<LogsheetService> logger
 ) : ILogsheetService
 {
@@ -86,6 +90,8 @@ public class LogsheetService(
                 .AdaptToType<IEnumerable<ExtractedValue>>()
                 .ToList();
 
+            EvaluateValidationWarnings(logsheet, extractedData);
+
             logger.LogInformation("Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.",
                 logsheet.Id, extractedData.Count);
 
@@ -135,5 +141,50 @@ public class LogsheetService(
     {
         logsheet.Status = ELogSheetStatus.Failed;
         logsheet.ErrorMessage = errorMessage;
+    }
+
+    private void EvaluateValidationWarnings(Logsheet logsheet, List<ExtractedValue> extractedData)
+    {
+        var rulesVersion = roiValidationRuleCatalogProvider.GetCatalog().Version;
+        var roisById = logsheet.Template?.Rois?.ToDictionary(r => r.Id) ?? new Dictionary<Guid, Roi>();
+        var hasRoiContext = roisById.Count > 0;
+
+        foreach (var extractedValue in extractedData)
+        {
+            extractedValue.ValidationRulesVersion = rulesVersion;
+
+            if (!hasRoiContext)
+            {
+                extractedValue.ValidationWarnings =
+                [
+                    new RoiValidationWarningSnapshot(
+                        "validation.roi.contextMissing",
+                        "ROI context was not available during validation evaluation.",
+                        "root")
+                ];
+                continue;
+            }
+
+            if (!roisById.TryGetValue(extractedValue.RoiId, out var roi))
+            {
+                extractedValue.ValidationWarnings =
+                [
+                    new RoiValidationWarningSnapshot(
+                        "validation.roi.notFound",
+                        $"ROI '{extractedValue.RoiId}' was not found for validation.",
+                        "root")
+                ];
+                continue;
+            }
+
+            var warnings = roiValidationConditionEvaluator.Evaluate(
+                    roi.Type,
+                    extractedValue.Value,
+                    roi.ValidationCondition)
+                .Select(w => new RoiValidationWarningSnapshot(w.Code, w.Message, w.Path))
+                .ToList();
+
+            extractedValue.ValidationWarnings = warnings;
+        }
     }
 }

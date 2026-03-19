@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { ExtractedValueType } from "@/modules/logsheets/schema";
+import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
@@ -7,6 +8,7 @@ import { ExtractedValueCard } from "./extracted-value-card";
 
 type ExtractedValuesListProps = {
     extractedValues: ExtractedValueType[];
+    validationConditionsByRoiId: Record<string, RoiValidationConditionType>;
     className?: string;
     onRoiClick?: (roiId: string) => void;
 };
@@ -18,7 +20,8 @@ export type ExtractedValuesListHandle = {
 export const ExtractedValuesList = forwardRef<
     ExtractedValuesListHandle,
     ExtractedValuesListProps
->(({ extractedValues, className, onRoiClick }, ref) => {
+>(
+    ({ extractedValues, validationConditionsByRoiId, className, onRoiClick }, ref) => {
     const virtuosoRef = useRef<VirtuosoHandle>(null);
     const { setSelectedRoiIds, selectedRoiIds } = useSelectedRois();
 
@@ -69,6 +72,9 @@ export const ExtractedValuesList = forwardRef<
                 <div className="pb-4 pr-2 pl-2" key={value.id}>
                     <ExtractedValueCard
                         extractedValue={value}
+                        validationCondition={
+                            validationConditionsByRoiId[value.roiId] ?? null
+                        }
                         isSelected={selectedRoiIds.includes(value.roiId)}
                         onSelect={onSelect}
                     />
@@ -76,4 +82,5 @@ export const ExtractedValuesList = forwardRef<
             )}
         />
     );
-});
+},
+);

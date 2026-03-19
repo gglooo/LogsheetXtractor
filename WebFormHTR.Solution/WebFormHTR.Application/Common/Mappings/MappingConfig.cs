@@ -7,6 +7,7 @@ using WebFormHTR.Application.Features.Logsheets;
 using WebFormHTR.Application.Features.Logsheets.Create;
 using WebFormHTR.Application.Features.Logsheets.DTOs;
 using WebFormHTR.Application.Features.Residuals.DTOs;
+using WebFormHTR.Application.Features.RoiValidation.DTOs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting.DTOs;
 using WebFormHTR.Application.Features.Template.DTOs;
@@ -83,33 +84,38 @@ public class MappingConfig : IRegister
         config.NewConfig<CreateRoiDto, Roi>()
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.VariableName, src => src.VariableName)
-            .Map(dest => dest.Coordinates, src => src.Coordinates);
+            .Map(dest => dest.Coordinates, src => src.Coordinates)
+            .Map(dest => dest.ValidationCondition, src => src.ValidationCondition);
 
         config.NewConfig<SetRoiDto, Roi>()
             .Ignore(dest => dest.Id)
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.VariableName, src => src.VariableName)
-            .Map(dest => dest.Coordinates, src => src.Coordinates);
+            .Map(dest => dest.Coordinates, src => src.Coordinates)
+            .Map(dest => dest.ValidationCondition, src => src.ValidationCondition);
 
         config.NewConfig<Roi, RoiDto>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.VariableName, src => src.VariableName)
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Type, src => src.Type)
-            .Map(dest => dest.Coordinates, src => src.Coordinates);
+            .Map(dest => dest.Coordinates, src => src.Coordinates)
+            .Map(dest => dest.ValidationCondition, src => src.ValidationCondition);
 
         config.NewConfig<RoiDto, Roi>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.VariableName, src => src.VariableName)
             .Map(dest => dest.TemplateId, src => src.TemplateId)
             .Map(dest => dest.Type, src => src.Type)
-            .Map(dest => dest.Coordinates, src => src.Coordinates);
+            .Map(dest => dest.Coordinates, src => src.Coordinates)
+            .Map(dest => dest.ValidationCondition, src => src.ValidationCondition);
 
         config.NewConfig<UpsertRoiDto, Roi>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.Type, src => src.Type)
             .Map(dest => dest.VariableName, src => src.VariableName)
-            .Map(dest => dest.Coordinates, src => src.Coordinates);
+            .Map(dest => dest.Coordinates, src => src.Coordinates)
+            .Map(dest => dest.ValidationCondition, src => src.ValidationCondition);
 
         config.NewConfig<PatchLogsheetDto, Logsheet>()
             .IgnoreNullValues(true);
@@ -144,7 +150,11 @@ public class MappingConfig : IRegister
 
         config.NewConfig<ExtractedValue, ExtractedValueDto>()
             .Map(dest => dest.VariableName, src => src.Roi.VariableName)
-            .Map(dest => dest.RoiType, src => src.Roi.Type);
+            .Map(dest => dest.RoiType, src => src.Roi.Type)
+            .Map(dest => dest.ValidationWarnings, src => src.ValidationWarnings
+                .Select(w => new RoiValidationWarningDto(w.Code, w.Message, w.Path))
+                .ToList())
+            .Map(dest => dest.ValidationRulesVersion, src => src.ValidationRulesVersion);
         config.NewConfig<ExtractedValueDto, ExtractedValue>();
 
         config.NewConfig<Coordinates, ExportCoordinateDto>();

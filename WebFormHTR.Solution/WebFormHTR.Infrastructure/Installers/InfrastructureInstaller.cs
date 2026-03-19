@@ -64,6 +64,8 @@ public static class InfrastructureInstaller
         services.AddScoped<IPdfQrCodeScanner, PdfQrCodeScanner>();
         services.AddScoped<ICredentialCookieAccessor, CredentialCookieAccessor>();
 
+        services.AddRoiValidation();
+
         services.AddMemoryCache();
     }
 }
