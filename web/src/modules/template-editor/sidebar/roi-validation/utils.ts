@@ -72,3 +72,6 @@ export const removeNodeAtPath = (
         };
     });
 };
+
+export const cloneValidationCondition = <T>(condition: T): T =>
+    JSON.parse(JSON.stringify(condition)) as T;

@@ -109,6 +109,9 @@ export const SelectSvgOverlay = ({
     }, []);
 
     const onBgMouseDown = (e: React.MouseEvent) => {
+        if (e.button !== 0) {
+            return;
+        }
         interactionMode.current = "drawing";
         handleStartDrawing(e);
     };

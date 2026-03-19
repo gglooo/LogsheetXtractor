@@ -7,7 +7,6 @@ import { ShortcutLabel } from "@/modules/template-editor/components/shortcut-lab
 import {
     BROWSE_ROI_FORCE_KEY,
     CLEAR_ROIS_KEY,
-    DRAW_TOOL_KEY,
     SELECT_TOOL_KEY,
     SPLIT_TOOL_KEY,
     type ShortcutWhitelist,
@@ -16,10 +15,11 @@ import { useKeyboardShortcuts } from "@/modules/template-editor/hooks/shortcuts/
 import { useBrowseSelectedRois } from "@/modules/template-editor/hooks/use-browse-selected-rois";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { DrawToolControls } from "@/modules/template-editor/sidebar/components/draw-tool-controls";
 import { ShortcutTooltip } from "@/modules/template-editor/sidebar/components/shortcut-tooltip";
 import { VARIABLE_NAME_INPUT_ID } from "@/modules/template-editor/sidebar/selected-roi";
 import { copy, paste } from "@/modules/template-editor/utils/copy-paste";
-import { Divide, MousePointer, Square, X } from "lucide-react";
+import { Divide, MousePointer, X } from "lucide-react";
 import { useCallback } from "react";
 import { useIntl } from "react-intl";
 import { useParams } from "react-router-dom";
@@ -54,6 +54,9 @@ export const ToolsSidebarGroup = () => {
         setRois,
         setRoisAndResiduals,
         setMode,
+        drawRoiType,
+        setDrawRoiType,
+        cycleDrawRoiType,
         mode,
         rois,
         residuals,
@@ -76,6 +79,14 @@ export const ToolsSidebarGroup = () => {
     const setSelectTool = useCallback(() => setMode("select"), [setMode]);
 
     const setDrawTool = useCallback(() => setMode("draw"), [setMode]);
+
+    const onDrawShortcut = useCallback(() => {
+        if (mode === "draw") {
+            cycleDrawRoiType();
+            return;
+        }
+        setMode("draw");
+    }, [cycleDrawRoiType, mode, setMode]);
 
     const setSplitTool = useCallback(() => setMode("split"), [setMode]);
 
@@ -100,7 +111,14 @@ export const ToolsSidebarGroup = () => {
             return;
         }
 
-        const addedRoisIds = addRois(adjustedRois);
+        const addedRoisIds = addRois(
+            adjustedRois.map((roi) => ({
+                coordinates: roi.coordinates,
+                name: roi.variableName,
+                type: roi.type,
+                validationCondition: roi.validationCondition,
+            })),
+        );
 
         setSelectedRoiIds(addedRoisIds);
         setMode("select");
@@ -123,7 +141,7 @@ export const ToolsSidebarGroup = () => {
     useKeyboardShortcuts(
         {
             select: setSelectTool,
-            draw: setDrawTool,
+            draw: onDrawShortcut,
             split: setSplitTool,
             clear: clearRois,
             undo,
@@ -147,37 +165,27 @@ export const ToolsSidebarGroup = () => {
             })}
         >
             <div className="flex flex-col gap-2 p-2 w-full">
-                <div className="flex flex-row gap-2 flex-1">
-                    <Button
-                        className="flex-1"
-                        variant={mode === "select" ? "default" : "outline"}
-                        onClick={setSelectTool}
-                    >
-                        <MousePointer />
-                        <ShortcutLabel
-                            shortcut={SELECT_TOOL_KEY}
-                            label={intl.formatMessage({
-                                id: "templateEditor.sidebar.selectTool",
-                                defaultMessage: "Select",
-                            })}
-                        />
-                    </Button>
-                    <Button
-                        className="flex-1"
-                        variant={mode === "draw" ? "default" : "outline"}
-                        disabled={!template?.isEditable}
-                        onClick={setDrawTool}
-                    >
-                        <Square />
-                        <ShortcutLabel
-                            shortcut={DRAW_TOOL_KEY}
-                            label={intl.formatMessage({
-                                id: "templateEditor.sidebar.drawTool",
-                                defaultMessage: "Draw",
-                            })}
-                        />
-                    </Button>
-                </div>
+                <Button
+                    className="w-full"
+                    variant={mode === "select" ? "default" : "outline"}
+                    onClick={setSelectTool}
+                >
+                    <MousePointer />
+                    <ShortcutLabel
+                        shortcut={SELECT_TOOL_KEY}
+                        label={intl.formatMessage({
+                            id: "templateEditor.sidebar.selectTool",
+                            defaultMessage: "Select",
+                        })}
+                    />
+                </Button>
+                <DrawToolControls
+                    mode={mode}
+                    isEditable={!!template?.isEditable}
+                    drawRoiType={drawRoiType}
+                    setDrawRoiType={setDrawRoiType}
+                    setDrawTool={setDrawTool}
+                />
                 <Button
                     variant={mode === "split" ? "default" : "outline"}
                     disabled={rois.length === 0 || !template?.isEditable}

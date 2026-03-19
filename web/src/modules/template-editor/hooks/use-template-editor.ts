@@ -2,6 +2,7 @@ import type {
     DetectedResidualType,
     ResidualType,
 } from "@/modules/residuals/schema";
+import type { RoiTypeEnum } from "@/modules/rois/roi-type-schema";
 import type { DetectedRoiType, RoiType } from "@/modules/rois/schema";
 import type { TemplateType } from "@/modules/templates/schema";
 import type { Coordinates } from "@/schema";
@@ -20,10 +21,29 @@ export type TemplateEditorContextType = {
         rois: DetectedRoiType[],
         residuals: DetectedResidualType[],
     ) => void;
-    addRoi: (coordinates: Coordinates, name?: string) => string | undefined;
-    addRois: (rois: { coordinates: Coordinates; name?: string }[]) => string[];
-    getNewRoi: (coordinates: Coordinates, name?: string) => RoiType;
+    addRoi: (
+        coordinates: Coordinates,
+        name?: string,
+        type?: RoiTypeEnum,
+    ) => string | undefined;
+    addRois: (
+        rois: {
+            coordinates: Coordinates;
+            name?: string;
+            type?: RoiTypeEnum;
+            validationCondition?: RoiType["validationCondition"];
+        }[],
+    ) => string[];
+    getNewRoi: (
+        coordinates: Coordinates,
+        name?: string,
+        type?: RoiTypeEnum,
+        validationCondition?: RoiType["validationCondition"],
+    ) => RoiType;
     removeRoi: (variableName: string) => void;
+    drawRoiType: RoiTypeEnum;
+    setDrawRoiType: (type: RoiTypeEnum) => void;
+    cycleDrawRoiType: () => void;
     template?: TemplateType;
     undo: () => void;
     redo: () => void;

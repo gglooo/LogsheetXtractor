@@ -60,10 +60,7 @@ export const RoiValidationConditionBuilder = ({
             return;
         }
 
-        const defaultGroup = buildDefaultGroupNode(
-            catalogQuery.data,
-            roiType,
-        );
+        const defaultGroup = buildDefaultGroupNode(catalogQuery.data, roiType);
         if (!defaultGroup) {
             return;
         }
@@ -76,10 +73,7 @@ export const RoiValidationConditionBuilder = ({
             return;
         }
 
-        const newRule = buildDefaultRuleNode(
-            catalogQuery.data,
-            roiType,
-        );
+        const newRule = buildDefaultRuleNode(catalogQuery.data, roiType);
         if (!newRule) {
             return;
         }
@@ -101,10 +95,7 @@ export const RoiValidationConditionBuilder = ({
             return;
         }
 
-        const newGroup = buildDefaultGroupNode(
-            catalogQuery.data,
-            roiType,
-        );
+        const newGroup = buildDefaultGroupNode(catalogQuery.data, roiType);
         if (!newGroup) {
             return;
         }

@@ -58,7 +58,8 @@ export const useShortcutRegistry = (): readonly ShortcutConfig[] => {
                 }),
                 description: intl.formatMessage({
                     id: "shortcut.drawTool.description",
-                    defaultMessage: "Activate the draw tool",
+                    defaultMessage:
+                        "Activate draw tool, or cycle draw type when already drawing",
                 }),
                 keys: [DRAW_TOOL_KEY],
                 actionKey: "draw",

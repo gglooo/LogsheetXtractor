@@ -3,6 +3,7 @@ import type {
     DetectedResidualType,
     ResidualType,
 } from "@/modules/residuals/schema";
+import type { RoiTypeEnum } from "@/modules/rois/roi-type-schema";
 import type { DetectedRoiType, RoiType } from "@/modules/rois/schema";
 import { useHistory } from "@/modules/template-editor/hooks/use-history";
 import {
@@ -12,13 +13,20 @@ import {
 import { sortRoisByPosition } from "@/modules/template-editor/utils/roi";
 import type { TemplateType } from "@/modules/templates/schema";
 import type { Coordinates } from "@/schema";
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 type EditorStateWithHistory = {
     rois: RoiType[];
     residuals: ResidualType[];
 };
+
+const DRAW_ROI_TYPES: RoiTypeEnum[] = [
+    "Handwritten",
+    "Number",
+    "Checkbox",
+    "Barcode",
+];
 
 const roundCoordinates = (coords: Coordinates): Coordinates => ({
     ...coords,
@@ -28,7 +36,9 @@ const roundCoordinates = (coords: Coordinates): Coordinates => ({
     height: Math.round(coords.height),
 });
 
-const addRequiredParamsToRoi = (roi: DetectedRoiType): RoiType => {
+const addRequiredParamsToRoi = (
+    roi: DetectedRoiType,
+): RoiType => {
     return {
         ...roi,
         id: roi.id ?? uuidv4(),
@@ -54,6 +64,7 @@ export const TemplateEditorProvider = ({
     children: ReactNode;
 }) => {
     const [mode, setMode] = useState<EditorMode>("select");
+    const [drawRoiType, setDrawRoiType] = useState<RoiTypeEnum>("Handwritten");
     const roiInputRef = useRef<HTMLInputElement>(null);
 
     const { state, set, undo, redo, canUndo, canRedo, isDirty, markAsSaved } =
@@ -102,7 +113,12 @@ export const TemplateEditorProvider = ({
         }));
     };
 
-    const getNewRoi = (coordinates: Coordinates, name?: string): RoiType => {
+    const getNewRoi = (
+        coordinates: Coordinates,
+        name?: string,
+        type?: RoiTypeEnum,
+        validationCondition?: RoiType["validationCondition"],
+    ): RoiType => {
         if (!template) {
             throw new Error("Template is not defined");
         }
@@ -114,17 +130,17 @@ export const TemplateEditorProvider = ({
             id: uniqueId,
             templateId: template.id,
             variableName: `${baseName}-${uniqueId.slice(0, 4)}`,
-            type: "Handwritten",
+            type: type ?? drawRoiType,
             coordinates: roundCoordinates(coordinates),
-            validationCondition: null,
+            validationCondition: validationCondition ?? null,
             createdAt: new Date().toISOString(),
         };
 
         return newRoi;
     };
 
-    const addRoi = (coordinates: Coordinates, name?: string) => {
-        const newRoi = getNewRoi(coordinates, name);
+    const addRoi = (coordinates: Coordinates, name?: string, type?: RoiTypeEnum) => {
+        const newRoi = getNewRoi(coordinates, name, type);
 
         setRois((prev) => [...prev, newRoi]);
 
@@ -132,13 +148,23 @@ export const TemplateEditorProvider = ({
     };
 
     const addRois = (
-        roisToAdd: { coordinates: Coordinates; name?: string }[],
+        roisToAdd: {
+            coordinates: Coordinates;
+            name?: string;
+            type?: RoiTypeEnum;
+            validationCondition?: RoiType["validationCondition"];
+        }[],
     ) => {
         const addedRoiIds: string[] = [];
         const newRois: RoiType[] = [];
 
         for (const roiData of roisToAdd) {
-            const newRoi = getNewRoi(roiData.coordinates, roiData.name);
+            const newRoi = getNewRoi(
+                roiData.coordinates,
+                roiData.name,
+                roiData.type,
+                roiData.validationCondition,
+            );
             newRois.push(newRoi);
             addedRoiIds.push(newRoi.id!);
         }
@@ -157,11 +183,22 @@ export const TemplateEditorProvider = ({
         [rois],
     );
 
+    const cycleDrawRoiType = useCallback(() => {
+        setDrawRoiType((previousType) => {
+            const currentIndex = DRAW_ROI_TYPES.indexOf(previousType);
+            const nextIndex = (currentIndex + 1) % DRAW_ROI_TYPES.length;
+            return DRAW_ROI_TYPES[nextIndex];
+        });
+    }, []);
+
     return (
         <TemplateEditorContext.Provider
             value={{
                 mode,
                 setMode,
+                drawRoiType,
+                setDrawRoiType,
+                cycleDrawRoiType,
                 rois,
                 setRois,
                 residuals,

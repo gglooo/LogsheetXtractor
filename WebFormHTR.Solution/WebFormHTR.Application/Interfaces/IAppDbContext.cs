@@ -12,6 +12,7 @@ public interface IAppDbContext
     DbSet<Residual> Residuals { get; set; }
     DbSet<Logsheet> Logsheets { get; set; }
     DbSet<ExtractedValue> ExtractedValues { get; set; }
+    DbSet<PredefinedRoiValidationCondition> PredefinedRoiValidationConditions { get; set; }
 
     ChangeTracker ChangeTracker { get; }
 

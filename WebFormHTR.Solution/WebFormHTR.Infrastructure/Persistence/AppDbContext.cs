@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Text.Json;
 using WebFormHTR.Application.Interfaces;
 using WebFormHTR.Domain.Entities;
@@ -16,12 +17,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         PropertyNameCaseInsensitive = true
     };
 
+    private static readonly ValueComparer<RoiValidationConditionNode?> RoiValidationConditionComparer =
+        new(
+            (left, right) => SerializeValidationCondition(left) == SerializeValidationCondition(right),
+            value => ComputeValidationConditionHash(value),
+            value => DeserializeValidationCondition(SerializeValidationCondition(value))
+        );
+
     public DbSet<Template> Templates { get; set; }
     public DbSet<File> Files { get; set; }
     public DbSet<Roi> Rois { get; set; }
     public DbSet<Residual> Residuals { get; set; }
     public DbSet<Logsheet> Logsheets { get; set; }
     public DbSet<ExtractedValue> ExtractedValues { get; set; }
+    public DbSet<PredefinedRoiValidationCondition> PredefinedRoiValidationConditions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,10 +44,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.OwnsOne(r => r.Coordinates);
             entity.Property(r => r.ValidationCondition)
                 .HasConversion(
-                    v => v == null ? null : JsonSerializer.Serialize(v, JsonOptions),
-                    v => string.IsNullOrWhiteSpace(v)
-                        ? null
-                        : JsonSerializer.Deserialize<RoiValidationConditionNode>(v, JsonOptions));
+                    v => SerializeValidationCondition(v),
+                    v => DeserializeValidationCondition(v));
+            entity.Property(r => r.ValidationCondition)
+                .Metadata.SetValueComparer(RoiValidationConditionComparer);
             entity.HasOne<Template>(r => r.Template)
                 .WithMany(t => t.Rois)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -128,6 +137,43 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(ev => ev.RoiId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<PredefinedRoiValidationCondition>(entity =>
+        {
+            entity.Property(p => p.Code)
+                .HasMaxLength(64)
+                .IsRequired();
+
+            entity.Property(p => p.Label)
+                .HasMaxLength(128)
+                .IsRequired();
+
+            entity.Property(p => p.Condition)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, JsonOptions),
+                    v => JsonSerializer.Deserialize<RoiValidationConditionNode>(v, JsonOptions)!);
+
+            entity.HasIndex(p => new { p.Code, p.RoiType })
+                .IsUnique();
+        });
+
         base.OnModelCreating(modelBuilder);
+    }
+
+    private static string? SerializeValidationCondition(RoiValidationConditionNode? value)
+    {
+        return value == null ? null : JsonSerializer.Serialize(value, JsonOptions);
+    }
+
+    private static RoiValidationConditionNode? DeserializeValidationCondition(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : JsonSerializer.Deserialize<RoiValidationConditionNode>(value, JsonOptions);
+    }
+
+    private static int ComputeValidationConditionHash(RoiValidationConditionNode? value)
+    {
+        var serialized = SerializeValidationCondition(value);
+        return serialized == null ? 0 : serialized.GetHashCode();
     }
 }

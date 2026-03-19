@@ -7,9 +7,10 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import type { RoiType } from "@/modules/rois/schema";
 import { roiValidationConditionGroupSchema } from "@/modules/rois/validation/schema";
+import type { RoiType } from "@/modules/rois/schema";
 import { RoiValidationConditionBuilder } from "@/modules/template-editor/sidebar/roi-validation/components/roi-validation-condition-builder";
+import { SelectPreset } from "@/modules/template-editor/sidebar/roi-validation/components/select-preset";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useIntl } from "react-intl";
@@ -128,7 +129,21 @@ export const RoiValidationConditionSheet = ({
                         className="flex min-h-0 flex-1 flex-col"
                         onSubmit={form.handleSubmit(handleApply)}
                     >
-                        <div className="flex-1 overflow-y-auto px-4 pb-4">
+                        <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-4">
+                            <SelectPreset
+                                roiType={selectedRoi.type}
+                                editable={editable}
+                                onSelect={(validationCondition) =>
+                                    form.setValue(
+                                        "validationCondition",
+                                        validationCondition,
+                                        {
+                                            shouldDirty: true,
+                                            shouldTouch: true,
+                                        },
+                                    )
+                                }
+                            />
                             <RoiValidationConditionBuilder
                                 roiType={selectedRoi.type}
                                 validationCondition={draftValidationCondition}

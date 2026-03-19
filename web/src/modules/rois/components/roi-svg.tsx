@@ -17,6 +17,7 @@ type Props = {
     guideLineCoordinates?: Coordinates;
     onDelete?: (id: string) => void;
     onRoiClick?: (e: React.MouseEvent, id: string) => void;
+    onRoiContextMenu?: (e: React.MouseEvent, id: string) => void;
     onRoiDrag?: (e: React.MouseEvent, id: string) => void;
     onRoiResizeStart?: (e: React.MouseEvent, id: string) => void;
     onMouseMove?: (e: React.MouseEvent, roi: RoiType) => void;
@@ -33,6 +34,7 @@ export const RoiSvg = React.memo(
         isDuplicate = false,
         onDelete,
         onRoiClick,
+        onRoiContextMenu,
         onRoiDrag,
         onRoiResizeStart,
         onMouseMove,
@@ -51,6 +53,12 @@ export const RoiSvg = React.memo(
               ? DUPLICATE_ROI_COLOR
               : DEFAULT_ROI_COLOR;
 
+        const handleClick = (e: React.MouseEvent) => {
+            if (!isDragging && roi.id) {
+                onRoiClick?.(e, roi.id);
+            }
+        };
+
         return (
             <g
                 id={`roi-${roi.id}`}
@@ -58,16 +66,27 @@ export const RoiSvg = React.memo(
                 onMouseLeave={() => setIsHovered(false)}
                 onMouseDown={(e: React.MouseEvent) => {
                     e.stopPropagation();
+                    if (e.button !== 0) {
+                        return;
+                    }
                     if (roi.id) {
                         onRoiDrag?.(e, roi.id);
                     }
                 }}
+                onContextMenu={(e: React.MouseEvent) => {
+                    if (!roi.id) {
+                        return;
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    handleClick(e);
+                    onRoiContextMenu?.(e, roi.id);
+                }}
                 onMouseMove={(e) => {
                     onMouseMove?.(e, roi as RoiType);
                 }}
-                onClick={(e: React.MouseEvent) => {
-                    return !isDragging && roi.id && onRoiClick?.(e, roi.id);
-                }}
+                onClick={handleClick}
                 className="cursor-pointer"
             >
                 <rect
@@ -156,6 +175,9 @@ export const RoiSvg = React.memo(
                         className="cursor-nwse-resize"
                         onMouseDown={(e) => {
                             e.stopPropagation();
+                            if (e.button !== 0) {
+                                return;
+                            }
                             onRoiResizeStart?.(e, roi.id!);
                         }}
                     >

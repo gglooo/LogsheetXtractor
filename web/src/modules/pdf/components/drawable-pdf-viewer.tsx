@@ -8,6 +8,8 @@ import { RoiSvg } from "@/modules/rois/components/roi-svg";
 import type { RoiType } from "@/modules/rois/schema";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { RoiValidationPresetContextMenu } from "@/modules/template-editor/sidebar/roi-validation/components/roi-validation-preset-context-menu";
+import { useRoiValidationPresetContextMenu } from "@/modules/template-editor/sidebar/roi-validation/hooks/use-roi-validation-preset-context-menu";
 import { getScaleFromReferenceScale } from "@/modules/template-editor/utils/coordinates";
 import type { TemplateType } from "@/modules/templates/schema";
 import React, { useCallback, useMemo, useRef } from "react";
@@ -23,6 +25,8 @@ export const DrawablePdfViewer = ({
 
     const { rois, removeRoi, setRois, mode } = useTemplateEditor();
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
+    const { handleOpenRoiContextMenu, menuProps } =
+        useRoiValidationPresetContextMenu(template.isEditable);
 
     const duplicateRoiNames = useMemo(
         () => getDuplicates(rois.map((r) => r.variableName)),
@@ -109,6 +113,7 @@ export const DrawablePdfViewer = ({
                 onDelete={removeRoi}
                 scale={referenceScale}
                 onRoiClick={onRoiClick}
+                onRoiContextMenu={handleOpenRoiContextMenu}
                 isSelected={isSelectedRoi(roi.id ?? "")}
                 isDuplicate={duplicateRoiNames.has(roi.variableName)}
                 onRoiDrag={onDragStart}
@@ -123,6 +128,7 @@ export const DrawablePdfViewer = ({
             removeRoi,
             referenceScale,
             onRoiClick,
+            handleOpenRoiContextMenu,
             isSelectedRoi,
             duplicateRoiNames,
             mode,
@@ -145,6 +151,7 @@ export const DrawablePdfViewer = ({
                     render={renderRoi}
                 />
             )}
+            <RoiValidationPresetContextMenu {...menuProps} />
         </div>
     );
 };

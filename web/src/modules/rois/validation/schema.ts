@@ -93,3 +93,19 @@ export const roiValidationRuleCatalogSchema = z.object({
 export type RoiValidationRuleCatalogType = z.infer<
     typeof roiValidationRuleCatalogSchema
 >;
+
+export const predefinedRoiValidationConditionSchema = z.object({
+    id: z.uuid(),
+    code: z.string().min(1),
+    label: z.string().min(1),
+    roiType: roiTypeSchema,
+    condition: roiValidationConditionGroupSchema,
+});
+
+export const predefinedRoiValidationConditionListSchema = z.array(
+    predefinedRoiValidationConditionSchema,
+);
+
+export type PredefinedRoiValidationConditionType = z.infer<
+    typeof predefinedRoiValidationConditionSchema
+>;

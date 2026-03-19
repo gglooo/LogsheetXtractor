@@ -19,7 +19,7 @@ export const PdfDrawingSvgOverlay = ({
     rois: RoiType[];
     render: (roi: RoiType) => React.ReactNode;
 }) => {
-    const { addRoi, template, mode } = useTemplateEditor();
+    const { addRoi, template, mode, drawRoiType } = useTemplateEditor();
     const { width: pdfWidth, scale } = useSvgZoom();
     const { setSelectedRoiIds } = useSelectedRois();
 
@@ -44,6 +44,8 @@ export const PdfDrawingSvgOverlay = ({
 
         const newId = addRoi(
             scaleCoordinatesToReference(coordinates, referenceScale),
+            undefined,
+            drawRoiType,
         );
         if (newId) {
             setSelectedRoiIds([newId]);

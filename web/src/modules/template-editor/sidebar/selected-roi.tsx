@@ -112,6 +112,9 @@ export const SelectedRoiSidebarGroup = () => {
     const selectedRois = rois.filter((roi) => isSelectedRoi(roi.id ?? ""));
 
     const selectedRoi = selectedRois[0];
+    const key = selectedRoi
+        ? `${selectedRoi.id}-${selectedRoi.type}`
+        : "no-selection";
 
     return (
         <SidebarGroup
@@ -122,7 +125,7 @@ export const SelectedRoiSidebarGroup = () => {
             className="flex flex-col gap-2"
         >
             <Form
-                key={selectedRoi?.id ?? "no-selection"}
+                key={key}
                 schema={editRoiSchema}
                 defaultValues={{
                     variableName: selectedRoi?.variableName || "",
