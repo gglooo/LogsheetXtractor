@@ -135,9 +135,9 @@ export const RoiValidationPresetContextMenu = ({
                 <div className="max-h-56 overflow-y-auto">
                     {filteredPresets.map((preset) => (
                         <Button
+                            key={preset.id}
                             variant="ghost"
                             type="button"
-                            key={preset.id}
                             className="w-full px-3 py-2 text-left text-sm justify-start hover:bg-accent disabled:opacity-50"
                             onClick={() => onSelectPreset(preset)}
                         >

@@ -1,8 +1,6 @@
 using FluentResults;
-using ImTools;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
 using WebFormHTR.Application.Features.Scripting;
@@ -65,61 +63,6 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
         }
 
         return Result.Ok(mapper.Map<IEnumerable<RoiDto>>(processedEntities));
-    }
-
-    public async Task<Result<IEnumerable<RoiDto>>> UpsertRoisForTemplateAsync(Guid templateId,
-        IEnumerable<UpsertRoiDto> upsertRois,
-        CancellationToken cancellationToken)
-    {
-        var template = await dbContext.Templates
-            .Include(t => t.Rois)
-            .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
-
-        if (template is null)
-        {
-            return Result.Fail(new NotFoundError("Template not found"));
-        }
-
-        var existingRoisMap = template.Rois.ToDictionary(r => r.Id);
-
-        var newRois = new List<Roi>();
-        var allProcessedRois = new List<Roi>();
-
-        foreach (var dto in upsertRois)
-        {
-            if (existingRoisMap.TryGetValue(dto.Id ?? Guid.Empty, out var existingRoi))
-            {
-                mapper.Map(dto, existingRoi);
-                allProcessedRois.Add(existingRoi);
-            }
-            else
-            {
-                var newRoi = mapper.Map<Roi>(dto);
-                newRoi.TemplateId = templateId;
-
-                newRois.Add(newRoi);
-                allProcessedRois.Add(newRoi);
-            }
-        }
-
-        if (newRois.Any())
-        {
-            await dbContext.Rois.AddRangeAsync(newRois, cancellationToken);
-        }
-
-        return Result.Ok(mapper.Map<IEnumerable<RoiDto>>(allProcessedRois));
-    }
-
-    public async Task<Result<RoiDto>> UpsertRoiForTemplateAsync(Guid templateId, UpsertRoiDto updateRoi,
-        CancellationToken cancellationToken)
-    {
-        var result = await UpsertRoisForTemplateAsync(templateId, [updateRoi], cancellationToken);
-        if (result.IsFailed)
-        {
-            return result.ToResult();
-        }
-
-        return Result.Ok(result.Value.First());
     }
 
     public async Task<Result<DetectRoisResponseDto>> DetectRoisAsync(

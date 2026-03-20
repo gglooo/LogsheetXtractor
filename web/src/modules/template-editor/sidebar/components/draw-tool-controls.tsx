@@ -13,7 +13,7 @@ import type {
     EditorMode,
     TemplateEditorContextType,
 } from "@/modules/template-editor/hooks/use-template-editor";
-import { getDrawToolIcon } from "@/modules/template-editor/sidebar/utils/draw-tool-icon";
+import { DrawToolIcon } from "@/modules/template-editor/sidebar/utils/draw-tool-icon";
 import { Check, ChevronDown } from "lucide-react";
 import { useIntl } from "react-intl";
 
@@ -33,7 +33,6 @@ export const DrawToolControls = ({
     setDrawTool,
 }: DrawToolControlsProps) => {
     const intl = useIntl();
-    const DrawToolIcon = getDrawToolIcon(mode, drawRoiType);
 
     const drawTypeOptions = [
         {
@@ -74,7 +73,7 @@ export const DrawToolControls = ({
                 disabled={!isEditable}
                 onClick={setDrawTool}
             >
-                <DrawToolIcon />
+                <DrawToolIcon mode={mode} drawRoiType={drawRoiType} />
                 <ShortcutLabel
                     shortcut={DRAW_TOOL_KEY}
                     label={intl.formatMessage({

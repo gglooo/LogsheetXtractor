@@ -10,20 +10,15 @@ type ApplyValidationPresetParams = {
 };
 
 export const useApplyValidationPresetToRois = () => {
-    const { selectedRoiIds, setSelectedRoiIds } = useSelectedRois();
+    const { setSelectedRoiIds } = useSelectedRois();
     const { setRois } = useTemplateEditor();
 
     return useCallback(
         ({ preset, clickedRoiId }: ApplyValidationPresetParams) => {
-            const targetRoiIds =
-                selectedRoiIds.length > 0 ? selectedRoiIds : [clickedRoiId];
-
-            const targetRoiIdSet = new Set(targetRoiIds);
-
-            setSelectedRoiIds(targetRoiIds);
-            setRois((prevRois) =>
-                prevRois.map((roi) => {
-                    if (!targetRoiIdSet.has(roi.id ?? "")) {
+            setSelectedRoiIds([clickedRoiId]);
+            setRois((prevRois) => {
+                return prevRois.map((roi) => {
+                    if (roi.id !== clickedRoiId) {
                         return roi;
                     }
 
@@ -34,9 +29,9 @@ export const useApplyValidationPresetToRois = () => {
                             preset.condition,
                         ),
                     };
-                }),
-            );
+                });
+            });
         },
-        [selectedRoiIds, setRois, setSelectedRoiIds],
+        [setRois, setSelectedRoiIds],
     );
 };

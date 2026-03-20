@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -35,6 +37,29 @@ export default defineConfig(({ mode }) => {
                     secure: false,
                     ws: true,
                 },
+            },
+        },
+        test: {
+            environment: "jsdom",
+            globals: true,
+            setupFiles: "./tests/setup/vitest.setup.ts",
+            css: true,
+            pool: "threads",
+            clearMocks: true,
+            restoreMocks: true,
+            mockReset: true,
+            include: ["tests/**/*.{test,spec}.{ts,tsx}"],
+            exclude: ["tests/e2e/**", "node_modules/**", "dist/**"],
+            coverage: {
+                provider: "v8",
+                reporter: ["text", "html", "lcov"],
+                reportsDirectory: "./coverage",
+                exclude: [
+                    "src/i18n/**",
+                    "src/assets/**",
+                    "tests/**",
+                    "**/*.d.ts",
+                ],
             },
         },
     };

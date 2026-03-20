@@ -2,6 +2,7 @@ using FluentAssertions;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using WebFormHTR.Application.Errors;
 using WebFormHTR.Application.Features.RoiValidation;
 using WebFormHTR.Application.Features.ROIs;
 using WebFormHTR.Application.Features.ROIs.DTOs;
@@ -141,6 +142,7 @@ public class SetTemplateRoisCommandHandlerTests : IDisposable
             _conditionValidatorMock.Object, CancellationToken.None);
 
         result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainItemsAssignableTo<ValidationError>();
         _roiServiceMock.Verify(x => x.SetRoisForTemplateAsync(It.IsAny<Guid>(), It.IsAny<IEnumerable<SetRoiDto>>(),
             It.IsAny<CancellationToken>()), Times.Never);
     }

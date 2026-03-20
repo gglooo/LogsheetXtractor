@@ -44,7 +44,7 @@ export const ExtractedValueValidationWarnings = ({
             <ul className="max-h-44 space-y-2 overflow-y-auto pr-1">
                 {warnings.map((warning, index) => {
                     const node = resolveNodeAtPath(
-                        warnings[0].path,
+                        warning.path,
                         validationCondition,
                     );
                     const shouldDisplayRulePath =

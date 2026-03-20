@@ -7,12 +7,17 @@ export const SignalRProvider = ({
 }: {
     children: React.ReactNode;
 }) => {
+    const isSignalRDisabled = import.meta.env.VITE_DISABLE_SIGNALR === "true";
     const connectionRef = useRef<HubConnection | null>(null);
     const [connectionState, setConnectionState] =
         useState<HubConnection | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
+        if (isSignalRDisabled) {
+            return;
+        }
+
         let isMounted = true;
 
         if (!connectionRef.current) {
@@ -63,7 +68,7 @@ export const SignalRProvider = ({
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [isSignalRDisabled]);
 
     return (
         <SignalRContext.Provider
