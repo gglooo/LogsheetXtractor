@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Threading;
 
 namespace LogsheetXtractor.IntegrationTests.Infrastructure;
 
@@ -17,6 +18,7 @@ public sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>, I
 
     private readonly string _storagePath;
     private readonly string _dbPath;
+    private int _cleanupDone;
 
     public ApiWebApplicationFactory()
     {
@@ -57,6 +59,22 @@ public sealed class ApiWebApplicationFactory : WebApplicationFactory<Program>, I
         base.Dispose(disposing);
 
         if (!disposing)
+        {
+            return;
+        }
+
+        CleanupTempDirectory();
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        await base.DisposeAsync();
+        CleanupTempDirectory();
+    }
+
+    private void CleanupTempDirectory()
+    {
+        if (Interlocked.Exchange(ref _cleanupDone, 1) == 1)
         {
             return;
         }
