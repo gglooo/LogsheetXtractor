@@ -6,6 +6,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { useVerifyExtractedValueMutation } from "@/modules/logsheets/proofreading/api";
 import { ExtractedValueCorrectedField } from "@/modules/logsheets/proofreading/components/extracted-value-corrected-field";
 import { ExtractedValueImage } from "@/modules/logsheets/proofreading/components/extracted-value-image";
+import { ExtractedValueValidationWarnings } from "@/modules/logsheets/proofreading/components/extracted-value-validation-warnings";
+import { useExtractedValueValidationCondition } from "@/modules/logsheets/proofreading/hooks/use-extracted-value-validation-condition";
 import { getExtractedValueDefaultFormValue } from "@/modules/logsheets/proofreading/utils";
 import {
     createExtractedValueFormSchema,
@@ -117,6 +119,10 @@ export const GamifiedCard = ({
     const verifyMutation = useVerifyExtractedValueMutation(
         extractedValue.logsheetId,
     );
+    const validationCondition = useExtractedValueValidationCondition(
+        extractedValue.logsheetId,
+        extractedValue.roiId,
+    );
 
     const formSchema = createExtractedValueFormSchema(extractedValue.roiType);
 
@@ -172,6 +178,10 @@ export const GamifiedCard = ({
                         onSubmit={handleSubmit}
                         onSkip={onSkip}
                         isFetching={isFetching}
+                    />
+                    <ExtractedValueValidationWarnings
+                        warnings={extractedValue.validationWarnings}
+                        validationCondition={validationCondition}
                     />
                 </Form>
             </CardContent>
