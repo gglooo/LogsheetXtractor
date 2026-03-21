@@ -97,9 +97,7 @@ const GamifiedCardForm = ({
                 name="value"
                 readOnly
             />
-            <ExtractedValueCorrectedField
-                roiType={extractedValue.roiType}
-            />
+            <ExtractedValueCorrectedField roiType={extractedValue.roiType} />
             <SubmitButton
                 onSubmit={() => handleSubmit(onSubmit)()}
                 onSkip={onSkip}
@@ -173,16 +171,18 @@ export const GamifiedCard = ({
                             getExtractedValueDefaultFormValue(extractedValue),
                     }}
                 >
-                    <GamifiedCardForm
-                        extractedValue={extractedValue}
-                        onSubmit={handleSubmit}
-                        onSkip={onSkip}
-                        isFetching={isFetching}
-                    />
-                    <ExtractedValueValidationWarnings
-                        warnings={extractedValue.validationWarnings}
-                        validationCondition={validationCondition}
-                    />
+                    <div className="flex flex-col gap-2">
+                        <GamifiedCardForm
+                            extractedValue={extractedValue}
+                            onSubmit={handleSubmit}
+                            onSkip={onSkip}
+                            isFetching={isFetching}
+                        />
+                        <ExtractedValueValidationWarnings
+                            warnings={extractedValue.validationWarnings}
+                            validationCondition={validationCondition}
+                        />
+                    </div>
                 </Form>
             </CardContent>
         </Card>
