@@ -25,7 +25,7 @@ export function Navbar() {
                         <span className="font-bold text-lg">
                             {intl.formatMessage({
                                 id: "navbar.title",
-                                defaultMessage: "webFormHTR",
+                                defaultMessage: "LogsheetXtractor",
                             })}
                         </span>
                     </Link>
