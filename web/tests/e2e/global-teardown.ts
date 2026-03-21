@@ -21,8 +21,8 @@ const removeContainersByNamePrefix = (namePrefix: string) => {
 };
 
 async function globalTeardown() {
-    removeContainersByNamePrefix("webformhtr-api-e2e");
-    removeContainersByNamePrefix("webformhtr-e2e-backend");
+    removeContainersByNamePrefix("logsheetxtractor-api-e2e");
+    removeContainersByNamePrefix("logsheetxtractor-e2e-backend");
 }
 
 export default globalTeardown;
