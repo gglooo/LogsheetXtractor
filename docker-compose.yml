@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: LogsheetXtractor.Solution/LogsheetXtractor.API/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    volumes:
+      - ./formHTR:/app/formHTR
+      - ./app_data:/app/app_data
+      - ./credentials:/app/credentials
+
+  frontend:
+    build:
+      context: ./web
+    ports:
+      - "3000:80"
+    environment:
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    ports:
+      - "8978:8978"
+    volumes:
+      - ./app_data:/data
+      - ./cloudbeaver:/opt/cloudbeaver/workspace

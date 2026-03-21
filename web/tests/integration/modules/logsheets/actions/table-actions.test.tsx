@@ -1,0 +1,185 @@
+import { LogsheetTableActions } from "@/modules/logsheets/actions/table-actions";
+import type { LogsheetListType } from "@/modules/logsheets/schema";
+import { renderWithProviders } from "../../../../utils/render-with-providers";
+import { waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import { toast } from "sonner";
+
+const mockNavigate = vi.fn();
+const mockUseParams = vi.fn(() => ({ templateId: "template-123" }));
+
+const useProcessLogsheetMutationMock = vi.fn();
+const useDeleteLogsheetMutationMock = vi.fn();
+const useExportLogsheetMutationMock = vi.fn();
+const useFileDownloadMutationMock = vi.fn();
+const useCredentialsStatusMock = vi.fn();
+
+vi.mock("react-router-dom", async () => {
+    const actual = await vi.importActual<typeof import("react-router-dom")>(
+        "react-router-dom",
+    );
+
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+        useParams: () => mockUseParams(),
+    };
+});
+
+vi.mock("@/modules/logsheets/api", () => ({
+    useProcessLogsheetMutation: () => useProcessLogsheetMutationMock(),
+    useDeleteLogsheetMutation: () => useDeleteLogsheetMutationMock(),
+    useExportLogsheetMutation: () => useExportLogsheetMutationMock(),
+}));
+
+vi.mock("@/modules/files/api", () => ({
+    useFileDownloadMutation: () => useFileDownloadMutationMock(),
+}));
+
+vi.mock("@/modules/settings/api", () => ({
+    useCredentialsStatus: () => useCredentialsStatusMock(),
+}));
+
+vi.mock("sonner", () => ({
+    toast: {
+        success: vi.fn(),
+        error: vi.fn(),
+    },
+}));
+
+const now = new Date().toISOString();
+
+const createLogsheet = (status: LogsheetListType["status"]): LogsheetListType => ({
+    id: "11111111-1111-4111-8111-111111111111",
+    createdAt: now,
+    updatedAt: null,
+    deletedAt: null,
+    templateId: "22222222-2222-4222-8222-222222222222",
+    file: {
+        id: "33333333-3333-4333-8333-333333333333",
+        createdAt: now,
+        updatedAt: null,
+        deletedAt: null,
+        fileName: "logsheet.pdf",
+        contentType: "application/pdf",
+        sizeBytes: 10,
+    },
+    status,
+    processedAt: null,
+    isFrontAligned: false,
+    isBackAligned: false,
+    errorMessage: null,
+});
+
+beforeEach(() => {
+    localStorage.setItem("app-locale", "en");
+
+    useProcessLogsheetMutationMock.mockReturnValue({
+        mutateAsync: vi.fn().mockResolvedValue(undefined),
+        isPending: false,
+    });
+
+    useDeleteLogsheetMutationMock.mockReturnValue({
+        mutateAsync: vi.fn().mockResolvedValue(undefined),
+        isPending: false,
+    });
+
+    useExportLogsheetMutationMock.mockReturnValue({
+        mutateAsync: vi.fn().mockResolvedValue(undefined),
+        isPending: false,
+    });
+
+    useFileDownloadMutationMock.mockReturnValue({
+        mutateAsync: vi.fn().mockResolvedValue(undefined),
+        isPending: false,
+    });
+
+    useCredentialsStatusMock.mockReturnValue({
+        data: { available: true, hasUserCredentials: true },
+    });
+});
+
+afterEach(() => {
+    vi.clearAllMocks();
+});
+
+describe("LogsheetTableActions", () => {
+    it("calls onPreview callback when preview button is clicked", async () => {
+        const user = userEvent.setup();
+        const onPreview = vi.fn();
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Pending")}
+                onPreview={onPreview}
+            />,
+        );
+
+        await user.click(screen.getByTitle("Preview"));
+
+        expect(onPreview).toHaveBeenCalledWith(
+            "11111111-1111-4111-8111-111111111111",
+        );
+    });
+
+    it("processes logsheet and shows success toast", async () => {
+        const user = userEvent.setup();
+        const mutateAsync = vi.fn().mockResolvedValue(undefined);
+        useProcessLogsheetMutationMock.mockReturnValue({
+            mutateAsync,
+            isPending: false,
+        });
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Pending")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        await user.click(screen.getByTitle("Process"));
+
+        await waitFor(() => {
+            expect(mutateAsync).toHaveBeenCalledWith(
+                "11111111-1111-4111-8111-111111111111",
+            );
+            expect(toast.success).toHaveBeenCalledWith(
+                "Logsheet was queued for processing.",
+            );
+        });
+    });
+
+    it("disables process button when credentials are missing", () => {
+        useCredentialsStatusMock.mockReturnValue({
+            data: { available: false, hasUserCredentials: false },
+        });
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Pending")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByTitle("Process")).toBeDisabled();
+    });
+
+    it("navigates to proofread route when proofread button is clicked", async () => {
+        const user = userEvent.setup();
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("NeedsReview")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        await user.click(screen.getByTitle("Proofread"));
+
+        expect(mockNavigate).toHaveBeenCalledWith(
+            "/templates/template-123/logsheets/11111111-1111-4111-8111-111111111111/proofread",
+        );
+    });
+});
