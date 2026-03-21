@@ -9,6 +9,15 @@ export const ProcessedBadge = ({
 }) => {
     const intl = useIntl();
 
+    const getLocalDate = (value: Date | string) => {
+        if (value instanceof Date) {
+            return value;
+        }
+
+        const hasTimezoneInfo = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
+        return new Date(hasTimezoneInfo ? value : `${value}Z`);
+    };
+
     if (processedAt) {
         return (
             <Badge className="bg-green-100 text-green-800 border-green-300 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/20">
@@ -19,7 +28,7 @@ export const ProcessedBadge = ({
                     },
                     {
                         processedAt: formatDate(
-                            new Date(processedAt),
+                            getLocalDate(processedAt),
                             "d. M. yyyy, HH:mm",
                         ),
                     },
