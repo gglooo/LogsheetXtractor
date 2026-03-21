@@ -28,6 +28,7 @@ public interface ITemplateService
 
     Task<Result<string>> ExportTemplateConfigAsync(
         Guid templateId,
+        bool includeRoiValidations,
         CancellationToken cancellationToken
     );
 }

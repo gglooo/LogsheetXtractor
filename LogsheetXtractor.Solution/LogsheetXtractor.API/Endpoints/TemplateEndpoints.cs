@@ -22,6 +22,7 @@ public sealed record CloneTemplateRequest(
 );
 
 public sealed record AddTemplateBacksideRequest(string Name, Guid FileId);
+public sealed record ExportTemplateConfigRequest(bool IncludeRoiValidations = true);
 
 public static class TemplateEndpoints
 {
@@ -140,11 +141,12 @@ public static class TemplateEndpoints
     [ProducesResponseType(404)]
     public static async Task<IResult> ExportTemplateConfig(
         Guid id,
+        ExportTemplateConfigRequest request,
         IMessageBus bus,
         CancellationToken ct
     )
     {
-        var query = new ExportTemplateConfigQuery(id);
+        var query = new ExportTemplateConfigQuery(id, request.IncludeRoiValidations);
         var result = await bus.InvokeAsync<Result<GetFileDto>>(query, ct);
 
         return result.ToHttpResult();

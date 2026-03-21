@@ -230,6 +230,7 @@ public class TemplateService(
 
     public async Task<Result<string>> ExportTemplateConfigAsync(
         Guid templateId,
+        bool includeRoiValidations,
         CancellationToken cancellationToken
     )
     {
@@ -237,6 +238,7 @@ public class TemplateService(
         var template = await dbContext
             .Templates.AsNoTracking()
             .Include(t => t.File)
+            .Include(t => t.Rois)
             .FirstOrDefaultAsync(t => t.Id == templateId, cancellationToken);
 
         if (template is null)
@@ -246,6 +248,16 @@ public class TemplateService(
         }
 
         var templateConfig = mapper.Map<PythonTemplateConfig>(template);
+        var rois = templateConfig.Rois.ToList();
+        if (!includeRoiValidations)
+        {
+            foreach (var roi in rois)
+            {
+                roi.ValidationCondition = null;
+            }
+        }
+        templateConfig.Rois = rois;
+
         var options = new JsonSerializerOptions { WriteIndented = true };
         return Result.Ok(JsonSerializer.Serialize(templateConfig, options));
     }

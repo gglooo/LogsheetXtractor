@@ -1,5 +1,5 @@
-import { useFormatValidationWarning } from "@/modules/logsheets/proofreading/validation-warning-intl";
-import { useFormatValidationRulePath } from "@/modules/logsheets/proofreading/validation-warning-path";
+import { useFormatValidationWarning } from "@/modules/logsheets/proofreading/utils/validation-warning-intl";
+import { useFormatValidationRulePath } from "@/modules/logsheets/proofreading/utils/validation-warning-path";
 import type { RoiValidationWarningType } from "@/modules/logsheets/schema";
 import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { TriangleAlert } from "lucide-react";

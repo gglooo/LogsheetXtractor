@@ -4,7 +4,11 @@ import {
     useUploadFileMutation,
 } from "@/modules/files/api";
 import type { CreateTemplateFormValues } from "@/modules/templates/schema";
-import { templateListSchema, templateSchema } from "@/modules/templates/schema";
+import {
+    exportTemplateConfigRequestSchema,
+    templateListSchema,
+    templateSchema,
+} from "@/modules/templates/schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useTemplates = () =>
@@ -168,10 +172,25 @@ export const useCreateTemplateMutation = () => {
 
 export const useExportConfigMutation = () => {
     return useMutation({
-        mutationFn: async ({ templateId }: { templateId: string }) => {
+        mutationFn: async ({
+            templateId,
+            includeRoiValidations = true,
+        }: {
+            templateId: string;
+            includeRoiValidations?: boolean;
+        }) => {
+            const request = exportTemplateConfigRequestSchema.parse({
+                includeRoiValidations,
+            });
             const { bytes, fileName, contentType } = await fileQueryFn(
                 `api/templates/${templateId}/export-config`,
-                { method: "POST" },
+                {
+                    method: "POST",
+                    body: JSON.stringify(request),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                },
             );
 
             const blob = new Blob([bytes], { type: contentType || undefined });

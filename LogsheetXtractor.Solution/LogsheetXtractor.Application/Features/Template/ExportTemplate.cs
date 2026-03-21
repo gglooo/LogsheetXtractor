@@ -5,7 +5,7 @@ using LogsheetXtractor.Application.Features.Template.Interfaces;
 
 namespace LogsheetXtractor.Application.Features.Template;
 
-public sealed record ExportTemplateConfigQuery(Guid Id);
+public sealed record ExportTemplateConfigQuery(Guid Id, bool IncludeRoiValidations = true);
 
 public static class ExportTemplateHandler
 {
@@ -18,7 +18,11 @@ public static class ExportTemplateHandler
     {
         try
         {
-            var configResult = await templateService.ExportTemplateConfigAsync(request.Id, ct);
+            var configResult = await templateService.ExportTemplateConfigAsync(
+                request.Id,
+                request.IncludeRoiValidations,
+                ct
+            );
             if (configResult.IsFailed)
             {
                 return configResult.ToResult();

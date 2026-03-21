@@ -5,14 +5,18 @@ using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Features.Scripting.DTOs;
 using LogsheetXtractor.Application.Features.Template.DTOs;
 using LogsheetXtractor.Domain.Entities;
+using LogsheetXtractor.Domain.Enums;
+using LogsheetXtractor.Domain.ValueObjects.RoiValidation;
 using LogsheetXtractor.Domain.ValueObjects;
 using LogsheetXtractor.Infrastructure.Persistence;
 using LogsheetXtractor.Infrastructure.Services;
+using LogsheetXtractor.Infrastructure.Services.Scripting.DTOs;
 using LogsheetXtractor.Tests.Common;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Text.Json;
 
 namespace LogsheetXtractor.Tests.Infrastructure.Services;
 
@@ -263,5 +267,111 @@ public class TemplateServiceTests
             .ToListAsync();
         clonedResiduals.Should().HaveCount(1);
         clonedResiduals[0].Content.Should().Be(residual.Content);
+    }
+
+    [Fact]
+    public async Task ExportTemplateConfigAsync_ShouldIncludeRoiValidation_WhenIncludeRoiValidationsIsTrue()
+    {
+        var template = await CreateTemplateWithFileAsync();
+
+        _mapperMock
+            .Setup(x => x.Map<PythonTemplateConfig>(It.IsAny<Template>()))
+            .Returns(
+                new PythonTemplateConfig
+                {
+                    Width = 100,
+                    Height = 200,
+                    Rois =
+                    [
+                        new PythonRoiDto
+                        {
+                            Coords = [0, 0, 10, 10],
+                            Type = ERoiType.Number.ToString(),
+                            VarName = "temperature",
+                            ValidationCondition = new RoiValidationConditionNode
+                            {
+                                Type = "rule",
+                                RuleType = "number.range",
+                            },
+                        },
+                    ],
+                }
+            );
+
+        var result = await _templateService.ExportTemplateConfigAsync(
+            template.Id,
+            includeRoiValidations: true,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+        using var json = JsonDocument.Parse(result.Value);
+        var roi = json.RootElement.GetProperty("content")[0];
+        roi.TryGetProperty("validation_condition", out var validationProperty).Should().BeTrue();
+        validationProperty.GetProperty("Type").GetString().Should().Be("rule");
+    }
+
+    [Fact]
+    public async Task ExportTemplateConfigAsync_ShouldOmitRoiValidation_WhenIncludeRoiValidationsIsFalse()
+    {
+        var template = await CreateTemplateWithFileAsync();
+
+        _mapperMock
+            .Setup(x => x.Map<PythonTemplateConfig>(It.IsAny<Template>()))
+            .Returns(
+                new PythonTemplateConfig
+                {
+                    Width = 100,
+                    Height = 200,
+                    Rois =
+                    [
+                        new PythonRoiDto
+                        {
+                            Coords = [0, 0, 10, 10],
+                            Type = ERoiType.Number.ToString(),
+                            VarName = "temperature",
+                            ValidationCondition = new RoiValidationConditionNode
+                            {
+                                Type = "rule",
+                                RuleType = "number.range",
+                            },
+                        },
+                    ],
+                }
+            );
+
+        var result = await _templateService.ExportTemplateConfigAsync(
+            template.Id,
+            includeRoiValidations: false,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+        using var json = JsonDocument.Parse(result.Value);
+        var roi = json.RootElement.GetProperty("content")[0];
+        roi.TryGetProperty("validation_condition", out _).Should().BeFalse();
+    }
+
+    private async Task<Template> CreateTemplateWithFileAsync()
+    {
+        var file = new LogsheetXtractor.Domain.Entities.File
+        {
+            OriginalFileName = "template.pdf",
+            StoredFileName = "template.pdf",
+            StoragePath = "path",
+            ContentType = "application/pdf",
+        };
+        _dbContext.Files.Add(file);
+        await _dbContext.SaveChangesAsync();
+
+        var template = new Template
+        {
+            Name = "Template for export",
+            FileId = file.Id,
+        };
+        _dbContext.Templates.Add(template);
+        await _dbContext.SaveChangesAsync();
+
+        return template;
     }
 }

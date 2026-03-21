@@ -106,3 +106,11 @@ export const addTemplateBacksideSchema = z.object({
 export type AddTemplateBacksideFormValues = z.infer<
     typeof addTemplateBacksideSchema
 >;
+
+export const exportTemplateConfigRequestSchema = z.object({
+    includeRoiValidations: z.boolean(),
+});
+
+export type ExportTemplateConfigRequest = z.infer<
+    typeof exportTemplateConfigRequestSchema
+>;
