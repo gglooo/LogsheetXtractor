@@ -18,9 +18,10 @@ export const useTemplates = () =>
         },
     });
 
-export const useTemplate = (templateId: string) =>
+export const useTemplate = (templateId: string, enabled = true) =>
     useQuery({
         queryKey: ["template", templateId],
+        enabled: enabled && Boolean(templateId),
         queryFn: async () => {
             const response = await fetch(`/api/templates/${templateId}`);
             return await templateSchema.parseAsync(await response.json());

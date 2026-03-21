@@ -15,6 +15,7 @@ import {
 import { ProofreadingLogsheetViewer } from "@/modules/logsheets/proofreading/components/proofreading-logsheet-viewer";
 import { ProofreadingNavbar } from "@/modules/logsheets/proofreading/components/proofreading-navbar";
 import { useExtractedValues } from "@/modules/logsheets/proofreading/hooks/use-extracted-values";
+import { getValidationConditionsByRoiId } from "@/modules/logsheets/proofreading/utils/validation-conditions";
 import type { RoiType } from "@/modules/rois/schema";
 import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
@@ -70,19 +71,10 @@ export const ProofreadingPage = () => {
 
     const validationConditionsByRoiId = useMemo<
         Record<string, RoiValidationConditionType>
-    >(() => {
-        const map: Record<string, RoiValidationConditionType> = {};
-
-        (template?.rois ?? []).forEach((roi) => {
-            map[roi.id] = roi.validationCondition;
-        });
-
-        (backsideTemplate?.rois ?? []).forEach((roi) => {
-            map[roi.id] = roi.validationCondition;
-        });
-
-        return map;
-    }, [template?.rois, backsideTemplate?.rois]);
+    >(
+        () => getValidationConditionsByRoiId(template, backsideTemplate),
+        [template, backsideTemplate],
+    );
 
     if (
         isLogsheetLoading ||
