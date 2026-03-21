@@ -14,6 +14,7 @@ using Wolverine.Http;
 using Wolverine.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
+var isTestingEnvironment = builder.Environment.IsEnvironment("Testing");
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -26,9 +27,12 @@ builder.Host.UseWolverine(opts =>
     opts.UseFluentValidation();
 
     opts.UseEntityFrameworkCoreTransactions();
-    opts.Policies.UseDurableLocalQueues();
     opts.Durability.Mode = DurabilityMode.Solo;
-    opts.PersistMessagesWithSqlite(builder.Configuration.GetConnectionString("DefaultConnection")!);
+    if (!isTestingEnvironment)
+    {
+        opts.Policies.UseDurableLocalQueues();
+        opts.PersistMessagesWithSqlite(builder.Configuration.GetConnectionString("DefaultConnection")!);
+    }
 
     opts.Policies.AddMiddleware(typeof(CredentialCookieMiddleware));
 });
