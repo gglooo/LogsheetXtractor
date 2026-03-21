@@ -183,8 +183,15 @@ public class LogsheetService(
     private void EvaluateValidationWarnings(Logsheet logsheet, List<ExtractedValue> extractedData)
     {
         var rulesVersion = roiValidationRuleCatalogProvider.GetCatalog().Version;
-        var roisById =
+        var roisByIdFront =
             logsheet.Template?.Rois?.ToDictionary(r => r.Id) ?? new Dictionary<Guid, Roi>();
+        var roisByIdBack =
+            logsheet.Template?.BacksideTemplate?.Rois?.ToDictionary(r => r.Id)
+            ?? new Dictionary<Guid, Roi>();
+        var roisById = roisByIdFront
+            .Concat(roisByIdBack)
+            .ToDictionary(kv => kv.Key, kv => kv.Value);
+
         var hasRoiContext = roisById.Count > 0;
 
         foreach (var extractedValue in extractedData)
