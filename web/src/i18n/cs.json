@@ -124,7 +124,7 @@
     "navbar.newTemplate": "Nová šablona",
     "navbar.proofreading.quick": "Rychlá kontrola",
     "navbar.settings": "Nastavení",
-    "navbar.title": "webFormHTR",
+    "navbar.title": "LogsheetXtractor",
     "navbar.toggleMenu": "Přepnout menu",
     "pdf.pageNotFound.description": "Tento dokument má pouze {numPages} {numPages, plural, one {stránku} few {stránky} other {stránek}}, ale byla požadována stránka {pageNumber}.",
     "pdf.pageNotFound.title": "Stránka nenalezena",

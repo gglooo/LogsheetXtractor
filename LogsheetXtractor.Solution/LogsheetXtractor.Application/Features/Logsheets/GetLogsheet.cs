@@ -1,0 +1,36 @@
+using FluentResults;
+using LogsheetXtractor.Application.Errors;
+using LogsheetXtractor.Application.Features.Logsheets.DTOs;
+using LogsheetXtractor.Application.Interfaces;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
+
+namespace LogsheetXtractor.Application.Features.Logsheets;
+
+public sealed record GetLogsheetQuery(Guid Id);
+
+public static class GetLogsheetHandler
+{
+    public static async Task<Result<LogsheetDetailDto>> Handle(
+        GetLogsheetQuery request,
+        IAppDbContext dbContext,
+        IMapper mapper,
+        CancellationToken cancellationToken
+    )
+    {
+        var logsheet = await dbContext
+            .Logsheets.AsNoTracking()
+            .Include(l => l.Template)
+            .ThenInclude(t => t.Rois)
+            .Include(l => l.ExtractedValues)
+            .ThenInclude(e => e.Roi)
+            .FirstOrDefaultAsync(l => l.Id == request.Id, cancellationToken);
+
+        if (logsheet is null)
+        {
+            return Result.Fail(new NotFoundError("Logsheet not found"));
+        }
+
+        return Result.Ok(mapper.Map<LogsheetDetailDto>(logsheet));
+    }
+}

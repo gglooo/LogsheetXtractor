@@ -124,7 +124,7 @@
     "navbar.newTemplate": "Nuovo modello",
     "navbar.proofreading.quick": "Revisione rapida",
     "navbar.settings": "Impostazioni",
-    "navbar.title": "webFormHTR",
+    "navbar.title": "LogsheetXtractor",
     "navbar.toggleMenu": "Attiva/disattiva menu",
     "pdf.pageNotFound.description": "Questo documento ha solo {numPages} {numPages, plural, one {pagina} other {pagine}}, ma è stata richiesta la pagina {pageNumber}.",
     "pdf.pageNotFound.title": "Pagina non trovata",
