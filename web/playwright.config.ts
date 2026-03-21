@@ -17,18 +17,18 @@ const runId = process.env.PLAYWRIGHT_RUN_ID ?? `${Date.now()}`;
 const repoRootPath = path.resolve(__dirname, "..");
 const backendDockerfilePath = path.resolve(
     repoRootPath,
-    "WebFormHTR.Solution/WebFormHTR.API/Dockerfile",
+    "LogsheetXtractor.Solution/LogsheetXtractor.API/Dockerfile",
 );
 const backendImageTag =
-    process.env.PLAYWRIGHT_BACKEND_IMAGE ?? "webformhtr-api-e2e";
-const backendContainerName = `webformhtr-api-e2e-${runId}`;
+    process.env.PLAYWRIGHT_BACKEND_IMAGE ?? "logsheetxtractor-api-e2e";
+const backendContainerName = `logsheetxtractor-api-e2e-${runId}`;
 const backendDataPath = path.join(
     os.tmpdir(),
-    `webformhtr-e2e-app-data-${runId}`,
+    `logsheetxtractor-e2e-app-data-${runId}`,
 );
 const backendCredentialsPath = path.join(
     os.tmpdir(),
-    `webformhtr-e2e-credentials-${runId}`,
+    `logsheetxtractor-e2e-credentials-${runId}`,
 );
 const processEnv = Object.fromEntries(
     Object.entries(process.env).filter(
