@@ -27,6 +27,7 @@ public class PythonMappingConfig : IRegister
             .NewConfig<Roi, PythonRoiDto>()
             .Map(dest => dest.VarName, src => src.Id)
             .Map(dest => dest.Type, src => src.Type.ToString())
+            .Map(dest => dest.ValidationCondition, src => src.ValidationCondition)
             .Map(
                 dest => dest.Coords,
                 src => new List<int>
@@ -65,7 +66,8 @@ public class PythonMappingConfig : IRegister
                     src.Coords[3] - src.Coords[1]
                 )
             )
-            .Map(dest => dest.VariableName, src => src.VarName);
+            .Map(dest => dest.VariableName, src => src.VarName)
+            .Map(dest => dest.ValidationCondition, src => src.ValidationCondition);
 
         config
             .NewConfig<Template, PythonTemplateConfig>()

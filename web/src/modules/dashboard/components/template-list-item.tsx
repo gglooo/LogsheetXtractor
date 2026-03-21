@@ -11,27 +11,16 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TemplateEditButton } from "@/modules/dashboard/components/template-edit-button";
 import { baseLogsheetsPath } from "@/modules/logsheets/routes";
 import { CloneTemplateAction } from "@/modules/templates/actions/clone-template-action";
-import {
-    useDeleteTemplateMutation,
-    useExportConfigMutation,
-} from "@/modules/templates/api";
+import { ExportTemplateConfigAction } from "@/modules/templates/actions/export-template-config-action";
+import { useDeleteTemplateMutation } from "@/modules/templates/api";
 import type { TemplateListItemType } from "@/modules/templates/schema";
 import { format } from "date-fns";
-import {
-    ArrowRightFromLineIcon,
-    FilesIcon,
-    MoreVertical,
-    Trash2,
-    UploadIcon,
-} from "lucide-react";
+import { FilesIcon, MoreVertical, Trash2, UploadIcon } from "lucide-react";
 import { FormattedPlural, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -51,7 +40,6 @@ export const TemplateListItem = ({
     const navigate = useNavigate();
 
     const deleteTemplateMutation = useDeleteTemplateMutation();
-    const exportConfigMutation = useExportConfigMutation();
 
     const handleDeleteTemplate = async () => {
         try {
@@ -68,26 +56,6 @@ export const TemplateListItem = ({
                 intl.formatMessage({
                     id: "templates.actions.delete.error",
                     defaultMessage: "Failed to delete template",
-                }),
-            );
-        }
-    };
-
-    const handleExportConfig = async (id: string) => {
-        try {
-            await exportConfigMutation.mutateAsync({ templateId: id });
-            toast.success(
-                intl.formatMessage({
-                    id: "templates.actions.export.success",
-                    defaultMessage: "Template config exported.",
-                }),
-            );
-        } catch (error) {
-            console.error("Error exporting template config:", error);
-            toast.error(
-                intl.formatMessage({
-                    id: "templates.actions.export.error",
-                    defaultMessage: "Failed to export template config",
                 }),
             );
         }
@@ -170,53 +138,10 @@ export const TemplateListItem = ({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <CloneTemplateAction templateId={template.id} />
-                            {template.backsideTemplateId ? (
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>
-                                        <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
-                                        {intl.formatMessage({
-                                            id: "templates.actions.export",
-                                            defaultMessage: "Export config",
-                                        })}
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuItem
-                                            onClick={() =>
-                                                handleExportConfig(template.id)
-                                            }
-                                        >
-                                            {intl.formatMessage({
-                                                id: "templates.actions.export.frontside",
-                                                defaultMessage: "Frontside",
-                                            })}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() =>
-                                                handleExportConfig(
-                                                    template.backsideTemplateId!,
-                                                )
-                                            }
-                                        >
-                                            {intl.formatMessage({
-                                                id: "templates.actions.export.backside",
-                                                defaultMessage: "Backside",
-                                            })}
-                                        </DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuSub>
-                            ) : (
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        handleExportConfig(template.id)
-                                    }
-                                >
-                                    <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
-                                    {intl.formatMessage({
-                                        id: "templates.actions.export",
-                                        defaultMessage: "Export config",
-                                    })}
-                                </DropdownMenuItem>
-                            )}
+                            <ExportTemplateConfigAction
+                                templateId={template.id}
+                                backsideTemplateId={template.backsideTemplateId}
+                            />
                             <DropdownMenuItem
                                 className="text-destructive"
                                 onClick={handleDeleteTemplate}

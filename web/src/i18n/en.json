@@ -273,6 +273,8 @@
     "templates.actions.export.error": "Failed to export template config",
     "templates.actions.export.frontside": "Frontside",
     "templates.actions.export.success": "Template config exported.",
+    "templates.actions.export.withRoiValidations": "With ROI validations (incompatible with formHTR)",
+    "templates.actions.export.withoutRoiValidations": "Without ROI validations",
     "templates.actions.logsheets": "Logsheets",
     "templates.actions.process": "Add logsheets",
     "templates.form.fileLabel": "Upload PDF File",

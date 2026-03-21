@@ -219,11 +219,18 @@ describe("templates api hooks", () => {
             wrapper: createQueryClientWrapper(queryClient),
         });
 
-        await result.current.mutateAsync({ templateId: ids.template });
+        await result.current.mutateAsync({
+            templateId: ids.template,
+            includeRoiValidations: false,
+        });
 
         expect(fileQueryFn).toHaveBeenCalledWith(
             `api/templates/${ids.template}/export-config`,
-            { method: "POST" },
+            {
+                method: "POST",
+                body: JSON.stringify({ includeRoiValidations: false }),
+                headers: { "Content-Type": "application/json" },
+            },
         );
         expect(downloadFile).toHaveBeenCalledTimes(1);
     });
