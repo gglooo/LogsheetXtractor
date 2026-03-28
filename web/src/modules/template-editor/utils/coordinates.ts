@@ -6,7 +6,7 @@ export const getScaleFromReferenceScale = (
     scale: number,
     originalWidth: number,
 ): number => {
-    return (width * originalWidth) / scale;
+    return (width * scale) / originalWidth;
 };
 
 export const getScaleToReferenceScale = (
