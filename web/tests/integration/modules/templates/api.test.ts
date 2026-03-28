@@ -178,7 +178,6 @@ describe("templates api hooks", () => {
             }),
             importedConfig: frontConfig,
             backside: {
-                name: "Template A Back",
                 file: new File(["%PDF"], "back.pdf", {
                     type: "application/pdf",
                 }),

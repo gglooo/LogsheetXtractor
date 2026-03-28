@@ -20,13 +20,12 @@ describe("templates schema contracts", () => {
             name: "Template A",
             file: pdfFile(),
             backside: {
-                name: "Template A Back",
                 file: pdfFile(),
             },
         });
 
         expect(parsed.name).toBe("Template A");
-        expect(parsed.backside?.name).toBe("Template A Back");
+        expect(parsed.backside?.file.type).toBe("application/pdf");
     });
 
     it("rejects non-pdf files for template creation", () => {
@@ -38,20 +37,16 @@ describe("templates schema contracts", () => {
         ).toThrow();
     });
 
-    it("rejects duplicate front/backside names", () => {
+    it("parses clone payload with optional backside file", () => {
         const result = cloneTemplateSchema.safeParse({
             name: "Same",
             file: pdfFile(),
             backside: {
-                name: "Same",
                 file: pdfFile(),
             },
         });
 
-        expect(result.success).toBe(false);
-        if (!result.success) {
-            expect(result.error.issues.some((issue) => issue.path.join(".") === "backside.name")).toBe(true);
-        }
+        expect(result.success).toBe(true);
     });
 
     it("parses template details payload", () => {
@@ -75,11 +70,10 @@ describe("templates schema contracts", () => {
         expect(parsed.isEditable).toBe(true);
     });
 
-    it("requires backside name and pdf file for add backside schema", () => {
+    it("requires backside pdf file for add backside schema", () => {
         expect(
             addTemplateBacksideSchema.safeParse({
                 backside: {
-                    name: "Back",
                     file: pdfFile(),
                 },
             }).success,
@@ -88,7 +82,6 @@ describe("templates schema contracts", () => {
         expect(
             addTemplateBacksideSchema.safeParse({
                 backside: {
-                    name: "",
                     file: textFile(),
                 },
             }).success,

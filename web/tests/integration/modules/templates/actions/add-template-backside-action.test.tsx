@@ -19,13 +19,9 @@ vi.mock("@/modules/templates/api", () => ({
 
 vi.mock("@/modules/templates/actions/backside-template-form", () => ({
     BacksideTemplateForm: ({ fieldPrefix }: { fieldPrefix: string }) => {
-        const { register, setValue } = useFormContext();
+        const { setValue } = useFormContext();
         return (
             <div data-testid="backside-form-stub">
-                <input
-                    aria-label="Backside name"
-                    {...register(`${fieldPrefix}.name`)}
-                />
                 <button
                     type="button"
                     onClick={() =>
@@ -112,10 +108,6 @@ describe("AddTemplateBacksideAction", () => {
         await user.click(screen.getByRole("button", { name: "Add backside" }));
 
         const dialog = screen.getByRole("dialog");
-        await user.type(
-            within(dialog).getByLabelText("Backside name"),
-            "Backside A",
-        );
         await user.click(
             within(dialog).getByRole("button", { name: "Set Backside File" }),
         );
@@ -127,7 +119,6 @@ describe("AddTemplateBacksideAction", () => {
             expect(uploadMutateAsync).toHaveBeenCalledTimes(1);
             expect(addBacksideMutateAsync).toHaveBeenCalledWith({
                 templateId: "tpl-123",
-                name: "Backside A",
                 fileId: "11111111-1111-4111-8111-111111111111",
             });
             expect(toast.success).toHaveBeenCalled();
@@ -152,10 +143,6 @@ describe("AddTemplateBacksideAction", () => {
         await user.click(screen.getByRole("button", { name: "Add backside" }));
 
         const dialog = screen.getByRole("dialog");
-        await user.type(
-            within(dialog).getByLabelText("Backside name"),
-            "Backside A",
-        );
         await user.click(
             within(dialog).getByRole("button", { name: "Set Backside File" }),
         );
@@ -168,4 +155,3 @@ describe("AddTemplateBacksideAction", () => {
         });
     });
 });
-
