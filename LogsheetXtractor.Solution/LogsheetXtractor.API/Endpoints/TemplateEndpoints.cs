@@ -13,7 +13,7 @@ using Wolverine.Http;
 
 namespace LogsheetXtractor.API.Endpoints;
 
-public sealed record CloneTemplateBacksideRequest(string Name, Guid FileId);
+public sealed record CloneTemplateBacksideRequest(Guid FileId);
 
 public sealed record CloneTemplateRequest(
     string NewName,
@@ -21,7 +21,7 @@ public sealed record CloneTemplateRequest(
     CloneTemplateBacksideRequest? Backside
 );
 
-public sealed record AddTemplateBacksideRequest(string Name, Guid FileId);
+public sealed record AddTemplateBacksideRequest(Guid FileId);
 public sealed record ExportTemplateConfigRequest(bool IncludeRoiValidations = true);
 
 public static class TemplateEndpoints
@@ -94,7 +94,7 @@ public static class TemplateEndpoints
     {
         var backsideCommand =
             request.Backside != null
-                ? new CloneTemplateBacksideCommand(request.Backside.Name, request.Backside.FileId)
+                ? new CloneTemplateBacksideCommand(request.Backside.FileId)
                 : null;
         var command = new CloneTemplateCommand(
             id,
@@ -119,7 +119,7 @@ public static class TemplateEndpoints
         CancellationToken ct
     )
     {
-        var command = new AddTemplateBacksideCommand(id, request.Name, request.FileId);
+        var command = new AddTemplateBacksideCommand(id, request.FileId);
         var result = await bus.InvokeAsync<Result<TemplateDetailDto>>(command, ct);
 
         return result.ToHttpResult();

@@ -207,7 +207,7 @@ public class CloneTemplateCommandHandlerTests : IDisposable
         _dbContext.Templates.Add(template);
         await _dbContext.SaveChangesAsync();
 
-        var backsideCommand = new CloneTemplateBacksideCommand("Backside Name", backsideFile.Id);
+        var backsideCommand = new CloneTemplateBacksideCommand(backsideFile.Id);
         var command = new CloneTemplateCommand(
             template.Id,
             "Cloned Template",

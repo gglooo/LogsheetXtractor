@@ -8,7 +8,6 @@ public interface ITemplateService
 {
     Task<Result<TemplateDetailDto>> AddBacksideTemplateAsync(
         Guid templateId,
-        string name,
         Guid fileId,
         CancellationToken cancellationToken
     );

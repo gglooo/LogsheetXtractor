@@ -7,6 +7,7 @@ import { EditorNavbar } from "@/modules/template-editor/components/navbar";
 import { SelectedRoisProvider } from "@/modules/template-editor/context/selected-rois-context";
 import { TemplateEditorProvider } from "@/modules/template-editor/context/template-editor-context";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { useTemplateName } from "@/modules/template-editor/hooks/use-template-name";
 import { EditorSidebar } from "@/modules/template-editor/sidebar/sidebar";
 import { useTemplate } from "@/modules/templates/api";
 import { useParams } from "react-router-dom";
@@ -42,6 +43,8 @@ export const TemplateEditorPage = () => {
 export const TemplateEditorContent = () => {
     const { mode, template } = useTemplateEditor();
 
+    const templateName = useTemplateName(template);
+
     if (!template) {
         return <div>No template loaded.</div>;
     }
@@ -55,7 +58,7 @@ export const TemplateEditorContent = () => {
 
                     <main className="flex-1 overflow-auto p-4">
                         <h1 className="text-2xl font-bold mb-4">
-                            {template.name}
+                            {templateName}
                         </h1>
 
                         {template ? (
