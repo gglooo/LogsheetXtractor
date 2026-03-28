@@ -15,6 +15,7 @@ import {
 import { ProofreadingLogsheetViewer } from "@/modules/logsheets/proofreading/components/proofreading-logsheet-viewer";
 import { ProofreadingNavbar } from "@/modules/logsheets/proofreading/components/proofreading-navbar";
 import { useExtractedValues } from "@/modules/logsheets/proofreading/hooks/use-extracted-values";
+import { scrollRoiIntoView } from "@/modules/logsheets/proofreading/utils/scroll";
 import { getValidationConditionsByRoiId } from "@/modules/logsheets/proofreading/utils/validation-conditions";
 import type { RoiType } from "@/modules/rois/schema";
 import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
@@ -48,18 +49,11 @@ export const ProofreadingPage = () => {
 
     const handleRoiClick = (roiId: string) => {
         unverifiedListRef.current?.scrollToRoi(roiId);
-
-        const element = document.getElementById(`roi-${roiId}`);
-        if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+        scrollRoiIntoView(roiId);
     };
 
     const handleListRoiClick = (roiId: string) => {
-        const element = document.getElementById(`roi-${roiId}`);
-        if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+        scrollRoiIntoView(roiId);
     };
 
     const shouldRenderRoiFn = useCallback(
