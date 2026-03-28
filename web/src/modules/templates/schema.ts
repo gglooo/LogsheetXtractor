@@ -58,18 +58,9 @@ export const baseCreateTemplateSchema = z.object({
     importedConfig: z.instanceof(File).optional(),
 });
 
-export const createTemplateSchema = baseCreateTemplateSchema
-    .extend({
-        backside: baseCreateTemplateSchema.optional(),
-    })
-    .refine((data) => data.name !== data.backside?.name, {
-        message: "The template name and backside name cannot be the same.",
-        path: ["backside", "name"],
-    })
-    .refine((data) => data.name !== data.backside?.name, {
-        message: "The template file and backside file cannot be the same.",
-        path: ["name"],
-    });
+export const createTemplateSchema = baseCreateTemplateSchema.extend({
+    backside: baseCreateTemplateSchema.omit({ name: true }).optional(),
+});
 
 export type CreateTemplateFormValues = z.infer<typeof createTemplateSchema>;
 
@@ -80,25 +71,15 @@ export const baseCloneTemplateSchema = z.object({
     file: pdfFileSchema,
 });
 
-export const cloneTemplateSchema = baseCloneTemplateSchema
-    .extend({
-        backside: baseCloneTemplateSchema.optional(),
-    })
-    .refine((data) => data.name !== data.backside?.name, {
-        message: "The template name and backside name cannot be the same.",
-        path: ["backside", "name"],
-    })
-    .refine((data) => data.name !== data.backside?.name, {
-        message: "The template file and backside file cannot be the same.",
-        path: ["name"],
-    });
+export const cloneTemplateSchema = baseCloneTemplateSchema.extend({
+    backside: baseCloneTemplateSchema.omit({ name: true }).optional(),
+});
 
 export type CloneTemplateFormValues = z.infer<typeof cloneTemplateSchema>;
 
 export const addTemplateBacksideSchema = z.object({
     backside: z.object({
         file: pdfFileSchema,
-        name: z.string().min(1).trim(),
         importedConfig: z.instanceof(File).optional(),
     }),
 });

@@ -29,7 +29,6 @@ public class TemplateService(
 {
     public async Task<Result<TemplateDetailDto>> AddBacksideTemplateAsync(
         Guid templateId,
-        string name,
         Guid fileId,
         CancellationToken cancellationToken
     )
@@ -41,7 +40,8 @@ public class TemplateService(
             cancellationToken
         );
         var backsideParentId = await GetBacksideParentIdAsync(template.ParentId, cancellationToken);
-
+        
+        var name = GenerateBacksideTemplateName(template.Name);
         var backsideTemplateResult = await GetTemplateAsync(name, fileId, backsideParentId);
         if (backsideTemplateResult.IsFailed)
         {
@@ -70,15 +70,16 @@ public class TemplateService(
         Template? backsideTemplate = null;
         if (command.Backside is not null)
         {
+            var backsideName = GenerateBacksideTemplateName(command.Name);
             var backsideResult = command.Backside.ImportedConfig is not null
                 ? await GetTemplateFromImportedConfigAsync(
                     command.Backside.ImportedConfig,
                     command.Backside.FileId,
-                    command.Backside.Name,
+                    backsideName,
                     command.Backside.ParentId
                 )
                 : await GetTemplateAsync(
-                    command.Backside.Name,
+                    backsideName,
                     command.Backside.FileId,
                     command.Backside.ParentId
                 );
@@ -158,8 +159,9 @@ public class TemplateService(
 
         if (backside is not null)
         {
+            var backsideName = GenerateBacksideTemplateName(newTemplateName);
             var backsideTemplateResult = await GetTemplateAsync(
-                backside.Name,
+                backsideName,
                 backside.FileId,
                 null
             );
@@ -385,5 +387,11 @@ public class TemplateService(
             .Templates.Where(t => t.Id == templateParentId.Value)
             .Select(t => t.BacksideTemplateId)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+    
+    private string GenerateBacksideTemplateName(string originalName)
+    {
+        var guidSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
+        return $"{originalName}_backside_{guidSuffix}";
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LogsheetXtractor.Application.Features.Template;
 
-public sealed record AddTemplateBacksideCommand(Guid TemplateId, string Name, Guid FileId);
+public sealed record AddTemplateBacksideCommand(Guid TemplateId, Guid FileId);
 
 public static class AddTemplateBacksideHandler
 {
@@ -19,13 +19,6 @@ public static class AddTemplateBacksideHandler
         CancellationToken ct
     )
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            return Result.Fail<TemplateDetailDto>(
-                new ValidationError("Backside template name is required")
-            );
-        }
-
         var templateState = await dbContext
             .Templates.Where(t => t.Id == request.TemplateId)
             .Select(t => new
@@ -72,19 +65,10 @@ public static class AddTemplateBacksideHandler
             return Result.Fail<TemplateDetailDto>(new NotFoundError("Backside file not found"));
         }
 
-        var normalizedName = request.Name.Trim();
-        if (await dbContext.Templates.AnyAsync(t => t.Name == normalizedName, ct))
-        {
-            return Result.Fail<TemplateDetailDto>(
-                new ValidationError("A template with this name already exists.")
-            );
-        }
-
         try
         {
             var result = await templateService.AddBacksideTemplateAsync(
                 request.TemplateId,
-                normalizedName,
                 request.FileId,
                 ct
             );

@@ -46,7 +46,7 @@ export const useCloneTemplateMutation = () => {
             templateId: string;
             newName: string;
             fileId: string;
-            backside?: { name: string; fileId: string };
+            backside?: { fileId: string };
         }) => {
             const response = await fetch(`/api/templates/${templateId}/clone`, {
                 method: "POST",
@@ -71,20 +71,21 @@ export const useAddTemplateBacksideMutation = () => {
         mutationKey: ["addTemplateBackside"],
         mutationFn: async ({
             templateId,
-            name,
             fileId,
         }: {
             templateId: string;
-            name: string;
             fileId: string;
         }) => {
-            const response = await fetch(`/api/templates/${templateId}/backside`, {
-                method: "POST",
-                body: JSON.stringify({ name, fileId }),
-                headers: {
-                    "Content-Type": "application/json",
+            const response = await fetch(
+                `/api/templates/${templateId}/backside`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({ fileId }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                 },
-            });
+            );
 
             return await templateSchema.parseAsync(await response.json());
         },
@@ -143,7 +144,6 @@ export const useCreateTemplateMutation = () => {
                     await uploadFileMutation.mutateAsync(values.backside.file);
 
                 backside = {
-                    name: values.backside.name,
                     fileId: backsideUploadedFile.id,
                     importedConfig: backsideImportedConfig,
                 };

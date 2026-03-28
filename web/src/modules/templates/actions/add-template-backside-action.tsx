@@ -43,7 +43,6 @@ const AddTemplateBacksideForm = ({
 
             await addTemplateBacksideMutation.mutateAsync({
                 templateId,
-                name: values.backside.name,
                 fileId: uploadedFile.id,
             });
 
@@ -154,7 +153,6 @@ export const AddTemplateBacksideAction = ({
                         defaultValues={{
                             backside: {
                                 file: undefined,
-                                name: "",
                                 importedConfig: undefined,
                             },
                         }}

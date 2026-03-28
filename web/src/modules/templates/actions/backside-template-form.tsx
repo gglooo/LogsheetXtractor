@@ -1,5 +1,4 @@
 import { FormFileUpload } from "@/components/form/form-file-upload";
-import { FormInput } from "@/components/form/form-input";
 import { BracesIcon } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { useIntl } from "react-intl";
@@ -27,11 +26,9 @@ export const BacksideTemplateForm = ({
             return;
         }
 
-        setValue(
-            `${fieldPrefix}.name`,
-            file.name.replace(/\.[^/.]+$/, ""),
-            { shouldValidate: true },
-        );
+        setValue(`${fieldPrefix}.name`, file.name.replace(/\.[^/.]+$/, ""), {
+            shouldValidate: true,
+        });
     };
 
     return (
@@ -53,16 +50,6 @@ export const BacksideTemplateForm = ({
                 validator={(file) => file.type === "application/pdf"}
                 onChange={onFileChange}
             />
-
-            {!uploadOnly && (
-                <FormInput
-                    name={`${fieldPrefix}.name`}
-                    label={intl.formatMessage({
-                        id: "templates.actions.createTemplate.form.name.label",
-                        defaultMessage: "Template name",
-                    })}
-                />
-            )}
 
             {showConfigUpload && !uploadOnly && (
                 <FormFileUpload

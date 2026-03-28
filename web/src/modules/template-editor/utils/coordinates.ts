@@ -4,22 +4,22 @@ import type { Coordinates } from "@/schema";
 export const getScaleFromReferenceScale = (
     width: number,
     scale: number,
-    originalWidth: number
+    originalWidth: number,
 ): number => {
-    return (width * scale) / originalWidth;
+    return (width * originalWidth) / scale;
 };
 
 export const getScaleToReferenceScale = (
     width: number,
     scale: number,
-    originalWidth: number
+    originalWidth: number,
 ): number => {
     return (1 / scale) * (originalWidth / width);
 };
 
 export const scaleCoordinatesToReference = (
     coordinates: Coordinates,
-    scale: number
+    scale: number,
 ): Coordinates => {
     return {
         x: coordinates.x * scale,
@@ -31,7 +31,7 @@ export const scaleCoordinatesToReference = (
 
 export const getCoordinatesFromPositions = (
     startPos: Position,
-    currentPos: Position
+    currentPos: Position,
 ): Coordinates => {
     const x = Math.min(startPos.x, currentPos.x);
     const y = Math.min(startPos.y, currentPos.y);
@@ -43,7 +43,7 @@ export const getCoordinatesFromPositions = (
 
 export const areCoordinatesOverlapping = (
     coord1: Coordinates,
-    coord2: Coordinates
+    coord2: Coordinates,
 ): boolean => {
     return !(
         coord1.x + coord1.width < coord2.x ||

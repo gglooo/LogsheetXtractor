@@ -6,7 +6,7 @@ using LogsheetXtractor.Application.Interfaces;
 
 namespace LogsheetXtractor.Application.Features.Template;
 
-public sealed record CloneTemplateBacksideCommand(string Name, Guid FileId);
+public sealed record CloneTemplateBacksideCommand(Guid FileId);
 
 public sealed record CloneTemplateCommand(
     Guid TemplateId,

@@ -33,11 +33,10 @@ export const CloneTemplateWizard = ({
             );
 
             let backside;
-            if (values.backside?.name && values.backside?.file) {
+            if (values.backside?.file) {
                 const backsideUploadedFile =
                     await uploadFileMutation.mutateAsync(values.backside.file);
                 backside = {
-                    name: values.backside.name,
                     fileId: backsideUploadedFile.id,
                 };
             }

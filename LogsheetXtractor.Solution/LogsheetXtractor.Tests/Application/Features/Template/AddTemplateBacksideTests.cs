@@ -19,7 +19,7 @@ public class AddTemplateBacksideTests : IDisposable
     [Fact]
     public async Task Handle_ShouldReturnError_WhenTemplateNotFound()
     {
-        var command = new AddTemplateBacksideCommand(Guid.NewGuid(), "Back", Guid.NewGuid());
+        var command = new AddTemplateBacksideCommand(Guid.NewGuid(), Guid.NewGuid());
 
         var result = await AddTemplateBacksideHandler.Handle(
             command,
@@ -31,23 +31,6 @@ public class AddTemplateBacksideTests : IDisposable
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
         result.Errors.First().Message.Should().Be("Template not found");
-    }
-
-    [Fact]
-    public async Task Handle_ShouldReturnError_WhenNameIsEmpty()
-    {
-        var command = new AddTemplateBacksideCommand(Guid.NewGuid(), "", Guid.NewGuid());
-
-        var result = await AddTemplateBacksideHandler.Handle(
-            command,
-            _templateServiceMock.Object,
-            _dbContext,
-            CancellationToken.None
-        );
-
-        result.IsFailed.Should().BeTrue();
-        result.Errors.Should().ContainItemsAssignableTo<ValidationError>();
-        result.Errors.First().Message.Should().Be("Backside template name is required");
     }
 
     [Fact]
@@ -88,7 +71,7 @@ public class AddTemplateBacksideTests : IDisposable
         _dbContext.Templates.AddRange(template, backside);
         await _dbContext.SaveChangesAsync();
 
-        var command = new AddTemplateBacksideCommand(template.Id, "Back", backFile.Id);
+        var command = new AddTemplateBacksideCommand(template.Id,  backFile.Id);
 
         var result = await AddTemplateBacksideHandler.Handle(
             command,
@@ -147,7 +130,7 @@ public class AddTemplateBacksideTests : IDisposable
         _dbContext.Logsheets.Add(logsheet);
         await _dbContext.SaveChangesAsync();
 
-        var command = new AddTemplateBacksideCommand(template.Id, "Back", backsideFile.Id);
+        var command = new AddTemplateBacksideCommand(template.Id,  backsideFile.Id);
 
         var result = await AddTemplateBacksideHandler.Handle(
             command,
@@ -210,14 +193,13 @@ public class AddTemplateBacksideTests : IDisposable
             .Setup(s =>
                 s.AddBacksideTemplateAsync(
                     template.Id,
-                    "Back",
                     backFile.Id,
                     It.IsAny<CancellationToken>()
                 )
             )
             .ReturnsAsync(expectedDto);
 
-        var command = new AddTemplateBacksideCommand(template.Id, "Back", backFile.Id);
+        var command = new AddTemplateBacksideCommand(template.Id, backFile.Id);
 
         var result = await AddTemplateBacksideHandler.Handle(
             command,
@@ -232,7 +214,6 @@ public class AddTemplateBacksideTests : IDisposable
             s =>
                 s.AddBacksideTemplateAsync(
                     template.Id,
-                    "Back",
                     backFile.Id,
                     It.IsAny<CancellationToken>()
                 ),
