@@ -1,4 +1,7 @@
+using System.Globalization;
 using System.Text.Json;
+using CsvHelper;
+using CsvHelper.Configuration;
 using LogsheetXtractor.Application.Features.Scripting.DTOs;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.ValueObjects;
@@ -13,20 +16,32 @@ public class ScriptOutputParser(
 ) : IScriptOutputParser
 {
     public async Task<Dictionary<string, string>> ParseProcessLogsheetCsvAsync(
-        string filePath,
-        CancellationToken ct = default
-    )
+        string filePath, 
+        CancellationToken ct = default)
     {
         var csvContent = await fileStorageService.ReadAllTextAsync(filePath, ct);
         var result = new Dictionary<string, string>();
 
-        var lines = csvContent.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Skip(1);
-        foreach (var line in lines)
+        using var reader = new StringReader(csvContent);
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            var parts = line.Split(',', 2);
-            if (parts.Length == 2)
+            HasHeaderRecord = true, 
+            MissingFieldFound = null 
+        };
+    
+        using var csv = new CsvReader(reader, config);
+
+        await csv.ReadAsync();
+        csv.ReadHeader();
+
+        while (await csv.ReadAsync())
+        {
+            var key = csv.GetField(0);
+            var value = csv.GetField(1);
+
+            if (!string.IsNullOrWhiteSpace(key))
             {
-                result[parts[0]] = parts[1];
+                result[key] = value!; 
             }
         }
 
