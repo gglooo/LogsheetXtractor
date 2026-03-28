@@ -66,6 +66,26 @@ public sealed class TemplateServiceExportConfigTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportTemplateConfigAsync_ShouldExportRoiVariableNames_InsteadOfIds()
+    {
+        var templateId = await SeedTemplateWithValidatedRoiAsync();
+
+        await using var context = new AppDbContext(_options);
+        var service = CreateTemplateService(context);
+
+        var result = await service.ExportTemplateConfigAsync(
+            templateId,
+            includeRoiValidations: true,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+        using var json = JsonDocument.Parse(result.Value);
+        var roiJson = json.RootElement.GetProperty("content")[0];
+        roiJson.GetProperty("varname").GetString().Should().Be("temperature");
+    }
+
+    [Fact]
     public async Task CreateTemplateAsync_ShouldImportOptionalValidationCondition_WhenPresent()
     {
         var fileId = await SeedFileAsync();

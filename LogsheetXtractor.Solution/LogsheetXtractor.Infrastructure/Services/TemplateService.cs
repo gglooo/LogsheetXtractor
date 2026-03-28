@@ -249,17 +249,30 @@ public class TemplateService(
 
         var templateConfig = mapper.Map<PythonTemplateConfig>(template);
         var rois = templateConfig.Rois.ToList();
-        if (!includeRoiValidations)
+        var variableNamesByRoiId = template.Rois.ToDictionary(r => r.Id, r => r.VariableName);
+
+        foreach (var roi in rois)
         {
-            foreach (var roi in rois)
+            if (
+                Guid.TryParse(roi.VarName, out var roiId)
+                && variableNamesByRoiId.TryGetValue(roiId, out var variableName)
+            )
+            {
+                // The app uses the unique ROI id as a variable name when interacting with formHTR.
+                // This ensures that the user sees the custom variable names when exporting.
+                roi.VarName = variableName;
+            }
+
+            if (!includeRoiValidations)
             {
                 roi.ValidationCondition = null;
             }
         }
+
         templateConfig.Rois = rois;
 
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        return Result.Ok(JsonSerializer.Serialize(templateConfig, options));
+        var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+        return Result.Ok(JsonSerializer.Serialize(templateConfig, jsonOptions));
     }
 
     private async Task<Result<PdfDimensionsDto>> CalculateTemplateFileDimensionsAsync(Guid fileId)
