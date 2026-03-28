@@ -108,6 +108,11 @@ public class TemplateService(
 
         var template = templateResult.Value;
 
+        if (backsideTemplate is not null)
+        {
+            await dbContext.Templates.AddAsync(backsideTemplate, cancellationToken);
+        }
+
         await dbContext.Templates.AddAsync(template, cancellationToken);
 
         template.SetBacksideTemplate(backsideTemplate);

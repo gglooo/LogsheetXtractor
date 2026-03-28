@@ -173,6 +173,86 @@ public sealed class TemplateServiceExportConfigTests : IDisposable
         persistedRoi.ValidationCondition.Should().BeNull();
     }
 
+    [Fact]
+    public async Task CreateTemplateAsync_ShouldCreateTemplateWithBackside_WhenBothConfigsAreImported()
+    {
+        var frontFileId = await SeedFileAsync();
+        var backFileId = await SeedFileAsync();
+
+        var command = new CreateTemplateCommand
+        {
+            Name = "Imported front with imported backside",
+            FileId = frontFileId,
+            ImportedConfig =
+                """
+                {
+                  "content": [
+                    {
+                      "coords": [10, 20, 40, 60],
+                      "type": "Number",
+                      "varname": "front_value"
+                    }
+                  ],
+                  "to_ignore": [
+                    {
+                      "coords": [1, 2, 3, 4],
+                      "content": "front residual"
+                    }
+                  ],
+                  "width": 100,
+                  "height": 200
+                }
+                """,
+            Backside = new CreateTemplateBacksideCommand
+            {
+                FileId = backFileId,
+                ImportedConfig =
+                    """
+                    {
+                      "content": [
+                        {
+                          "coords": [11, 21, 41, 61],
+                          "type": "Handwritten",
+                          "varname": "back_value"
+                        }
+                      ],
+                      "to_ignore": [
+                        {
+                          "coords": [2, 3, 4, 5],
+                          "content": "back residual"
+                        }
+                      ],
+                      "width": 101,
+                      "height": 201
+                    }
+                    """,
+            },
+        };
+
+        await using var context = new AppDbContext(_options);
+        var service = CreateTemplateService(context);
+
+        var result = await service.CreateTemplateAsync(command, CancellationToken.None);
+        result.IsSuccess.Should().BeTrue();
+
+        await context
+            .Invoking(c => c.SaveChangesAsync(CancellationToken.None))
+            .Should()
+            .NotThrowAsync();
+
+        var templates = await context.Templates.AsNoTracking().ToListAsync();
+        templates.Should().HaveCount(2);
+
+        var frontTemplate = templates.Single(t => t.Name == command.Name);
+        frontTemplate.BacksideTemplateId.Should().NotBeNull();
+
+        var rois = await context.Rois.AsNoTracking().ToListAsync();
+        rois.Should().HaveCount(2);
+
+        var residuals = await context.Residuals.AsNoTracking().ToListAsync();
+        residuals.Should().HaveCount(2);
+    }
+
     private TemplateService CreateTemplateService(AppDbContext context)
     {
         var residualServiceMock = new Mock<IResidualService>();
