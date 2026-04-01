@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { getLocalDate } from "@/lib/utils";
 import { formatDate } from "date-fns";
 import { useIntl } from "react-intl";
 
@@ -8,15 +9,6 @@ export const ProcessedBadge = ({
     processedAt: Date | string | null;
 }) => {
     const intl = useIntl();
-
-    const getLocalDate = (value: Date | string) => {
-        if (value instanceof Date) {
-            return value;
-        }
-
-        const hasTimezoneInfo = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
-        return new Date(hasTimezoneInfo ? value : `${value}Z`);
-    };
 
     if (processedAt) {
         return (

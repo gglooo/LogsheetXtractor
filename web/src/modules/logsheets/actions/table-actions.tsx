@@ -97,12 +97,15 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
                             logsheetId: logsheet.id,
                         });
                     }}
-                    disabled={exportLogsheetMutation.isPending}
+                    disabled={
+                        exportLogsheetMutation.isPending ||
+                        !stateMachine.canProofread()
+                    }
                 >
                     <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />
                     {intl.formatMessage({
                         id: "logsheets.actions.export",
-                        defaultMessage: "Export",
+                        defaultMessage: "Export proofreading data",
                     })}
                 </DropdownMenuItem>
                 <DropdownMenuItem
