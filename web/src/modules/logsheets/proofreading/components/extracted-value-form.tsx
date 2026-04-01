@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useVerifyExtractedValueMutation } from "@/modules/logsheets/proofreading/api";
 import { ExtractedValueCorrectedField } from "@/modules/logsheets/proofreading/components/extracted-value-corrected-field";
+import { ExtractedValueValidationWarnings } from "@/modules/logsheets/proofreading/components/extracted-value-validation-warnings";
 import { getExtractedValueDefaultFormValue } from "@/modules/logsheets/proofreading/utils";
 import {
     createExtractedValueFormSchema,
     type ExtractedValueFormValues,
     type ExtractedValueType,
 } from "@/modules/logsheets/schema";
+import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { CheckIcon } from "lucide-react";
 import { useFormContext, useFormState } from "react-hook-form";
 import { useIntl } from "react-intl";
@@ -16,6 +18,8 @@ import { toast } from "sonner";
 
 type Props = {
     extractedValue: ExtractedValueType;
+    validationCondition: RoiValidationConditionType;
+    onVerified?: (verifiedExtractedValue: ExtractedValueType) => void;
 };
 
 const SubmitButton = ({ onSubmit }: { onSubmit: () => void }) => {
@@ -84,13 +88,19 @@ const FormContent = ({
     );
 };
 
-export const ExtractedValueForm = ({ extractedValue }: Props) => {
+export const ExtractedValueForm = ({
+    extractedValue,
+    validationCondition,
+    onVerified,
+}: Props) => {
     const intl = useIntl();
     const verifyMutation = useVerifyExtractedValueMutation(
         extractedValue.logsheetId,
     );
 
     const formSchema = createExtractedValueFormSchema(extractedValue.roiType);
+    const defaultCorrectedValue =
+        getExtractedValueDefaultFormValue(extractedValue);
 
     const onSubmit = async (values: ExtractedValueFormValues) => {
         try {
@@ -104,6 +114,7 @@ export const ExtractedValueForm = ({ extractedValue }: Props) => {
                     defaultMessage: "Value verified successfully",
                 }),
             );
+            onVerified?.(extractedValue);
         } catch {
             toast.error(
                 intl.formatMessage({
@@ -119,14 +130,20 @@ export const ExtractedValueForm = ({ extractedValue }: Props) => {
             schema={formSchema}
             defaultValues={{
                 ...extractedValue,
-                correctedValue:
-                    getExtractedValueDefaultFormValue(extractedValue),
+                correctedValue: defaultCorrectedValue,
             }}
         >
-            <FormContent
-                extractedValue={extractedValue}
-                onSubmitCallback={onSubmit}
-            />
+            <div className="flex flex-col gap-4">
+                <FormContent
+                    extractedValue={extractedValue}
+                    onSubmitCallback={onSubmit}
+                />
+                <ExtractedValueValidationWarnings
+                    warnings={extractedValue.validationWarnings}
+                    validationCondition={validationCondition}
+                    initialCorrectedValue={defaultCorrectedValue}
+                />
+            </div>
         </Form>
     );
 };

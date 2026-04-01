@@ -121,6 +121,9 @@ export const GamifiedCard = ({
         extractedValue.logsheetId,
         extractedValue.roiId,
     );
+    const defaultCorrectedValue = getExtractedValueDefaultFormValue(
+        extractedValue,
+    );
 
     const formSchema = createExtractedValueFormSchema(extractedValue.roiType);
 
@@ -167,8 +170,7 @@ export const GamifiedCard = ({
                     schema={formSchema}
                     defaultValues={{
                         ...extractedValue,
-                        correctedValue:
-                            getExtractedValueDefaultFormValue(extractedValue),
+                        correctedValue: defaultCorrectedValue,
                     }}
                 >
                     <div className="flex flex-col gap-2">
@@ -181,6 +183,7 @@ export const GamifiedCard = ({
                         <ExtractedValueValidationWarnings
                             warnings={extractedValue.validationWarnings}
                             validationCondition={validationCondition}
+                            initialCorrectedValue={defaultCorrectedValue}
                         />
                     </div>
                 </Form>
