@@ -19,3 +19,12 @@ export const formatFileSize = (bytes: number) => {
 export const getUrlFromBytes = (bytes: ArrayBuffer) => {
     return URL.createObjectURL(new Blob([bytes]));
 };
+
+export const getLocalDate = (value: Date | string) => {
+    if (value instanceof Date) {
+        return value;
+    }
+
+    const hasTimezoneInfo = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
+    return new Date(hasTimezoneInfo ? value : `${value}Z`);
+};

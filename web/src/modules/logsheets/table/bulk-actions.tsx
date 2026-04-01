@@ -139,7 +139,7 @@ export const LogsheetTableBulkActions = ({
                     )}
                     {intl.formatMessage({
                         id: "logsheets.bulk.export",
-                        defaultMessage: "Export",
+                        defaultMessage: "Export proofreading data",
                     })}
                 </Button>
                 <Button

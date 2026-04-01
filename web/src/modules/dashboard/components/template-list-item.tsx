@@ -13,6 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getLocalDate } from "@/lib/utils";
 import { TemplateEditButton } from "@/modules/dashboard/components/template-edit-button";
 import { baseLogsheetsPath } from "@/modules/logsheets/routes";
 import { CloneTemplateAction } from "@/modules/templates/actions/clone-template-action";
@@ -121,7 +122,7 @@ export const TemplateListItem = ({
                             </Badge>
                         ) : null}
                     </div>
-                    {format(new Date(template.createdAt), "PPP p", {
+                    {format(getLocalDate(template.createdAt), "PPP p", {
                         locale,
                     })}
                 </CardDescription>
