@@ -99,7 +99,7 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
                     }}
                     disabled={
                         exportLogsheetMutation.isPending ||
-                        !stateMachine.canProofread()
+                        !stateMachine.canExport()
                     }
                 >
                     <ArrowRightFromLineIcon className="mr-2 h-4 w-4" />

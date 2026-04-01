@@ -26,4 +26,8 @@ export class LogsheetStateMachine {
     canDelete(): boolean {
         return this.status !== "Processing" && this.status !== "Aligning";
     }
+
+    canExport(): boolean {
+        return this.status === "Completed";
+    }
 }
