@@ -1,76 +1,125 @@
-import { useFormatValidationWarning } from "@/modules/logsheets/proofreading/utils/validation-warning-intl";
-import { useFormatValidationRulePath } from "@/modules/logsheets/proofreading/utils/validation-warning-path";
+import { Button } from "@/components/ui/button";
+import { ExtractedValueValidationWarningsContent } from "@/modules/logsheets/proofreading/components/extracted-value-validation-warnings-content";
 import type { RoiValidationWarningType } from "@/modules/logsheets/schema";
 import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
-import { TriangleAlert } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { defineMessage, useIntl } from "react-intl";
 
 type ExtractedValueValidationWarningsProps = {
     warnings: RoiValidationWarningType[];
     validationCondition: RoiValidationConditionType;
+    initialCorrectedValue: string | number | null;
 };
 
-const warningsTitleMessage = defineMessage({
-    id: "proofreading.validationWarnings.title",
-    defaultMessage: "Validation warnings",
+const collapsedSummaryMessage = defineMessage({
+    id: "proofreading.validationWarnings.collapsedSummary",
+    defaultMessage:
+        "{count, plural, one {# warning from original extraction} other {# warnings from original extraction}}",
 });
 
-const rulePathMessage = defineMessage({
-    id: "proofreading.validationWarnings.rulePath",
-    defaultMessage: "{rulePath}",
+const showWarningsMessage = defineMessage({
+    id: "proofreading.validationWarnings.show",
+    defaultMessage: "Show warnings",
 });
+
+const minimizeWarningsMessage = defineMessage({
+    id: "proofreading.validationWarnings.minimize",
+    defaultMessage: "Hide warnings",
+});
+
+const normalizeComparableValue = (value: unknown): string => {
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    if (typeof value === "number") {
+        return Number.isNaN(value) ? "" : `${value}`;
+    }
+
+    if (typeof value === "boolean") {
+        return value ? "true" : "false";
+    }
+
+    return `${value}`;
+};
 
 export const ExtractedValueValidationWarnings = ({
     warnings,
     validationCondition,
+    initialCorrectedValue,
 }: ExtractedValueValidationWarningsProps) => {
     const intl = useIntl();
-    const formatValidationWarning = useFormatValidationWarning();
-    const { formatValidationRulePath, resolveNodeAtPath } =
-        useFormatValidationRulePath();
+    const { watch } = useFormContext();
+    const hasAutoCollapsedRef = useRef(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    useEffect(() => {
+        const initialComparable = normalizeComparableValue(
+            initialCorrectedValue,
+        );
+
+        const subscription = watch((values, { name }) => {
+            if (name !== "correctedValue" || hasAutoCollapsedRef.current) {
+                return;
+            }
+
+            const currentComparable = normalizeComparableValue(
+                values.correctedValue,
+            );
+
+            if (currentComparable === initialComparable) {
+                return;
+            }
+
+            hasAutoCollapsedRef.current = true;
+            setIsCollapsed(true);
+        });
+
+        return () => subscription.unsubscribe();
+    }, [initialCorrectedValue, watch]);
 
     if (warnings.length === 0) {
         return null;
     }
 
     return (
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
-            <div className="mb-2 flex items-center gap-2 text-amber-700 dark:text-amber-300">
-                <TriangleAlert className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase tracking-wide">
-                    {intl.formatMessage(warningsTitleMessage)}
-                </span>
-            </div>
-            <ul className="max-h-44 space-y-2 overflow-y-auto pr-1">
-                {warnings.map((warning, index) => {
-                    const node = resolveNodeAtPath(
-                        warning.path,
-                        validationCondition,
-                    );
-                    const shouldDisplayRulePath =
-                        node?.type === "rule" &&
-                        Object.keys(node.params).length > 0;
-
-                    return (
-                        <li
-                            key={`${warning.code}-${warning.path}-${index}`}
-                            className="text-sm text-amber-900 dark:text-amber-100"
-                        >
-                            <div>{formatValidationWarning(warning)}</div>
-                            {shouldDisplayRulePath && (
-                                <div className="text-xs text-amber-800/80 dark:text-amber-200/80">
-                                    {intl.formatMessage(rulePathMessage, {
-                                        rulePath: formatValidationRulePath(
-                                            warning.path,
-                                            validationCondition,
-                                        ),
-                                    })}
-                                </div>
-                            )}
-                        </li>
-                    );
-                })}
-            </ul>
-        </div>
+        <ExtractedValueValidationWarningsContent
+            warnings={warnings}
+            validationCondition={validationCondition}
+            isCollapsed={isCollapsed}
+            onCollapsedClick={() => setIsCollapsed((prev) => !prev)}
+            collapsedSummary={
+                isCollapsed
+                    ? intl.formatMessage(collapsedSummaryMessage, {
+                          count: warnings.length,
+                      })
+                    : undefined
+            }
+            headerAction={
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        setIsCollapsed((prev) => !prev);
+                    }}
+                    aria-label={intl.formatMessage(
+                        isCollapsed
+                            ? showWarningsMessage
+                            : minimizeWarningsMessage,
+                    )}
+                    className="h-6 w-6 text-amber-700 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-300 dark:hover:bg-amber-400/10 dark:hover:text-amber-300"
+                >
+                    {isCollapsed ? (
+                        <ChevronDown className="h-4 w-4" />
+                    ) : (
+                        <ChevronUp className="h-4 w-4" />
+                    )}
+                </Button>
+            }
+        />
     );
 };

@@ -2,7 +2,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ExtractedValueForm } from "@/modules/logsheets/proofreading/components/extracted-value-form";
 import { ExtractedValueImage } from "@/modules/logsheets/proofreading/components/extracted-value-image";
-import { ExtractedValueValidationWarnings } from "@/modules/logsheets/proofreading/components/extracted-value-validation-warnings";
 import type { ExtractedValueType } from "@/modules/logsheets/schema";
 import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { memo } from "react";
@@ -12,6 +11,7 @@ type ExtractedValueCardProps = {
     validationCondition: RoiValidationConditionType;
     isSelected: boolean;
     onSelect: (roiId: string) => void;
+    onVerified?: (roiId: string) => void;
 };
 
 export const ExtractedValueCard = memo(
@@ -20,10 +20,12 @@ export const ExtractedValueCard = memo(
         validationCondition,
         isSelected,
         onSelect,
+        onVerified,
     }: ExtractedValueCardProps) => {
         return (
             <Card
                 onClick={() => onSelect(extractedValue.roiId)}
+                data-proofreading-roi-id={extractedValue.roiId}
                 className={cn(
                     "cursor-pointer transition-all duration-200 border-2",
                     isSelected
@@ -37,10 +39,10 @@ export const ExtractedValueCard = memo(
                         <div className="font-medium text-sm text-muted-foreground">
                             {extractedValue.variableName}
                         </div>
-                        <ExtractedValueForm extractedValue={extractedValue} />
-                        <ExtractedValueValidationWarnings
-                            warnings={extractedValue.validationWarnings}
+                        <ExtractedValueForm
+                            extractedValue={extractedValue}
                             validationCondition={validationCondition}
+                            onVerified={() => onVerified?.(extractedValue.roiId)}
                         />
                     </div>
                     <div className="flex flex-col justify-end"></div>
