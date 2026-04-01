@@ -11,6 +11,13 @@ namespace LogsheetXtractor.IntegrationTests.Infrastructure.Fakes;
 
 public sealed class FakeHtrScriptEngine : IHtrScriptEngine
 {
+    public IReadOnlyList<ExportLogsheetDataDto> LastExportData { get; private set; } = [];
+
+    public void ResetCapturedExportData()
+    {
+        LastExportData = [];
+    }
+
     public Task<Result<SelectRoisOutputDto>> SelectRoisAsync(
         SelectRoisInputDto input,
         CancellationToken ct
@@ -53,6 +60,19 @@ public sealed class FakeHtrScriptEngine : IHtrScriptEngine
         CancellationToken ct
     )
     {
+        LastExportData = data
+            .Select(
+                entry =>
+                    new ExportLogsheetDataDto
+                    {
+                        VariableName = entry.VariableName,
+                        Value = entry.Value,
+                        Coordinates = entry.Coordinates,
+                        Page = entry.Page,
+                    }
+            )
+            .ToList();
+
         var dto = new GetFileDto
         {
             Stream = new MemoryStream([]),
