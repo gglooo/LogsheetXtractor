@@ -38,6 +38,8 @@ public class LogsheetExportIntegrationTests : IClassFixture<ApiWebApplicationFac
         await SetRoiAsync(templateId, "temperature");
 
         var createdLogsheet = await CreateLogsheetAsync(templateId, logsheetFileId);
+       
+        await WaitForStatusAsync(createdLogsheet.Id, "Pending");
 
         var startProcessingResponse = await _client.PostAsJsonAsync(
             $"/api/logsheets/{createdLogsheet.Id}/process",
@@ -54,6 +56,23 @@ public class LogsheetExportIntegrationTests : IClassFixture<ApiWebApplicationFac
         var processedLogsheet = await WaitForStatusAsync(createdLogsheet.Id, "NeedsReview");
         processedLogsheet.ExtractedValues.Should().ContainSingle();
         var processedRoiId = processedLogsheet.ExtractedValues[0].RoiId;
+
+        foreach (var extractedValue in processedLogsheet.ExtractedValues)
+        {
+            var verifyResponse = await _client.PostAsJsonAsync(
+                $"/api/extracted-values/{extractedValue.Id}/verify",
+                new { correctedValue = extractedValue.Value }
+            );
+            verifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        var completeProofreadingResponse = await _client.PostAsync(
+            $"/api/logsheets/{createdLogsheet.Id}/proofreading/complete",
+            content: null
+        );
+        completeProofreadingResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await WaitForStatusAsync(createdLogsheet.Id, "Completed");
 
         var exportResponse = await _client.PostAsync(
             $"/api/logsheets/{createdLogsheet.Id}/export",
@@ -164,7 +183,7 @@ public class LogsheetExportIntegrationTests : IClassFixture<ApiWebApplicationFac
 
     private sealed record FileUploadResponse(Guid Id);
     private sealed record TemplateDetailResponse(Guid Id);
-    private sealed record ExtractedValueResponse(Guid Id, Guid RoiId, string VariableName);
+    private sealed record ExtractedValueResponse(Guid Id, Guid RoiId, string VariableName, string Value);
     private sealed record LogsheetDetailResponse(
         Guid Id,
         string Status,
