@@ -182,4 +182,130 @@ describe("LogsheetTableActions", () => {
             "/templates/template-123/logsheets/11111111-1111-4111-8111-111111111111/proofread",
         );
     });
+
+    it("shows error toast when process fails", async () => {
+        const user = userEvent.setup();
+        const mutateAsync = vi.fn().mockRejectedValue(new Error("boom"));
+        useProcessLogsheetMutationMock.mockReturnValue({
+            mutateAsync,
+            isPending: false,
+        });
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Pending")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        await user.click(screen.getByTitle("Process"));
+
+        await waitFor(() => {
+            expect(mutateAsync).toHaveBeenCalledWith(
+                "11111111-1111-4111-8111-111111111111",
+            );
+            expect(toast.error).toHaveBeenCalledWith(
+                "Failed to queue logsheet for processing.",
+            );
+        });
+    });
+
+    it("hides process action when logsheet state cannot be processed", () => {
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Completed")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        expect(screen.queryByTitle("Process")).not.toBeInTheDocument();
+    });
+
+    it("disables export action when logsheet state cannot be exported", async () => {
+        const user = userEvent.setup();
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Pending")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        await user.click(screen.getByTitle("More actions"));
+
+        expect(
+            screen.getByRole("menuitem", { name: "Export proofreading data" }),
+        ).toHaveAttribute("aria-disabled", "true");
+    });
+
+    it("exports completed logsheet from menu action", async () => {
+        const user = userEvent.setup();
+        const mutateAsync = vi.fn().mockResolvedValue(undefined);
+        useExportLogsheetMutationMock.mockReturnValue({
+            mutateAsync,
+            isPending: false,
+        });
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Completed")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        await user.click(screen.getByTitle("More actions"));
+        await user.click(
+            screen.getByRole("menuitem", { name: "Export proofreading data" }),
+        );
+
+        await waitFor(() => {
+            expect(mutateAsync).toHaveBeenCalledWith({
+                logsheetId: "11111111-1111-4111-8111-111111111111",
+            });
+        });
+    });
+
+    it("disables delete action when logsheet state cannot be deleted", async () => {
+        const user = userEvent.setup();
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Processing")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        await user.click(screen.getByTitle("More actions"));
+
+        expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveAttribute(
+            "aria-disabled",
+            "true",
+        );
+    });
+
+    it("deletes logsheet from menu action and shows success toast", async () => {
+        const user = userEvent.setup();
+        const mutateAsync = vi.fn().mockResolvedValue(undefined);
+        useDeleteLogsheetMutationMock.mockReturnValue({
+            mutateAsync,
+            isPending: false,
+        });
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Pending")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        await user.click(screen.getByTitle("More actions"));
+        await user.click(screen.getByRole("menuitem", { name: "Delete" }));
+
+        await waitFor(() => {
+            expect(mutateAsync).toHaveBeenCalledWith(
+                "11111111-1111-4111-8111-111111111111",
+            );
+            expect(toast.success).toHaveBeenCalledWith("Logsheet was deleted.");
+        });
+    });
 });

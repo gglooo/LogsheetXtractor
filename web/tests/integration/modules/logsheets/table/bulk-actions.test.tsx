@@ -126,7 +126,9 @@ describe("LogsheetTableBulkActions", () => {
             />,
         );
 
-        await user.click(screen.getByRole("button", { name: "Export" }));
+        await user.click(
+            screen.getByRole("button", { name: "Export proofreading data" }),
+        );
 
         await waitFor(() => {
             expect(mutateAsync).toHaveBeenCalledWith(["a", "b", "c"]);
@@ -134,5 +136,72 @@ describe("LogsheetTableBulkActions", () => {
             expect(toast.success).toHaveBeenCalled();
         });
     });
-});
 
+    it("shows error toast when export fails and keeps selection", async () => {
+        const user = userEvent.setup();
+        const mutateAsync = vi.fn().mockRejectedValue(new Error("export failed"));
+        const onClearSelection = vi.fn();
+
+        useExportLogsheetsMutationMock.mockReturnValue({
+            mutateAsync,
+            isPending: false,
+        });
+
+        renderWithProviders(
+            <LogsheetTableBulkActions
+                selectedLogsheetIds={["a", "b", "c"]}
+                onClearSelection={onClearSelection}
+            />,
+        );
+
+        await user.click(
+            screen.getByRole("button", { name: "Export proofreading data" }),
+        );
+
+        await waitFor(() => {
+            expect(mutateAsync).toHaveBeenCalledWith(["a", "b", "c"]);
+            expect(onClearSelection).not.toHaveBeenCalled();
+            expect(toast.error).toHaveBeenCalled();
+        });
+    });
+
+    it("disables export button and shows exporting dialog while export is pending", () => {
+        useExportLogsheetsMutationMock.mockReturnValue({
+            mutateAsync: vi.fn(),
+            isPending: true,
+        });
+
+        renderWithProviders(
+            <LogsheetTableBulkActions
+                selectedLogsheetIds={["a", "b", "c"]}
+                onClearSelection={vi.fn()}
+            />,
+        );
+
+        expect(
+            screen
+                .getByText("Export proofreading data", { selector: "button" })
+                .closest("button"),
+        ).toBeDisabled();
+        expect(screen.getByText("Exporting logsheets")).toBeInTheDocument();
+    });
+
+    it("disables process button and shows processing dialog while process is pending", () => {
+        useProcessLogsheetsMutationMock.mockReturnValue({
+            mutateAsync: vi.fn(),
+            isPending: true,
+        });
+
+        renderWithProviders(
+            <LogsheetTableBulkActions
+                selectedLogsheetIds={["a", "b", "c"]}
+                onClearSelection={vi.fn()}
+            />,
+        );
+
+        expect(
+            screen.getByText("Process", { selector: "button" }).closest("button"),
+        ).toBeDisabled();
+        expect(screen.getByText("Processing logsheets")).toBeInTheDocument();
+    });
+});
