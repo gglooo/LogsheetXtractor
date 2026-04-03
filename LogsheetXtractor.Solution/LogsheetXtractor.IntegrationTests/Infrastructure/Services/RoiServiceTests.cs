@@ -1,0 +1,413 @@
+using FluentAssertions;
+using LogsheetXtractor.Application.Features.ROIs.DTOs;
+using LogsheetXtractor.Application.Features.Scripting;
+using LogsheetXtractor.Application.Interfaces;
+using LogsheetXtractor.Domain.Entities;
+using LogsheetXtractor.Domain.Enums;
+using LogsheetXtractor.Domain.ValueObjects;
+using LogsheetXtractor.Infrastructure.Persistence;
+using LogsheetXtractor.Infrastructure.Services;
+using LogsheetXtractor.IntegrationTests.Common;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Moq;
+using Xunit;
+
+namespace LogsheetXtractor.IntegrationTests.Infrastructure.Services;
+
+public class RoiServiceTests : IDisposable
+{
+    private readonly AppDbContext _dbContext;
+    private readonly Mock<IMapper> _mapperMock;
+    private readonly Mock<IHtrScriptEngine> _scriptEngineMock;
+    private readonly RoiService _roiService;
+
+    public RoiServiceTests()
+    {
+        _dbContext = TestDbContextFactory.Create();
+        _mapperMock = new Mock<IMapper>();
+        _scriptEngineMock = new Mock<IHtrScriptEngine>();
+
+        _roiService = new RoiService(_dbContext, _mapperMock.Object, _scriptEngineMock.Object);
+    }
+
+    [Fact]
+    public async Task SetRoisForTemplateAsync_ShouldAddNewRois()
+    {
+        var templateId = Guid.NewGuid();
+        var newRoiDto = new SetRoiDto(
+            null,
+            "New ROI",
+            ERoiType.Handwritten,
+            new Coordinates(10, 10, 100, 100)
+        );
+        var updateRois = new List<SetRoiDto> { newRoiDto };
+
+        _mapperMock
+            .Setup(m => m.Map<Roi>(It.IsAny<SetRoiDto>()))
+            .Returns(
+                (SetRoiDto dto) =>
+                    new Roi
+                    {
+                        VariableName = dto.VariableName,
+                        Type = dto.Type ?? ERoiType.Handwritten,
+                        Coordinates = dto.Coordinates,
+                        Template = null!,
+                    }
+            );
+
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
+            .Returns(
+                (IEnumerable<Roi> rois) =>
+                    rois.Select(r => new RoiDto(
+                        r.Id,
+                        r.VariableName,
+                        r.TemplateId,
+                        r.Type,
+                        r.Coordinates,
+                        r.CreatedAt,
+                        r.UpdatedAt
+                    ))
+            );
+
+        var result = await _roiService.SetRoisForTemplateAsync(
+            templateId,
+            updateRois,
+            CancellationToken.None
+        );
+        await _dbContext.SaveChangesAsync();
+
+        var savedRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
+        savedRois.Should().HaveCount(1);
+        savedRois[0].VariableName.Should().Be("New ROI");
+        savedRois[0].TemplateId.Should().Be(templateId);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().VariableName.Should().Be("New ROI");
+    }
+
+    [Fact]
+    public async Task SetRoisForTemplateAsync_ShouldUpdateExistingRois()
+    {
+        var templateId = Guid.NewGuid();
+        var existingRoiId = Guid.NewGuid();
+        var existingRoi = new Roi
+        {
+            Id = existingRoiId,
+            TemplateId = templateId,
+            VariableName = "Old Name",
+            Type = ERoiType.Handwritten,
+            Coordinates = new Coordinates(0, 0, 50, 50),
+            Template = null!,
+        };
+        _dbContext.Rois.Add(existingRoi);
+        await _dbContext.SaveChangesAsync();
+
+        var updateDto = new SetRoiDto(
+            existingRoiId.ToString(),
+            "Updated Name",
+            ERoiType.Handwritten,
+            new Coordinates(20, 20, 60, 60)
+        );
+        var updateRois = new List<SetRoiDto> { updateDto };
+
+        _mapperMock
+            .Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
+            .Callback<SetRoiDto, Roi>(
+                (dto, entity) =>
+                {
+                    entity.VariableName = dto.VariableName;
+                    entity.Type = dto.Type ?? ERoiType.Handwritten;
+                    entity.Coordinates = dto.Coordinates;
+                }
+            );
+
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
+            .Returns(
+                (IEnumerable<Roi> rois) =>
+                    rois.Select(r => new RoiDto(
+                        r.Id,
+                        r.VariableName,
+                        r.TemplateId,
+                        r.Type,
+                        r.Coordinates,
+                        r.CreatedAt,
+                        r.UpdatedAt
+                    ))
+            );
+
+        var result = await _roiService.SetRoisForTemplateAsync(
+            templateId,
+            updateRois,
+            CancellationToken.None
+        );
+        await _dbContext.SaveChangesAsync();
+
+        var savedRoi = await _dbContext.Rois.FirstAsync(r => r.Id == existingRoiId);
+        savedRoi.VariableName.Should().Be("Updated Name");
+        savedRoi.Coordinates.Width.Should().Be(60);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().VariableName.Should().Be("Updated Name");
+    }
+
+    [Fact]
+    public async Task SetRoisForTemplateAsync_ShouldDeleteMissingRois()
+    {
+        var templateId = Guid.NewGuid();
+        var roiToDelete = new Roi
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = templateId,
+            VariableName = "To Delete",
+            Template = null!,
+            Coordinates = new Coordinates(0, 0, 0, 0),
+        };
+        var roiToKeep = new Roi
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = templateId,
+            VariableName = "To Keep",
+            Template = null!,
+            Coordinates = new Coordinates(0, 0, 0, 0),
+        };
+
+        _dbContext.Rois.AddRange(roiToDelete, roiToKeep);
+        await _dbContext.SaveChangesAsync();
+
+        var updateDto = new SetRoiDto(
+            roiToKeep.Id.ToString(),
+            "To Keep",
+            ERoiType.Handwritten,
+            new Coordinates(0, 0, 0, 0)
+        );
+        var updateRois = new List<SetRoiDto> { updateDto };
+
+        _mapperMock
+            .Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
+            .Callback<SetRoiDto, Roi>((dto, entity) => { });
+
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
+            .Returns(
+                (IEnumerable<Roi> rois) =>
+                    rois.Select(r => new RoiDto(
+                        r.Id,
+                        r.VariableName,
+                        r.TemplateId,
+                        r.Type,
+                        r.Coordinates,
+                        r.CreatedAt,
+                        r.UpdatedAt
+                    ))
+            );
+
+        var result = await _roiService.SetRoisForTemplateAsync(
+            templateId,
+            updateRois,
+            CancellationToken.None
+        );
+        await _dbContext.SaveChangesAsync();
+
+        var allRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
+        allRois.Should().HaveCount(1);
+        allRois[0].Id.Should().Be(roiToKeep.Id);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(1);
+        result.Value.First().Id.Should().Be(roiToKeep.Id);
+    }
+
+    [Fact]
+    public async Task SetRoisForTemplateAsync_ShouldHandleEmptyUpdateList()
+    {
+        var templateId = Guid.NewGuid();
+        var existingRoi = new Roi
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = templateId,
+            VariableName = "Existing",
+            Template = null!,
+            Coordinates = new Coordinates(0, 0, 0, 0),
+        };
+        _dbContext.Rois.Add(existingRoi);
+        await _dbContext.SaveChangesAsync();
+
+        var updateRois = new List<SetRoiDto>();
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
+            .Returns(
+                (IEnumerable<Roi> rois) =>
+                    rois.Select(r => new RoiDto(
+                        r.Id,
+                        r.VariableName,
+                        r.TemplateId,
+                        r.Type,
+                        r.Coordinates,
+                        r.CreatedAt,
+                        r.UpdatedAt
+                    ))
+            );
+
+        var result = await _roiService.SetRoisForTemplateAsync(
+            templateId,
+            updateRois,
+            CancellationToken.None
+        );
+        await _dbContext.SaveChangesAsync();
+
+        var allRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
+        allRois.Should().BeEmpty();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SetRoisForTemplateAsync_ShouldHandleAllNewRois()
+    {
+        var templateId = Guid.NewGuid();
+        var newRois = new List<SetRoiDto>
+        {
+            new(null, "ROI 1", ERoiType.Handwritten, new Coordinates(0, 0, 0, 0)),
+            new(null, "ROI 2", ERoiType.Checkbox, new Coordinates(0, 0, 0, 0)),
+        };
+
+        _mapperMock
+            .Setup(m => m.Map<Roi>(It.IsAny<SetRoiDto>()))
+            .Returns(
+                (SetRoiDto dto) =>
+                    new Roi
+                    {
+                        VariableName = dto.VariableName,
+                        Type = dto.Type ?? ERoiType.Handwritten,
+                        Coordinates = dto.Coordinates,
+                        Template = null!,
+                    }
+            );
+
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
+            .Returns(
+                (IEnumerable<Roi> rois) =>
+                    rois.Select(r => new RoiDto(
+                        r.Id,
+                        r.VariableName,
+                        r.TemplateId,
+                        r.Type,
+                        r.Coordinates,
+                        r.CreatedAt,
+                        r.UpdatedAt
+                    ))
+            );
+
+        var result = await _roiService.SetRoisForTemplateAsync(
+            templateId,
+            newRois,
+            CancellationToken.None
+        );
+        await _dbContext.SaveChangesAsync();
+
+        var savedRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
+        savedRois.Should().HaveCount(2);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task SetRoisForTemplateAsync_ShouldHandleAllCombinations()
+    {
+        var templateId = Guid.NewGuid();
+        var existingRois = new List<Roi>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TemplateId = templateId,
+                VariableName = "Existing 1",
+                Template = null!,
+                Coordinates = new Coordinates(0, 0, 0, 0),
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TemplateId = templateId,
+                VariableName = "Existing 2",
+                Template = null!,
+                Coordinates = new Coordinates(0, 0, 0, 0),
+            },
+        };
+        _dbContext.Rois.AddRange(existingRois);
+        await _dbContext.SaveChangesAsync();
+
+        _mapperMock
+            .Setup(m => m.Map<Roi>(It.IsAny<SetRoiDto>()))
+            .Returns(
+                (SetRoiDto dto) =>
+                    new Roi
+                    {
+                        VariableName = dto.VariableName,
+                        Type = dto.Type ?? ERoiType.Handwritten,
+                        Coordinates = dto.Coordinates,
+                        Template = null!,
+                    }
+            );
+
+        var updateRois = new List<SetRoiDto>
+        {
+            new(
+                existingRois[0].Id.ToString(),
+                "Updated Existing 1",
+                ERoiType.Handwritten,
+                new Coordinates(0, 0, 0, 0)
+            ),
+            new(null, "New ROI", ERoiType.Checkbox, new Coordinates(0, 0, 0, 0)),
+        };
+
+        _mapperMock
+            .Setup(m => m.Map(It.IsAny<SetRoiDto>(), It.IsAny<Roi>()))
+            .Callback<SetRoiDto, Roi>(
+                (dto, entity) =>
+                {
+                    entity.VariableName = dto.VariableName;
+                    entity.Type = dto.Type ?? ERoiType.Handwritten;
+                    entity.Coordinates = dto.Coordinates;
+                }
+            );
+        _mapperMock
+            .Setup(m => m.Map<IEnumerable<RoiDto>>(It.IsAny<IEnumerable<Roi>>()))
+            .Returns(
+                (IEnumerable<Roi> rois) =>
+                    rois.Select(r => new RoiDto(
+                        r.Id,
+                        r.VariableName,
+                        r.TemplateId,
+                        r.Type,
+                        r.Coordinates,
+                        r.CreatedAt,
+                        r.UpdatedAt
+                    ))
+            );
+
+        var result = await _roiService.SetRoisForTemplateAsync(
+            templateId,
+            updateRois,
+            CancellationToken.None
+        );
+        await _dbContext.SaveChangesAsync();
+
+        var allRois = await _dbContext.Rois.Where(r => r.TemplateId == templateId).ToListAsync();
+        allRois.Should().HaveCount(2);
+        allRois.Any(r => r.VariableName == "Updated Existing 1").Should().BeTrue();
+        allRois.Any(r => r.VariableName == "New ROI").Should().BeTrue();
+    }
+
+    public void Dispose()
+    {
+        _dbContext.Dispose();
+    }
+}
