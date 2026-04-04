@@ -44,10 +44,20 @@ const ActionsInDialog = ({ logsheet }: { logsheet: LogsheetListType }) => {
     const handleDelete = async () => {
         try {
             await deleteLogsheetMutation.mutateAsync(logsheet.id);
-            toast.success("Logsheet was deleted.");
+            toast.success(
+                intl.formatMessage({
+                    id: "logsheets.actions.delete.success",
+                    defaultMessage: "Logsheet deleted successfully!",
+                }),
+            );
         } catch (error) {
             console.log("Error deleting logsheet:", error);
-            toast.error("Failed to delete logsheet.");
+            toast.error(
+                intl.formatMessage({
+                    id: "logsheets.actions.delete.error",
+                    defaultMessage: "Failed to delete logsheet.",
+                }),
+            );
         }
     };
 
@@ -151,10 +161,20 @@ export const LogsheetTableActions = ({
     const handleProcess = async () => {
         try {
             await processLogsheetMutation.mutateAsync(logsheet.id);
-            toast.success("Logsheet was queued for processing.");
+            toast.success(
+                intl.formatMessage({
+                    id: "logsheets.actions.process.success",
+                    defaultMessage: "Logsheet was queued for processing.",
+                }),
+            );
         } catch (error) {
             console.log("Error processing logsheet:", error);
-            toast.error("Failed to queue logsheet for processing.");
+            toast.error(
+                intl.formatMessage({
+                    id: "logsheets.actions.process.error",
+                    defaultMessage: "Failed to queue logsheet for processing.",
+                }),
+            );
         }
     };
 
