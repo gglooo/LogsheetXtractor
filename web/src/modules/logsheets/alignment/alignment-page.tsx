@@ -13,7 +13,7 @@ export const LogsheetAlignmentPage = () => {
 
     return (
         <div className="flex flex-col h-screen bg-background">
-            <AlignmentNavbar logsheetId={logsheet?.id} />
+            <AlignmentNavbar logsheet={logsheet} />
             <div className="flex-1 overflow-hidden">
                 {logsheet ? <AlignmentEditor logsheet={logsheet} /> : null}
                 {isLoading ? <Spinner className="p-4" /> : null}
