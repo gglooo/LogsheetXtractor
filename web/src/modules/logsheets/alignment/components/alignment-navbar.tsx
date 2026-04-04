@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { useNavigateUp } from "@/hooks/use-navigate-up";
+import type { LogsheetType } from "@/modules/logsheets/schema";
 import { ArrowLeftIcon } from "lucide-react";
 import { useIntl } from "react-intl";
 
-export const AlignmentNavbar = ({ logsheetId }: { logsheetId?: string }) => {
+export const AlignmentNavbar = ({ logsheet }: { logsheet?: LogsheetType }) => {
     const navigateUp = useNavigateUp();
     const intl = useIntl();
 
@@ -24,9 +25,9 @@ export const AlignmentNavbar = ({ logsheetId }: { logsheetId?: string }) => {
                             defaultMessage: "Manual alignment",
                         })}
                     </h1>
-                    {logsheetId ? (
+                    {logsheet ? (
                         <p className="text-sm text-muted-foreground">
-                            {logsheetId}
+                            {logsheet.file.fileName}
                         </p>
                     ) : null}
                 </div>
