@@ -32,7 +32,7 @@ public static class ListTemplatesHandler
                 t.BacksideTemplateId,
                 t.ParentId,
                 t.FileId,
-                t.Rois.Count(),
+                t.Rois.Count() + (t.BacksideTemplate != null ? t.BacksideTemplate.Rois.Count() : 0),
                 t.Logsheets.Count(),
                 t.Width ?? 0,
                 t.Height ?? 0,
