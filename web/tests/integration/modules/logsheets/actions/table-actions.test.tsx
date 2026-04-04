@@ -1,11 +1,10 @@
 import { LogsheetTableActions } from "@/modules/logsheets/actions/table-actions";
 import type { LogsheetListType } from "@/modules/logsheets/schema";
-import { renderWithProviders } from "../../../../utils/render-with-providers";
-import { waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen } from "@testing-library/react";
 import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { renderWithProviders } from "../../../../utils/render-with-providers";
 
 const mockNavigate = vi.fn();
 const mockUseParams = vi.fn(() => ({ templateId: "template-123" }));
@@ -17,9 +16,10 @@ const useFileDownloadMutationMock = vi.fn();
 const useCredentialsStatusMock = vi.fn();
 
 vi.mock("react-router-dom", async () => {
-    const actual = await vi.importActual<typeof import("react-router-dom")>(
-        "react-router-dom",
-    );
+    const actual =
+        await vi.importActual<typeof import("react-router-dom")>(
+            "react-router-dom",
+        );
 
     return {
         ...actual,
@@ -51,7 +51,9 @@ vi.mock("sonner", () => ({
 
 const now = new Date().toISOString();
 
-const createLogsheet = (status: LogsheetListType["status"]): LogsheetListType => ({
+const createLogsheet = (
+    status: LogsheetListType["status"],
+): LogsheetListType => ({
     id: "11111111-1111-4111-8111-111111111111",
     createdAt: now,
     updatedAt: null,
@@ -277,10 +279,9 @@ describe("LogsheetTableActions", () => {
 
         await user.click(screen.getByTitle("More actions"));
 
-        expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveAttribute(
-            "aria-disabled",
-            "true",
-        );
+        expect(
+            screen.getByRole("menuitem", { name: "Delete" }),
+        ).toHaveAttribute("aria-disabled", "true");
     });
 
     it("deletes logsheet from menu action and shows success toast", async () => {
@@ -305,7 +306,9 @@ describe("LogsheetTableActions", () => {
             expect(mutateAsync).toHaveBeenCalledWith(
                 "11111111-1111-4111-8111-111111111111",
             );
-            expect(toast.success).toHaveBeenCalledWith("Logsheet was deleted.");
+            expect(toast.success).toHaveBeenCalledWith(
+                "Logsheet deleted successfully!",
+            );
         });
     });
 });
