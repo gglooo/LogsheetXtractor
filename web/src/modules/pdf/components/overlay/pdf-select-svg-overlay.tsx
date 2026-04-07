@@ -25,12 +25,14 @@ export const SelectSvgOverlay = ({
     width,
     dragEnded,
     resizeEnded,
+    onFinishDrawing,
 }: {
     rois: RoiType[];
     render: SvgCanvasRenderFn;
     width: number;
     dragEnded?: (rois: RoiType[]) => void;
     resizeEnded?: (rois: RoiType[]) => void;
+    onFinishDrawing?: (affectedRoiCount: number) => void;
 }) => {
     const { width: pdfWidth, scale } = useSvgZoom();
     const { isSelectedRoi, setSelectedRoiIds } = useSelectedRois();
@@ -138,13 +140,13 @@ export const SelectSvgOverlay = ({
             resizeEnded?.(getMovedRois());
             dragControls.handleResizeEnd();
         } else if (interactionMode.current === "drawing") {
-            handleStopDrawing(onFinishDrawing);
+            handleStopDrawing(handleFinishDrawing);
         }
 
         interactionMode.current = null;
     };
 
-    const onFinishDrawing = (startPos: Position, currentPos: Position) => {
+    const handleFinishDrawing = (startPos: Position, currentPos: Position) => {
         const coordinates = getCoordinatesFromPositions(startPos, currentPos);
         const toReferenceScale = getScaleToReferenceScale(
             pdfWidth,
@@ -156,11 +158,12 @@ export const SelectSvgOverlay = ({
             toReferenceScale,
         );
 
-        const selectedRois = rois.filter((roi) =>
+        const affectedRois = rois.filter((roi) =>
             areCoordinatesOverlapping(roi.coordinates, scaledCoordinates),
         );
 
-        setSelectedRoiIds(selectedRois.map((roi) => roi.id!));
+        setSelectedRoiIds(affectedRois.map((roi) => roi.id!));
+        onFinishDrawing?.(affectedRois.length);
     };
 
     return (

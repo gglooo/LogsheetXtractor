@@ -6,6 +6,7 @@ import { useSplitTool } from "@/modules/pdf/hooks/use-split-tool";
 import { getDuplicates, type Point } from "@/modules/pdf/utils";
 import { RoiSvg } from "@/modules/rois/components/roi-svg";
 import type { RoiType } from "@/modules/rois/schema";
+import { useSelectToolEmptySelectionHelp } from "@/modules/template-editor/hooks/use-select-tool-empty-selection-help";
 import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
 import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
 import { RoiValidationPresetContextMenu } from "@/modules/template-editor/sidebar/roi-validation/components/roi-validation-preset-context-menu";
@@ -25,6 +26,9 @@ export const DrawablePdfViewer = ({
 
     const { rois, removeRoi, setRois, mode } = useTemplateEditor();
     const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
+    const { trackSelectionResult } = useSelectToolEmptySelectionHelp({
+        mode,
+    });
     const { handleOpenRoiContextMenu, menuProps } =
         useRoiValidationPresetContextMenu(template.isEditable);
 
@@ -97,6 +101,13 @@ export const DrawablePdfViewer = ({
         [setRois]
     );
 
+    const onDrawingFinish = useCallback(
+        (affectedRoiCount: number) => {
+            trackSelectionResult(affectedRoiCount);
+        },
+        [trackSelectionResult]
+    );
+
     const renderRoi = useCallback(
         (
             roi: RoiType,
@@ -146,6 +157,7 @@ export const DrawablePdfViewer = ({
                 <SvgCanvas
                     dragEnded={onDragEnd}
                     resizeEnded={onResizeEnd}
+                    onFinishDrawing={onDrawingFinish}
                     width={template.width}
                     rois={rois}
                     render={renderRoi}
