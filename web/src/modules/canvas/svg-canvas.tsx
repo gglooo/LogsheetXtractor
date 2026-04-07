@@ -15,12 +15,14 @@ export const SvgCanvas = ({
     width,
     dragEnded,
     resizeEnded,
+    onFinishDrawing,
 }: {
     rois: RoiType[];
     render: SvgCanvasRenderFn;
     width: number;
     dragEnded?: (rois: RoiType[]) => void;
     resizeEnded?: (rois: RoiType[]) => void;
+    onFinishDrawing?: (affectedRoiCount: number) => void;
 }) => {
     return (
         <DragProvider>
@@ -30,6 +32,7 @@ export const SvgCanvas = ({
                 width={width}
                 dragEnded={dragEnded}
                 resizeEnded={resizeEnded}
+                onFinishDrawing={onFinishDrawing}
             />
         </DragProvider>
     );
