@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatFileSize } from "@/lib/utils";
-import { FileIcon, Upload, X } from "lucide-react";
+import { FileIcon, Trash, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 
@@ -69,7 +69,7 @@ export const FileUpload = ({
         }
 
         const validFiles = Array.from(droppedFiles).filter(
-            (file) => !validator || validator(file)
+            (file) => !validator || validator(file),
         );
 
         if (multiple) {
@@ -103,7 +103,7 @@ export const FileUpload = ({
                         "flex items-center pointer-events-none",
                         componentSize === "small"
                             ? "flex-row gap-4"
-                            : "flex-col"
+                            : "flex-col",
                     )}
                 >
                     {icon ?? (
@@ -112,7 +112,7 @@ export const FileUpload = ({
                                 "mx-auto text-muted-foreground",
                                 componentSize === "small"
                                     ? "h-4 w-4"
-                                    : "h-8 w-8 mb-2"
+                                    : "h-8 w-8 mb-2",
                             )}
                         />
                     )}
@@ -148,7 +148,7 @@ export const FileUpload = ({
                                     id: "fileUpload.multipleFiles",
                                     defaultMessage: "{count} files selected",
                                 },
-                                { count: file.length }
+                                { count: file.length },
                             )}
                         </span>
                     </div>
@@ -183,7 +183,7 @@ export const FileUpload = ({
                                     size="icon-sm"
                                     className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-destructive/10 hover:text-destructive rounded-full transition-colors cursor-pointer"
                                 >
-                                    <X className="h-4 w-4" />
+                                    <Trash className="h-4 w-4" />
                                 </Button>
                             </div>
                         ))}
@@ -210,7 +210,7 @@ export const FileUpload = ({
                         defaultMessage: "Remove file",
                     })}
                 >
-                    <X className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                 </Button>
             </div>
         );
@@ -230,7 +230,7 @@ export const FileUpload = ({
                         : "border-border hover:border-primary/50"
                 }`,
                 componentSize === "small" ? "p-4 " : "p-8",
-                className
+                className,
             )}
         >
             <Input
