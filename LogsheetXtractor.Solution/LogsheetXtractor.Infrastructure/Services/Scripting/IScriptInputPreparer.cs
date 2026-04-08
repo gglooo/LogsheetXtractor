@@ -5,12 +5,12 @@ namespace LogsheetXtractor.Infrastructure.Services.Scripting;
 public interface IScriptInputPreparer
 {
     Task<string> CreateTemplateConfigAsync(Template template, CancellationToken ct);
-    Task<IEnumerable<string>> CreateAlignmentArgumentAsync(
+    Task<PreparedAlignmentInput> PrepareAlignmentInputAsync(
         Logsheet logsheet,
         bool hasBacksidePage,
         CancellationToken ct
     );
-    Task<IEnumerable<string>> CreateBacksideArgumentAsync(
+    Task<PreparedBacksideInput?> PrepareBacksideInputAsync(
         Logsheet logsheet,
         bool hasBacksidePage,
         CancellationToken ct

@@ -58,6 +58,7 @@ public static class InfrastructureInstaller
         services.AddScoped<ILogsheetService, LogsheetService>();
         services.AddScoped<IPdfCropperService, PdfCropperService>();
         services.AddScoped<IScriptOutputParser, ScriptOutputParser>();
+        services.AddScoped<IPythonScriptArgumentsBuilder, PythonScriptArgumentsBuilder>();
         services.AddScoped<IScriptInputPreparer, ScriptInputPreparer>();
         services.AddScoped<ICoordinateTransformerService, CoordinateTransformerService>();
         services.AddScoped<IPerspectiveMatrixComputer, PerspectiveMatrixComputer>();

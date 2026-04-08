@@ -16,7 +16,7 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
         return await GenerateConfigFileAsync(template, ct);
     }
 
-    public async Task<IEnumerable<string>> CreateAlignmentArgumentAsync(
+    public async Task<PreparedAlignmentInput> PrepareAlignmentInputAsync(
         Logsheet logsheet,
         bool hasBacksidePage,
         CancellationToken ct
@@ -31,7 +31,11 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
 
         if (!anyPoints)
         {
-            return new[] { "--aligned" };
+            return new PreparedAlignmentInput(
+                IsAligned: true,
+                AlignmentConfigPath: null,
+                BacksideAlignmentConfigPath: null
+            );
         }
 
         if (!hasFrontsidePoints)
@@ -53,23 +57,14 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
                 ? await GetTemplateConfigPath(logsheet.Template.BacksideTemplate, backsidePoints)
                 : null;
 
-        var alignmentArgs = new List<string>();
-        if (frontsideAlignmentConfigPath is not null)
-        {
-            alignmentArgs.Add("--alignment_config");
-            alignmentArgs.Add(frontsideAlignmentConfigPath);
-        }
-
-        if (backsideAlignmentConfigPath is not null)
-        {
-            alignmentArgs.Add("--backside_alignment_config");
-            alignmentArgs.Add(backsideAlignmentConfigPath);
-        }
-
-        return alignmentArgs;
+        return new PreparedAlignmentInput(
+            IsAligned: false,
+            AlignmentConfigPath: frontsideAlignmentConfigPath,
+            BacksideAlignmentConfigPath: backsideAlignmentConfigPath
+        );
     }
 
-    public async Task<IEnumerable<string>> CreateBacksideArgumentAsync(
+    public async Task<PreparedBacksideInput?> PrepareBacksideInputAsync(
         Logsheet logsheet,
         bool hasBacksidePage,
         CancellationToken ct
@@ -77,26 +72,19 @@ public class ScriptInputPreparer(IFileStorageService fileStorageService, IMapper
     {
         if (!hasBacksidePage)
         {
-            return Array.Empty<string>();
+            return null;
         }
 
         var backTemplate = logsheet.Template.BacksideTemplate;
         if (backTemplate is null)
         {
-            return Array.Empty<string>();
+            return null;
         }
 
         var configPath = await GenerateConfigFileAsync(backTemplate, ct);
         var pdfPath = fileStorageService.GetResolvedPath(backTemplate.File.StoragePath);
 
-        return new[]
-        {
-            "--backside",
-            "--backside_template",
-            pdfPath,
-            "--backside_config",
-            configPath,
-        };
+        return new PreparedBacksideInput(pdfPath, configPath);
     }
 
     private async Task<string> GenerateConfigFileAsync(Template template, CancellationToken ct)

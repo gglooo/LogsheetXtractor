@@ -27,6 +27,7 @@ public class PythonHtrAdapter(
     ICredentialContextProvider credentialContextProvider,
     IFileStorageService fileStorageService,
     IMapper mapper,
+    IPythonScriptArgumentsBuilder scriptArgumentsBuilder,
     IScriptInputPreparer inputPreparer,
     IScriptOutputParser outputParser,
     IPdfCropperService pdfCropperService,
@@ -64,21 +65,11 @@ public class PythonHtrAdapter(
         var usedCredentials = credentials
             .FirstOrDefault(c => c.Item1 == ECredentialType.Google)
             .Item2;
-        var args = new List<string>
-        {
-            "--pdf_file",
+        var args = scriptArgumentsBuilder.BuildSelectRoisArguments(
             inputFilePath,
-            "--output_file",
             outputFilePath,
-            "--autodetect",
-            "--headless",
-        };
-
-        if (usedCredentials != null)
-        {
-            args.Add("--detect_residuals");
-            args.AddRange(["--credentials", usedCredentials]);
-        }
+            usedCredentials
+        );
 
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.SelectRois, args, ct);
 
@@ -132,19 +123,11 @@ public class PythonHtrAdapter(
             ? fileStorageService.GetResolvedPath(backsideTemplate.File.StoragePath)
             : null;
 
-        var argsList = new List<string>
-        {
-            "--pdf_logsheet",
+        var argsList = scriptArgumentsBuilder.BuildAutomaticAlignmentArguments(
             logsheetPath,
-            "--pdf_template",
             templatePath,
-        };
-
-        if (hasBacksidePage && backsideTemplatePath is not null)
-        {
-            argsList.Add("--backside_template");
-            argsList.Add(backsideTemplatePath);
-        }
+            hasBacksidePage ? backsideTemplatePath : null
+        );
 
         var stdOut = await scriptExecutor.ExecuteScriptAsync(
             PythonScriptTypes.AutomaticAlignment,
@@ -207,40 +190,27 @@ public class PythonHtrAdapter(
 
         var configPath = await inputPreparer.CreateTemplateConfigAsync(logsheet.Template, ct);
 
-        var credentialsArgs = credentials.SelectMany(c =>
-            new[] { $"--{c.Item1.ToString().ToLower()}", c.Item2 }
-        );
-
-        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(
+        var alignmentInput = await inputPreparer.PrepareAlignmentInputAsync(
             logsheet,
             hasBacksidePage,
             ct
         );
-        var backsideArgument = await inputPreparer.CreateBacksideArgumentAsync(
+        var backsideInput = await inputPreparer.PrepareBacksideInputAsync(
             logsheet,
             hasBacksidePage,
             ct
         );
 
-        var argsList = new List<string>
-        {
-            "--output_file",
+        var argsList = scriptArgumentsBuilder.BuildProcessLogsheetArguments(
             outputFilePath,
-            "--pdf_template",
             templatePath,
-            "--pdf_logsheet",
             logsheetPath,
-            "--config_file",
             configPath,
-        };
-        argsList.AddRange(credentialsArgs);
-        argsList.AddRange(alignmentArgument);
-        argsList.AddRange(backsideArgument);
-        argsList.Add("--store_csv");
-        if (input?.Options?.UglyCheckboxes == true)
-        {
-            argsList.Add("--ugly_checkboxes");
-        }
+            credentials,
+            alignmentInput,
+            backsideInput,
+            input?.Options?.UglyCheckboxes == true
+        );
 
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ProcessLogsheet, argsList, ct);
 
@@ -258,7 +228,7 @@ public class PythonHtrAdapter(
 
         var dimensions = await scriptExecutor.ExecuteScriptWithJsonOutputAsync<PdfDimensionsDto>(
             PythonScriptTypes.PdfDimensions,
-            new[] { "--pdf_file", filePath },
+            scriptArgumentsBuilder.BuildPdfDimensionsArguments(filePath),
             ct
         );
 
@@ -287,7 +257,7 @@ public class PythonHtrAdapter(
 
         var templatePath = fileStorageService.GetResolvedPath(templateFile.StoragePath);
 
-        var alignmentArgument = await inputPreparer.CreateAlignmentArgumentAsync(
+        var alignmentInput = await inputPreparer.PrepareAlignmentInputAsync(
             logsheet,
             hasBacksidePage,
             ct
@@ -314,25 +284,20 @@ public class PythonHtrAdapter(
             $"{Guid.NewGuid()}_exported_logsheet.csv"
         );
 
-        var backsideArgs = await inputPreparer.CreateBacksideArgumentAsync(
+        var backsideInput = await inputPreparer.PrepareBacksideInputAsync(
             logsheet,
             hasBacksidePage,
             ct
         );
 
-        var argsList = new List<string>
-        {
-            "--pdf_logsheet",
+        var argsList = scriptArgumentsBuilder.BuildExportLogsheetArguments(
             filePath,
-            "--pdf_template",
             templatePath,
-            "--config_file",
             configPath,
-            "--output_file",
             outputFilePath,
-        };
-        argsList.AddRange(alignmentArgument);
-        argsList.AddRange(backsideArgs);
+            alignmentInput,
+            backsideInput
+        );
 
         logger.LogInformation("Executing export script for Logsheet {LogsheetId}", logsheet.Id);
         await scriptExecutor.ExecuteScriptAsync(PythonScriptTypes.ExportLogsheet, argsList, ct);
