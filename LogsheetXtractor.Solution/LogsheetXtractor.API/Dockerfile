@@ -19,15 +19,13 @@ RUN apt-get update && apt-get install -y \
     libzbar0 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ["formHTR", "/app/formHTR"]
-WORKDIR /app/formHTR
+COPY ["LogsheetXtractor.Solution/LogsheetXtractor.API/requirements.txt", "/app/requirements.txt"]
 
 RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 ENV Python__InterpreterPath="/app/venv/bin/python"
-ENV Python__ScriptsFolder="/app/formHTR"
 
-RUN pip install --default-timeout=1000 --no-cache-dir -r requirements.txt
+RUN pip install --default-timeout=1000 --no-cache-dir -r /app/requirements.txt
 
 WORKDIR /app
 
