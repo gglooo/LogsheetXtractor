@@ -17,7 +17,6 @@ public class PythonScriptExecutorTests
     public PythonScriptExecutorTests()
     {
         _configMock.Setup(c => c["Python:InterpreterPath"]).Returns("python3");
-        _configMock.Setup(c => c["Python:ScriptsFolder"]).Returns("./");
 
         _serviceMock = new Mock<PythonScriptExecutor>(_configMock.Object, _loggerMock.Object)
         {
@@ -28,7 +27,7 @@ public class PythonScriptExecutorTests
     [Fact]
     public async Task ExecuteScriptWithJsonOutputAsync_ShouldEnsureDeserialization_WhenOutputIsValid()
     {
-        var scriptName = "test_script.py";
+        var scriptName = "test-subcommand";
         var args = new[] { "--test" };
         var expectedResult = new TestDto { Message = "Success" };
         var jsonOutput = JsonSerializer.Serialize(expectedResult);
@@ -50,7 +49,7 @@ public class PythonScriptExecutorTests
     [Fact]
     public async Task ExecuteScriptWithJsonOutputAsync_ShouldThrow_WhenOutputIsInvalidJson()
     {
-        var scriptName = "test_script.py";
+        var scriptName = "test-subcommand";
         var args = new[] { "--test" };
         var invalidJson = "Not JSON";
 

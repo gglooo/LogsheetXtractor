@@ -9,7 +9,6 @@ public class PythonScriptExecutor(IConfiguration config, ILogger<PythonScriptExe
     : IScriptExecutor
 {
     private readonly string _pythonInterpreterPath = config["Python:InterpreterPath"] ?? "python3";
-    private readonly string _scriptsBasePath = config["Python:ScriptsFolder"] ?? "../../formHTR";
 
     public virtual async Task<string> ExecuteScriptAsync(
         string scriptName,
@@ -17,13 +16,11 @@ public class PythonScriptExecutor(IConfiguration config, ILogger<PythonScriptExe
         CancellationToken cancellationToken
     )
     {
-        var scriptPath = Path.Combine(_scriptsBasePath, scriptName);
-
         var args = enumerableArgs as string[] ?? enumerableArgs.ToArray();
         logger.LogDebug(
-            "Executing Python script: {Interpreter} {ScriptPath} {Args}",
+            "Executing Python script module: {Interpreter} -m formhtr.cli {Subcommand} {Args}",
             _pythonInterpreterPath,
-            scriptPath,
+            scriptName,
             string.Join(" ", args)
         );
 
@@ -36,7 +33,9 @@ public class PythonScriptExecutor(IConfiguration config, ILogger<PythonScriptExe
             RedirectStandardError = true,
         };
 
-        startInfo.ArgumentList.Add(scriptPath);
+        startInfo.ArgumentList.Add("-m");
+        startInfo.ArgumentList.Add("formhtr.cli");
+        startInfo.ArgumentList.Add(scriptName);
         foreach (var arg in args)
         {
             startInfo.ArgumentList.Add(arg);

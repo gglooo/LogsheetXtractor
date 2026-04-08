@@ -98,7 +98,7 @@ public class PythonHtrAdapterTests
         _scriptExecutorMock
             .Setup(x =>
                 x.ExecuteScriptAsync(
-                    "select_ROIs.py",
+                    "select-rois",
                     It.Is<IEnumerable<string>>(args =>
                         args.Contains(PythonCliArgs.PdfFile)
                         && args.Contains(resolvedInputPath)
@@ -215,7 +215,7 @@ public class PythonHtrAdapterTests
         _scriptExecutorMock.Verify(
             x =>
                 x.ExecuteScriptAsync(
-                    "select_ROIs.py",
+                    "select-rois",
                     It.Is<IEnumerable<string>>(args =>
                         args.Contains(PythonCliArgs.PdfFile)
                         && args.Contains(resolvedInputPath)
