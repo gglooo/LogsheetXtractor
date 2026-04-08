@@ -67,7 +67,7 @@ public class ScriptInputPreparerTests
     }
 
     [Fact]
-    public async Task CreateAlignmentArgumentAsync_ShouldReturnAlignedFlag_WhenNoFrontsidePoints()
+    public async Task PrepareAlignmentInputAsync_ShouldReturnAligned_WhenNoFrontsidePoints()
     {
         var logsheet = new Logsheet
         {
@@ -75,17 +75,19 @@ public class ScriptInputPreparerTests
             AlignmentData = new AlignmentContainer(new List<PointCoordinate>(), null),
         };
 
-        var result = await _preparer.CreateAlignmentArgumentAsync(
+        var result = await _preparer.PrepareAlignmentInputAsync(
             logsheet,
             true,
             CancellationToken.None
         );
 
-        result.Should().BeEquivalentTo(new[] { "--aligned" });
+        result.IsAligned.Should().BeTrue();
+        result.AlignmentConfigPath.Should().BeNull();
+        result.BacksideAlignmentConfigPath.Should().BeNull();
     }
 
     [Fact]
-    public async Task CreateAlignmentArgumentAsync_ShouldSaveAlignmentConfig_WhenPointsExist()
+    public async Task PrepareAlignmentInputAsync_ShouldSaveAlignmentConfig_WhenPointsExist()
     {
         var logsheet = new Logsheet
         {
@@ -104,13 +106,15 @@ public class ScriptInputPreparerTests
             )
             .ReturnsAsync(expectedPath);
 
-        var result = await _preparer.CreateAlignmentArgumentAsync(
+        var result = await _preparer.PrepareAlignmentInputAsync(
             logsheet,
             true,
             CancellationToken.None
         );
 
-        result.Should().BeEquivalentTo(new[] { "--alignment_config", expectedPath });
+        result.IsAligned.Should().BeFalse();
+        result.AlignmentConfigPath.Should().Be(expectedPath);
+        result.BacksideAlignmentConfigPath.Should().BeNull();
         _fileStorageServiceMock.Verify(
             x =>
                 x.SaveTemporaryFileAsync(
@@ -123,7 +127,7 @@ public class ScriptInputPreparerTests
     }
 
     [Fact]
-    public async Task CreateAlignmentArgumentAsync_ShouldThrow_WhenTemplateDimensionsMissing()
+    public async Task PrepareAlignmentInputAsync_ShouldThrow_WhenTemplateDimensionsMissing()
     {
         var logsheet = new Logsheet
         {
@@ -132,7 +136,7 @@ public class ScriptInputPreparerTests
         };
 
         Func<Task> act = async () =>
-            await _preparer.CreateAlignmentArgumentAsync(logsheet, true, CancellationToken.None);
+            await _preparer.PrepareAlignmentInputAsync(logsheet, true, CancellationToken.None);
 
         await act.Should()
             .ThrowAsync<InvalidOperationException>()
@@ -140,7 +144,7 @@ public class ScriptInputPreparerTests
     }
 
     [Fact]
-    public async Task CreateAlignmentArgumentAsync_ShouldSaveBothConfigs_WhenOnlyBacksidePointsExist()
+    public async Task PrepareAlignmentInputAsync_ShouldSaveBothConfigs_WhenOnlyBacksidePointsExist()
     {
         var template = new Template
         {
@@ -175,14 +179,15 @@ public class ScriptInputPreparerTests
             .ReturnsAsync(expectedFrontPath)
             .ReturnsAsync(expectedBackPath);
 
-        var result = await _preparer.CreateAlignmentArgumentAsync(
+        var result = await _preparer.PrepareAlignmentInputAsync(
             logsheet,
             true,
             CancellationToken.None
         );
 
-        result.Should().ContainInOrder("--alignment_config", expectedFrontPath);
-        result.Should().ContainInOrder("--backside_alignment_config", expectedBackPath);
+        result.IsAligned.Should().BeFalse();
+        result.AlignmentConfigPath.Should().Be(expectedFrontPath);
+        result.BacksideAlignmentConfigPath.Should().Be(expectedBackPath);
 
         _fileStorageServiceMock.Verify(
             x =>
@@ -193,5 +198,23 @@ public class ScriptInputPreparerTests
                 ),
             Times.Exactly(2)
         );
+    }
+
+    [Fact]
+    public async Task PrepareBacksideInputAsync_ShouldReturnNull_WhenNoBacksidePage()
+    {
+        var logsheet = new Logsheet
+        {
+            Template = new Template { Width = 100, Height = 100 },
+            AlignmentData = new AlignmentContainer(new List<PointCoordinate>(), null),
+        };
+
+        var result = await _preparer.PrepareBacksideInputAsync(
+            logsheet,
+            hasBacksidePage: false,
+            CancellationToken.None
+        );
+
+        result.Should().BeNull();
     }
 }

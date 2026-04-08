@@ -24,6 +24,7 @@ public class PythonHtrAdapterTests
     private readonly Mock<ICredentialContextProvider> _credentialContextProviderMock;
     private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly Mock<IConfiguration> _configMock;
+    private readonly IPythonScriptArgumentsBuilder _scriptArgumentsBuilder;
     private readonly Mock<IScriptInputPreparer> _inputPreparerMock;
     private readonly Mock<IScriptOutputParser> _outputParserMock;
     private readonly Mock<IPdfCropperService> _pdfCropperServiceMock;
@@ -38,6 +39,7 @@ public class PythonHtrAdapterTests
         _credentialContextProviderMock = new Mock<ICredentialContextProvider>();
         _fileStorageServiceMock = new Mock<IFileStorageService>();
         _configMock = new Mock<IConfiguration>();
+        _scriptArgumentsBuilder = new PythonScriptArgumentsBuilder();
         _inputPreparerMock = new Mock<IScriptInputPreparer>();
         _outputParserMock = new Mock<IScriptOutputParser>();
         _pdfCropperServiceMock = new Mock<IPdfCropperService>();
@@ -50,6 +52,7 @@ public class PythonHtrAdapterTests
             _credentialContextProviderMock.Object,
             _fileStorageServiceMock.Object,
             _mapper,
+            _scriptArgumentsBuilder,
             _inputPreparerMock.Object,
             _outputParserMock.Object,
             _pdfCropperServiceMock.Object,
@@ -97,12 +100,12 @@ public class PythonHtrAdapterTests
                 x.ExecuteScriptAsync(
                     "select_ROIs.py",
                     It.Is<IEnumerable<string>>(args =>
-                        args.Contains("--pdf_file")
+                        args.Contains(PythonCliArgs.PdfFile)
                         && args.Contains(resolvedInputPath)
-                        && args.Contains("--output_file")
+                        && args.Contains(PythonCliArgs.OutputFile)
                         && args.Contains(resolvedOutputPath)
-                        && args.Contains("--autodetect")
-                        && args.Contains("--credentials")
+                        && args.Contains(PythonCliArgs.Autodetect)
+                        && args.Contains(PythonCliArgs.Credentials)
                         && args.Contains(credentialsPath)
                     ),
                     ct
@@ -214,14 +217,14 @@ public class PythonHtrAdapterTests
                 x.ExecuteScriptAsync(
                     "select_ROIs.py",
                     It.Is<IEnumerable<string>>(args =>
-                        args.Contains("--pdf_file")
+                        args.Contains(PythonCliArgs.PdfFile)
                         && args.Contains(resolvedInputPath)
-                        && args.Contains("--output_file")
+                        && args.Contains(PythonCliArgs.OutputFile)
                         && args.Contains(resolvedOutputPath)
-                        && args.Contains("--autodetect")
-                        && args.Contains("--headless")
-                        && !args.Contains("--credentials")
-                        && !args.Contains("--detect_residuals")
+                        && args.Contains(PythonCliArgs.Autodetect)
+                        && args.Contains(PythonCliArgs.Headless)
+                        && !args.Contains(PythonCliArgs.Credentials)
+                        && !args.Contains(PythonCliArgs.DetectResiduals)
                     ),
                     It.IsAny<CancellationToken>()
                 ),
