@@ -3,7 +3,6 @@ using LogsheetXtractor.API.Extensions;
 using LogsheetXtractor.API.Middleware;
 using LogsheetXtractor.API.Notifications;
 using LogsheetXtractor.Application;
-using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Application.MessageProcessing;
 using LogsheetXtractor.Infrastructure.Installers;
@@ -37,7 +36,7 @@ builder.Host.UseWolverine(opts =>
         opts.PersistMessagesWithSqlite(builder.Configuration.GetConnectionString("DefaultConnection")!);
     }
 
-    opts.ApplyRetryPolicy(MessageRetryPolicies.For<ProcessLogsheetDataCommand>());
+    opts.ApplyRetryPolicies(MessageRetryPolicies.All());
 
     opts.Policies.AddMiddleware(typeof(CredentialCookieMiddleware));
 });

@@ -3,6 +3,7 @@ using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Logsheets.DTOs;
 using LogsheetXtractor.Application.Features.Logsheets.Events;
 using LogsheetXtractor.Application.Interfaces;
+using LogsheetXtractor.Application.MessageProcessing;
 using LogsheetXtractor.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Wolverine;
@@ -16,6 +17,7 @@ public static class AlignLogsheetHandler
     public static async Task<Result<LogsheetDetailDto>> Handle(
         AlignLogsheetCommand request,
         IAppDbContext dbContext,
+        Envelope envelope,
         ILogsheetService logsheetService,
         IMessageBus bus,
         ILogger<AlignLogsheetCommand> logger,
@@ -36,23 +38,49 @@ public static class AlignLogsheetHandler
 
         var shouldResetStatus = logsheet.Status == ELogSheetStatus.Aligning;
 
-        var alignmentResult = await logsheetService.AlignLogsheetAsync(logsheet, ct);
-        if (shouldResetStatus && alignmentResult.IsSuccess)
+        Result<LogsheetDetailDto> result;
+        string? errorMessage;
+
+        try
         {
-            logsheet.Status = ELogSheetStatus.Pending;
+            result = await logsheetService.AlignLogsheetAsync(logsheet, ct);
+            if (shouldResetStatus && result.IsSuccess)
+            {
+                logsheet.Status = ELogSheetStatus.Pending;
+            }
+
+            errorMessage = result.IsSuccess
+                ? null
+                : string.Join(", ", result.Errors.Select(e => e.Message).ToArray());
         }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            var retryPolicy = MessageRetryPolicies.For<AlignLogsheetCommand>();
+            if (retryPolicy.IsRetryable(ex) && envelope.Attempts < retryPolicy.MaxAttempts)
+            {
+                throw;
+            }
+
+            errorMessage = $"Exception during automatic alignment: {ex.Message}";
+
+            result = Result.Fail<LogsheetDetailDto>(errorMessage);
+        }
+
+        await bus.PublishAsync(
+            new LogsheetAutomaticAlignmentFinished(
+                request.LogsheetId,
+                errorMessage == null,
+                errorMessage
+            )
+        );
+        await dbContext.SaveChangesAsync(CancellationToken.None);
         
-        var errorMessages = alignmentResult.IsSuccess ? null : string.Join(", ", alignmentResult.Errors.Select(e => e.Message).ToArray());
-
-        await bus.PublishAsync(new LogsheetAutomaticAlignmentFinished(request.LogsheetId, alignmentResult.IsSuccess, errorMessages));
-        await dbContext.SaveChangesAsync(ct);
-
         logger.LogInformation(
             "Finished automatic alignment for Logsheet {LogsheetId} with result: {Result}",
             request.LogsheetId,
-            alignmentResult.IsSuccess ? "Success" : $"Failed with errors: {errorMessages}"
+            result.IsSuccess ? "Success" : $"Failed with errors: {errorMessage}"
         );
 
-        return alignmentResult;
+        return result;
     }
 }

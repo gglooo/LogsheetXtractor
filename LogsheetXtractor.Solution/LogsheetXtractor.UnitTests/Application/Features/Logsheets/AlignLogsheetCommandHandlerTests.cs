@@ -6,10 +6,13 @@ using LogsheetXtractor.Application.Features.File.DTOs;
 using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Features.Logsheets.DTOs;
 using LogsheetXtractor.Application.Features.Logsheets.Events;
+using LogsheetXtractor.Application.MessageProcessing;
 using LogsheetXtractor.Application.Features.Template.DTOs;
 using LogsheetXtractor.Domain.Entities;
+using LogsheetXtractor.Domain.Enums;
 using LogsheetXtractor.Infrastructure.Persistence;
 using LogsheetXtractor.UnitTests.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Wolverine;
@@ -50,6 +53,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var command = new AlignLogsheetCommand(logsheet.Id);
+        var envelope = CreateEnvelope(command, attempts: 1);
 
         var expectedDto = new LogsheetDetailDto(
             logsheet.Id,
@@ -87,6 +91,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         var result = await AlignLogsheetHandler.Handle(
             command,
             _dbContext,
+            envelope,
             _logsheetServiceMock.Object,
             _busMock.Object,
             _loggerMock.Object,
@@ -118,10 +123,12 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
     public async Task Handle_ShouldFail_WhenLogsheetNotFound()
     {
         var command = new AlignLogsheetCommand(Guid.NewGuid());
+        var envelope = CreateEnvelope(command, attempts: 1);
 
         var result = await AlignLogsheetHandler.Handle(
             command,
             _dbContext,
+            envelope,
             _logsheetServiceMock.Object,
             _busMock.Object,
             _loggerMock.Object,
@@ -167,6 +174,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var command = new AlignLogsheetCommand(logsheet.Id);
+        var envelope = CreateEnvelope(command, attempts: 1);
         var errorMessage = "Script engine failure";
 
         _logsheetServiceMock
@@ -178,6 +186,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         var result = await AlignLogsheetHandler.Handle(
             command,
             _dbContext,
+            envelope,
             _logsheetServiceMock.Object,
             _busMock.Object,
             _loggerMock.Object,
@@ -194,6 +203,114 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
                 ),
             Times.Exactly(1)
         );
+    }
+
+    [Fact]
+    public async Task Handle_ShouldRethrowRetryableException_WhenAttemptIsNotLast()
+    {
+        var logsheet = CreateAligningLogsheet();
+        var command = new AlignLogsheetCommand(logsheet.Id);
+        var retryPolicy = MessageRetryPolicies.For<AlignLogsheetCommand>();
+        var envelope = CreateEnvelope(command, retryPolicy.MaxAttempts - 1);
+
+        _logsheetServiceMock
+            .Setup(x => x.AlignLogsheetAsync(It.IsAny<Logsheet>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TimeoutException("alignment timeout"));
+
+        var action = () =>
+            AlignLogsheetHandler.Handle(
+                command,
+                _dbContext,
+                envelope,
+                _logsheetServiceMock.Object,
+                _busMock.Object,
+                _loggerMock.Object,
+                CancellationToken.None
+            );
+
+        await action.Should().ThrowAsync<TimeoutException>();
+
+        var unchangedLogsheet = await _dbContext.Logsheets.FirstAsync(ls => ls.Id == logsheet.Id);
+        unchangedLogsheet.Status.Should().Be(ELogSheetStatus.Aligning);
+
+        _busMock.Verify(
+            b =>
+                b.PublishAsync(
+                    It.IsAny<LogsheetAutomaticAlignmentFinished>(),
+                    It.IsAny<DeliveryOptions>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task Handle_ShouldFailOnLastRetryableExceptionAttempt()
+    {
+        var logsheet = CreateAligningLogsheet();
+        var command = new AlignLogsheetCommand(logsheet.Id);
+        var retryPolicy = MessageRetryPolicies.For<AlignLogsheetCommand>();
+        var envelope = CreateEnvelope(command, retryPolicy.MaxAttempts);
+
+        _logsheetServiceMock
+            .Setup(x => x.AlignLogsheetAsync(It.IsAny<Logsheet>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TimeoutException("alignment timeout"));
+
+        var result = await AlignLogsheetHandler.Handle(
+            command,
+            _dbContext,
+            envelope,
+            _logsheetServiceMock.Object,
+            _busMock.Object,
+            _loggerMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.Message.Contains("alignment timeout"));
+
+        _busMock.Verify(
+            b =>
+                b.PublishAsync(
+                    It.Is<LogsheetAutomaticAlignmentFinished>(evt =>
+                        evt.LogsheetId == logsheet.Id
+                        && !evt.IsSuccess
+                        && evt.ErrorMessage != null
+                        && evt.ErrorMessage.Contains("alignment timeout")
+                    ),
+                    It.IsAny<DeliveryOptions>()
+                ),
+            Times.Once
+        );
+    }
+
+    private Logsheet CreateAligningLogsheet()
+    {
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Template = new LogsheetXtractor.Domain.Entities.Template
+            {
+                Id = Guid.NewGuid(),
+                Name = "Template",
+                File = new LogsheetXtractor.Domain.Entities.File { StoredFileName = "t.pdf" },
+            },
+            File = new LogsheetXtractor.Domain.Entities.File
+            {
+                Id = Guid.NewGuid(),
+                StoredFileName = "l.pdf",
+            },
+            Status = ELogSheetStatus.Aligning,
+        };
+
+        _dbContext.Logsheets.Add(logsheet);
+        _dbContext.SaveChanges();
+
+        return logsheet;
+    }
+
+    private static Envelope CreateEnvelope(AlignLogsheetCommand command, int attempts)
+    {
+        return new Envelope(command, Array.Empty<Envelope>()) { Attempts = attempts };
     }
 
     public void Dispose()
