@@ -106,7 +106,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         _busMock.Verify(
             b =>
                 b.PublishAsync(
-                    It.Is<LogsheetAutomaticallyAlignedEvent>(e => e.LogsheetId == logsheet.Id),
+                    It.Is<LogsheetAutomaticAlignmentFinished>(e => e.LogsheetId == logsheet.Id),
                     It.IsAny<DeliveryOptions>()
                 ),
             Times.Once
@@ -134,7 +134,7 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         _busMock.Verify(
             b =>
                 b.PublishAsync(
-                    It.IsAny<LogsheetAutomaticallyAlignedEvent>(),
+                    It.IsAny<LogsheetAutomaticAlignmentFinished>(),
                     It.IsAny<DeliveryOptions>()
                 ),
             Times.Never
@@ -189,10 +189,10 @@ public class AlignLogsheetCommandHandlerTests : IDisposable
         _busMock.Verify(
             b =>
                 b.PublishAsync(
-                    It.IsAny<LogsheetAutomaticallyAlignedEvent>(),
+                    It.IsAny<LogsheetAutomaticAlignmentFinished>(),
                     It.IsAny<DeliveryOptions>()
                 ),
-            Times.Never
+            Times.Exactly(1)
         );
     }
 
