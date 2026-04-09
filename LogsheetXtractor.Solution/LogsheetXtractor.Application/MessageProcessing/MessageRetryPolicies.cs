@@ -6,25 +6,38 @@ namespace LogsheetXtractor.Application.MessageProcessing;
 
 public static class MessageRetryPolicies
 {
+    private static readonly TimeSpan[] DefaultRetryCooldowns =
+    [
+        TimeSpan.FromMilliseconds(50),
+        TimeSpan.FromMilliseconds(100),
+        TimeSpan.FromMilliseconds(250),
+    ];
+
+    private static readonly Type[] DefaultRetryableExceptions =
+    [
+        typeof(TimeoutException),
+        typeof(DbException),
+        typeof(DbUpdateException),
+        typeof(DbUpdateConcurrencyException),
+    ];
+
     private static readonly IReadOnlyDictionary<Type, MessageRetryPolicy> PoliciesByMessageType =
         new Dictionary<Type, MessageRetryPolicy>
         {
             [typeof(ProcessLogsheetDataCommand)] = new (
-                RetryableExceptionTypes:
-                [
-                    typeof(TimeoutException),
-                    typeof(DbException),
-                    typeof(DbUpdateException),
-                    typeof(DbUpdateConcurrencyException),
-                ],
-                RetryCooldowns:
-                [
-                    TimeSpan.FromMilliseconds(50),
-                    TimeSpan.FromMilliseconds(100),
-                    TimeSpan.FromMilliseconds(250),
-                ]
+                RetryableExceptionTypes: DefaultRetryableExceptions,
+                RetryCooldowns: DefaultRetryCooldowns
+            ),
+            [typeof(AlignLogsheetCommand)] = new (
+                RetryableExceptionTypes: DefaultRetryableExceptions,
+                RetryCooldowns: DefaultRetryCooldowns
             ),
         };
+
+    public static IReadOnlyCollection<MessageRetryPolicy> All()
+    {
+        return PoliciesByMessageType.Values.ToArray();
+    }
 
     public static MessageRetryPolicy For<TMessage>()
     {

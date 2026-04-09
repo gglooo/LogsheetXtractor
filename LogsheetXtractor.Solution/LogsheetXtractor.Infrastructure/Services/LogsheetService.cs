@@ -27,39 +27,26 @@ public class LogsheetService(
         CancellationToken ct
     )
     {
-        try
-        {
-            logger.LogInformation(
-                "Invoking automatic alignment for Logsheet {LogsheetId}",
-                logsheet.Id
-            );
-            var alignmentResult = await scriptEngine.AutomaticAlignAsync(
-                new AutomaticAlignmentInputDto(logsheet),
-                ct
-            );
+        logger.LogInformation(
+            "Invoking automatic alignment for Logsheet {LogsheetId}",
+            logsheet.Id
+        );
+        var alignmentResult = await scriptEngine.AutomaticAlignAsync(
+            new AutomaticAlignmentInputDto(logsheet),
+            ct
+        );
 
-            if (alignmentResult.IsFailed)
-            {
-                var errorMessage =
-                    alignmentResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
-                logger.LogError(
-                    "Automatic alignment failed for Logsheet {LogsheetId}: {Error}",
-                    logsheet.Id,
-                    errorMessage
-                );
-            }
-
-            return alignmentResult;
-        }
-        catch (Exception ex)
+        if (alignmentResult.IsFailed)
         {
+            var errorMessage = alignmentResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
             logger.LogError(
-                ex,
-                "Automatic alignment failed for Logsheet {LogsheetId}",
-                logsheet.Id
+                "Automatic alignment failed for Logsheet {LogsheetId}: {Error}",
+                logsheet.Id,
+                errorMessage
             );
-            return Result.Fail<LogsheetDetailDto>($"Failed to align logsheet: {ex.Message}");
         }
+
+        return alignmentResult;
     }
 
     private Result ValidateLogsheetForProcessing(Logsheet? logsheet)

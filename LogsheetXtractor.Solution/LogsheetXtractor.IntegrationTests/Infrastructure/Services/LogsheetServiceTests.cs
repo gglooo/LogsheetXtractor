@@ -83,7 +83,7 @@ public class LogsheetServiceTests
     }
 
     [Fact]
-    public async Task AlignLogsheetAsync_ShouldReturnFail_WhenScriptEngineThrowsException()
+    public async Task AlignLogsheetAsync_ShouldThrow_WhenScriptEngineThrowsException()
     {
         var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
         var errorMessage = "Script engine failure";
@@ -97,10 +97,9 @@ public class LogsheetServiceTests
             )
             .ThrowsAsync(new Exception(errorMessage));
 
-        var result = await _service.AlignLogsheetAsync(logsheet, CancellationToken.None);
+        var action = () => _service.AlignLogsheetAsync(logsheet, CancellationToken.None);
 
-        result.IsFailed.Should().BeTrue();
-        result.Errors.First().Message.Should().Be($"Failed to align logsheet: {errorMessage}");
+        await action.Should().ThrowAsync<Exception>().WithMessage(errorMessage);
     }
 
     [Fact]
