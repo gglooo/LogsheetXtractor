@@ -89,55 +89,45 @@ public class LogsheetService(
         CancellationToken ct
     )
     {
-        try
+        logger.LogInformation("Invoking script engine for Logsheet {LogsheetId}", logsheet.Id);
+        var processingOptions = new ProcessLogsheetInputOptionsDto(options?.UglyCheckboxes);
+        var outputResult = await scriptEngine.ProcessLogsheetAsync(
+            new ProcessLogsheetInputDto(logsheet, processingOptions),
+            ct
+        );
+
+        if (outputResult.IsFailed)
         {
-            logger.LogInformation("Invoking script engine for Logsheet {LogsheetId}", logsheet.Id);
-            var processingOptions = new ProcessLogsheetInputOptionsDto(options?.UglyCheckboxes);
-            var outputResult = await scriptEngine.ProcessLogsheetAsync(
-                new ProcessLogsheetInputDto(logsheet, processingOptions),
-                ct
-            );
-
-            if (outputResult.IsFailed)
-            {
-                var errorMessage = outputResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
-                logger.LogError(
-                    "Script processing failed for Logsheet {LogsheetId}: {Error}",
-                    logsheet.Id,
-                    errorMessage
-                );
-                AdjustAfterFailedProcessing(logsheet, errorMessage);
-
-                return outputResult.ToResult();
-            }
-
-            var output = outputResult.Value;
-
-            var extractedData = output
-                .ExtractedData.BuildAdapter()
-                .AddParameters("LogsheetId", logsheet.Id)
-                .AdaptToType<IEnumerable<ExtractedValue>>()
-                .ToList();
-
-            EvaluateValidationWarnings(logsheet, extractedData);
-
-            logger.LogInformation(
-                "Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.",
+            var errorMessage = outputResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
+            logger.LogError(
+                "Script processing failed for Logsheet {LogsheetId}: {Error}",
                 logsheet.Id,
-                extractedData.Count
+                errorMessage
             );
+            AdjustAfterFailedProcessing(logsheet, errorMessage);
 
-            AdjustAfterSuccessfulProcessing(logsheet, extractedData);
-
-            return Result.Ok();
+            return outputResult.ToResult();
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Script processing failed for Logsheet {LogsheetId}", logsheet.Id);
-            AdjustAfterFailedProcessing(logsheet, ex.Message);
 
-            return Result.Fail(ex.Message);
-        }
+        var output = outputResult.Value;
+
+        var extractedData = output
+            .ExtractedData.BuildAdapter()
+            .AddParameters("LogsheetId", logsheet.Id)
+            .AdaptToType<IEnumerable<ExtractedValue>>()
+            .ToList();
+
+        EvaluateValidationWarnings(logsheet, extractedData);
+
+        logger.LogInformation(
+            "Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.",
+            logsheet.Id,
+            extractedData.Count
+        );
+
+        AdjustAfterSuccessfulProcessing(logsheet, extractedData);
+
+        return Result.Ok();
     }
 
     public async Task<Result<LogsheetDetailDto>> ProcessLogsheetAsync(

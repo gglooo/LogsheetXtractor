@@ -5,6 +5,7 @@ using LogsheetXtractor.Application.Features.Logsheets.DTOs;
 using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Features.Scripting.DTOs;
 using LogsheetXtractor.Domain.Entities;
+using System.Collections.Concurrent;
 using File = LogsheetXtractor.Domain.Entities.File;
 
 namespace LogsheetXtractor.E2ETests.Infrastructure.Fakes;
@@ -12,10 +13,28 @@ namespace LogsheetXtractor.E2ETests.Infrastructure.Fakes;
 public sealed class FakeHtrScriptEngine : IHtrScriptEngine
 {
     public IReadOnlyList<ExportLogsheetDataDto> LastExportData { get; private set; } = [];
+    private readonly ConcurrentDictionary<Guid, Exception> _throwOnceByLogsheet = new();
+    private readonly ConcurrentDictionary<Guid, int> _processAttemptsByLogsheet = new();
 
     public void ResetCapturedExportData()
     {
         LastExportData = [];
+    }
+
+    public void ConfigureProcessThrowOnce(Guid logsheetId, Exception exception)
+    {
+        _throwOnceByLogsheet[logsheetId] = exception;
+    }
+
+    public int GetProcessAttempts(Guid logsheetId)
+    {
+        return _processAttemptsByLogsheet.TryGetValue(logsheetId, out var attempts) ? attempts : 0;
+    }
+
+    public void ResetProcessingBehavior()
+    {
+        _throwOnceByLogsheet.Clear();
+        _processAttemptsByLogsheet.Clear();
     }
 
     public Task<Result<SelectRoisOutputDto>> SelectRoisAsync(
@@ -39,6 +58,13 @@ public sealed class FakeHtrScriptEngine : IHtrScriptEngine
         CancellationToken ct
     )
     {
+        _processAttemptsByLogsheet.AddOrUpdate(input.Logsheet.Id, 1, (_, current) => current + 1);
+
+        if (_throwOnceByLogsheet.TryRemove(input.Logsheet.Id, out var configuredException))
+        {
+            throw configuredException;
+        }
+
         var extractedData = input.Logsheet.Template.Rois.ToDictionary(
             roi => roi.Id.ToString(),
             _ => "42"
