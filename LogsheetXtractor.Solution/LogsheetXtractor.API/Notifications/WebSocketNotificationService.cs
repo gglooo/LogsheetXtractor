@@ -17,7 +17,7 @@ public class WebSocketNotificationService(IHubContext<LogsheetHub> hubContext)
     }
 
     public async Task NotifyLogsheetAutomaticallyAlignedAsync(
-        LogsheetAutomaticallyAlignedEvent notificationEvent,
+        LogsheetAutomaticAlignmentFinished notificationEvent,
         CancellationToken ct
     )
     {

@@ -6,7 +6,7 @@ namespace LogsheetXtractor.Application.Features.Logsheets.Notifications;
 public static class AlignmentNotificationHandler
 {
     public static async Task Handle(
-        LogsheetAutomaticallyAlignedEvent message,
+        LogsheetAutomaticAlignmentFinished message,
         INotificationService notificationService,
         CancellationToken ct
     )

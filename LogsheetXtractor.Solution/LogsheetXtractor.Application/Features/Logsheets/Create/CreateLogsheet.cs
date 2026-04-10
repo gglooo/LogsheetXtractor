@@ -51,7 +51,7 @@ public static class CreateLogsheetHandler
             return Result.Fail<LogsheetDetailDto>(new NotFoundError("Template not found"));
         }
 
-        var logsheet = mapper.Map<LogsheetXtractor.Domain.Entities.Logsheet>(request);
+        var logsheet = mapper.Map<Domain.Entities.Logsheet>(request);
 
         await dbContext.Logsheets.AddAsync(logsheet, ct);
         await bus.PublishAsync(
