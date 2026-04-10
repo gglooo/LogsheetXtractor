@@ -9,7 +9,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
-      - ./formHTR:/app/formHTR
       - ./app_data:/app/app_data
       - ./credentials:/app/credentials
 
