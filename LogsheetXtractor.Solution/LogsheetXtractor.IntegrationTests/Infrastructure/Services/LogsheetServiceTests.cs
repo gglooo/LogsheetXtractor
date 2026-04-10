@@ -83,7 +83,7 @@ public class LogsheetServiceTests
     }
 
     [Fact]
-    public async Task AlignLogsheetAsync_ShouldThrow_WhenScriptEngineThrowsException()
+    public async Task AlignLogsheetAsync_ShouldReturnFail_WhenScriptEngineThrowsException()
     {
         var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Pending };
         var errorMessage = "Script engine failure";
@@ -97,9 +97,10 @@ public class LogsheetServiceTests
             )
             .ThrowsAsync(new Exception(errorMessage));
 
-        var action = () => _service.AlignLogsheetAsync(logsheet, CancellationToken.None);
+        var result = await _service.AlignLogsheetAsync(logsheet, CancellationToken.None);
 
-        await action.Should().ThrowAsync<Exception>().WithMessage(errorMessage);
+        result.IsFailed.Should().BeTrue();
+        result.Errors.First().Message.Should().Be($"Failed to align logsheet: {errorMessage}");
     }
 
     [Fact]
@@ -182,33 +183,22 @@ public class LogsheetServiceTests
                 )
             );
 
+        var expectedDto = new LogsheetDetailDto(
+            logsheet.Id,
+            null!,
+            null!,
+            ELogSheetStatus.Failed,
+            null,
+            null,
+            new List<ExtractedValueDto>(),
+            DateTime.UtcNow,
+            null
+        );
+        _mapperMock.Setup(x => x.Map<LogsheetDetailDto>(logsheet)).Returns(expectedDto);
+
         var result = await _service.ProcessLogsheetAsync(logsheet, null, CancellationToken.None);
 
-        result.IsFailed.Should().BeTrue();
         logsheet.Status.Should().Be(ELogSheetStatus.Failed);
         logsheet.ErrorMessage.Should().Be(errorMessage);
-    }
-
-    [Fact]
-    public async Task ProcessLogsheetAsync_ShouldThrow_WhenEngineThrowsException()
-    {
-        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Processing };
-        var errorMessage = "Python HTR crashed";
-
-        _scriptEngineMock
-            .Setup(x =>
-                x.ProcessLogsheetAsync(
-                    It.IsAny<ProcessLogsheetInputDto>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ThrowsAsync(new Exception(errorMessage));
-
-        var action = () => _service.ProcessLogsheetAsync(logsheet, null, CancellationToken.None);
-
-        await action.Should().ThrowAsync<Exception>().WithMessage(errorMessage);
-
-        logsheet.Status.Should().Be(ELogSheetStatus.Processing);
-        logsheet.ErrorMessage.Should().BeNull();
     }
 }

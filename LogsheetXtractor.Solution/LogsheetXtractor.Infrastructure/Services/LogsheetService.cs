@@ -27,26 +27,39 @@ public class LogsheetService(
         CancellationToken ct
     )
     {
-        logger.LogInformation(
-            "Invoking automatic alignment for Logsheet {LogsheetId}",
-            logsheet.Id
-        );
-        var alignmentResult = await scriptEngine.AutomaticAlignAsync(
-            new AutomaticAlignmentInputDto(logsheet),
-            ct
-        );
-
-        if (alignmentResult.IsFailed)
+        try
         {
-            var errorMessage = alignmentResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
-            logger.LogError(
-                "Automatic alignment failed for Logsheet {LogsheetId}: {Error}",
-                logsheet.Id,
-                errorMessage
+            logger.LogInformation(
+                "Invoking automatic alignment for Logsheet {LogsheetId}",
+                logsheet.Id
             );
-        }
+            var alignmentResult = await scriptEngine.AutomaticAlignAsync(
+                new AutomaticAlignmentInputDto(logsheet),
+                ct
+            );
 
-        return alignmentResult;
+            if (alignmentResult.IsFailed)
+            {
+                var errorMessage =
+                    alignmentResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
+                logger.LogError(
+                    "Automatic alignment failed for Logsheet {LogsheetId}: {Error}",
+                    logsheet.Id,
+                    errorMessage
+                );
+            }
+
+            return alignmentResult;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Automatic alignment failed for Logsheet {LogsheetId}",
+                logsheet.Id
+            );
+            return Result.Fail<LogsheetDetailDto>($"Failed to align logsheet: {ex.Message}");
+        }
     }
 
     private Result ValidateLogsheetForProcessing(Logsheet? logsheet)
@@ -76,45 +89,55 @@ public class LogsheetService(
         CancellationToken ct
     )
     {
-        logger.LogInformation("Invoking script engine for Logsheet {LogsheetId}", logsheet.Id);
-        var processingOptions = new ProcessLogsheetInputOptionsDto(options?.UglyCheckboxes);
-        var outputResult = await scriptEngine.ProcessLogsheetAsync(
-            new ProcessLogsheetInputDto(logsheet, processingOptions),
-            ct
-        );
-
-        if (outputResult.IsFailed)
+        try
         {
-            var errorMessage = outputResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
-            logger.LogError(
-                "Script processing failed for Logsheet {LogsheetId}: {Error}",
-                logsheet.Id,
-                errorMessage
+            logger.LogInformation("Invoking script engine for Logsheet {LogsheetId}", logsheet.Id);
+            var processingOptions = new ProcessLogsheetInputOptionsDto(options?.UglyCheckboxes);
+            var outputResult = await scriptEngine.ProcessLogsheetAsync(
+                new ProcessLogsheetInputDto(logsheet, processingOptions),
+                ct
             );
-            AdjustAfterFailedProcessing(logsheet, errorMessage);
 
-            return outputResult.ToResult();
+            if (outputResult.IsFailed)
+            {
+                var errorMessage = outputResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
+                logger.LogError(
+                    "Script processing failed for Logsheet {LogsheetId}: {Error}",
+                    logsheet.Id,
+                    errorMessage
+                );
+                AdjustAfterFailedProcessing(logsheet, errorMessage);
+
+                return outputResult.ToResult();
+            }
+
+            var output = outputResult.Value;
+
+            var extractedData = output
+                .ExtractedData.BuildAdapter()
+                .AddParameters("LogsheetId", logsheet.Id)
+                .AdaptToType<IEnumerable<ExtractedValue>>()
+                .ToList();
+
+            EvaluateValidationWarnings(logsheet, extractedData);
+
+            logger.LogInformation(
+                "Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.",
+                logsheet.Id,
+                extractedData.Count
+            );
+
+            AdjustAfterSuccessfulProcessing(logsheet, extractedData);
+
+            return Result.Ok();
         }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Script processing failed for Logsheet {LogsheetId}", logsheet.Id);
+            AdjustAfterFailedProcessing(logsheet, ex.Message);
 
-        var output = outputResult.Value;
-
-        var extractedData = output
-            .ExtractedData.BuildAdapter()
-            .AddParameters("LogsheetId", logsheet.Id)
-            .AdaptToType<IEnumerable<ExtractedValue>>()
-            .ToList();
-
-        EvaluateValidationWarnings(logsheet, extractedData);
-
-        logger.LogInformation(
-            "Script processing successful for Logsheet {LogsheetId}. Extracted {Count} values.",
-            logsheet.Id,
-            extractedData.Count
-        );
-
-        AdjustAfterSuccessfulProcessing(logsheet, extractedData);
-
-        return Result.Ok();
+            return Result.Fail(ex.Message);
+        }
     }
 
     public async Task<Result<LogsheetDetailDto>> ProcessLogsheetAsync(
