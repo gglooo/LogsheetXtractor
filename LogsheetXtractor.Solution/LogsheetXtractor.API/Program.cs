@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using JasperFx.Core;
 using LogsheetXtractor.API.Middleware;
 using LogsheetXtractor.API.Notifications;
 using LogsheetXtractor.Application;
@@ -7,11 +6,9 @@ using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Infrastructure.Installers;
 using LogsheetXtractor.Infrastructure.Middleware;
 using Mapster;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Wolverine;
 using Wolverine.EntityFrameworkCore;
-using Wolverine.ErrorHandling;
 using Wolverine.FluentValidation;
 using Wolverine.Http;
 using Wolverine.Sqlite;
