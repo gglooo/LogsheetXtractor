@@ -36,38 +36,20 @@ public static class SetTemplateRoisHandler
         }
 
         var requestRois = request.Rois.ToList();
-        for (var i = 0; i < requestRois.Count; i++)
+        List<IError> validationErrors = [];
+        
+        foreach (var roi in requestRois)
         {
-            var roi = requestRois[i];
-            if (roi.ValidationCondition is null)
-            {
-                continue;
-            }
-
-            if (roi.Type is null)
-            {
-                return Result.Fail<IEnumerable<RoiDto>>(
-                    new ValidationError(
-                        $"ROI at index {i} ('{roi.VariableName}') must define a type when validationCondition is set."
-                    )
-                );
-            }
-
-            var validationResult = conditionTreeValidator.Validate(
-                roi.Type.Value,
-                roi.ValidationCondition
-            );
+            var validationResult = ValidateRoi(roi, conditionTreeValidator);
             if (validationResult.IsFailed)
             {
-                var message =
-                    validationResult.Errors.FirstOrDefault()?.Message
-                    ?? "Invalid validation condition.";
-                return Result.Fail<IEnumerable<RoiDto>>(
-                    new ValidationError(
-                        $"ROI at index {i} ('{roi.VariableName}') has invalid validationCondition: {message}"
-                    )
-                );
+                validationErrors.AddRange(validationResult.Errors);
             }
+        }
+        
+        if (validationErrors.Count > 0)
+        {
+            return Result.Fail<IEnumerable<RoiDto>>(validationErrors);
         }
 
         try
@@ -90,5 +72,42 @@ public static class SetTemplateRoisHandler
         {
             return Result.Fail($"Failed to update ROIs: {ex.Message}");
         }
+    }
+    
+    private static Result ValidateRoi(SetRoiDto roi, IRoiValidationConditionTreeValidator conditionTreeValidator)
+    {
+       
+        if (roi.ValidationCondition is null)
+        {
+            return Result.Ok();
+        }
+        
+        if (roi.Type is null)
+        {
+            return Result.Fail(
+                new ValidationError(
+                    $"ROI '{roi.VariableName}' must define a type when validationCondition is set."
+                )
+            );
+        }
+        
+        var validationResult = conditionTreeValidator.Validate(
+            roi.Type.Value,
+            roi.ValidationCondition
+        );
+        
+        if (validationResult.IsFailed)
+        {
+            var message =
+                validationResult.Errors.FirstOrDefault()?.Message
+                ?? "Invalid validation condition.";
+            return Result.Fail(
+                new ValidationError(
+                    $"ROI '{roi.VariableName}' has invalid validationCondition: {message}"
+                )
+            );
+        }
+
+        return Result.Ok();
     }
 }
