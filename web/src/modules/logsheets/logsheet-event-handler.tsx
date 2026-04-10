@@ -4,15 +4,15 @@ import { useEffect } from "react";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
 
-export type LogsheetProcessingFinishedEvent = {
+type LogsheetEvent = {
     logsheetId: string;
     isSuccess: boolean;
     errorMessage?: string;
 };
 
-export type LogsheetAutomaticAlignmentFinishedEvent = {
-    logsheetId: string;
-};
+export type LogsheetProcessingFinishedEvent = LogsheetEvent;
+
+export type LogsheetAutomaticAlignmentFinishedEvent = LogsheetEvent;
 
 export const LogsheetEventHandler = () => {
     const { connection } = useSignalR();
@@ -52,9 +52,21 @@ export const LogsheetEventHandler = () => {
         };
 
         const onLogsheetAutomaticAlignmentFinished = async (
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            _: LogsheetAutomaticAlignmentFinishedEvent,
+            event: LogsheetAutomaticAlignmentFinishedEvent,
         ) => {
+            if (!event.isSuccess) {
+                toast.error(
+                    intl.formatMessage({
+                        id: "logsheets.automaticAlignment.error",
+                        defaultMessage: "Logsheet automatic alignment failed",
+                    }),
+                    {
+                        id: `logsheet-automatic-alignment-error-${event.logsheetId}`,
+                        description: event.errorMessage,
+                    },
+                );
+            }
+
             await queryClient.invalidateQueries({ queryKey: ["logsheets"] });
         };
 

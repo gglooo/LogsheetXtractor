@@ -37,27 +37,20 @@ public static class AlignLogsheetHandler
         var shouldResetStatus = logsheet.Status == ELogSheetStatus.Aligning;
 
         var alignmentResult = await logsheetService.AlignLogsheetAsync(logsheet, ct);
-        if (shouldResetStatus)
+        if (shouldResetStatus && alignmentResult.IsSuccess)
         {
             logsheet.Status = ELogSheetStatus.Pending;
         }
+        
+        var errorMessages = alignmentResult.IsSuccess ? null : string.Join(", ", alignmentResult.Errors.Select(e => e.Message).ToArray());
 
-        if (alignmentResult.IsFailed)
-        {
-            if (shouldResetStatus)
-            {
-                await dbContext.SaveChangesAsync(ct);
-            }
-
-            return alignmentResult;
-        }
-
-        await bus.PublishAsync(new LogsheetAutomaticallyAlignedEvent(request.LogsheetId));
+        await bus.PublishAsync(new LogsheetAutomaticAlignmentFinished(request.LogsheetId, alignmentResult.IsSuccess, errorMessages));
         await dbContext.SaveChangesAsync(ct);
 
         logger.LogInformation(
-            "Automatic alignment completed successfully for Logsheet {LogsheetId}",
-            request.LogsheetId
+            "Finished automatic alignment for Logsheet {LogsheetId} with result: {Result}",
+            request.LogsheetId,
+            alignmentResult.IsSuccess ? "Success" : $"Failed with errors: {errorMessages}"
         );
 
         return alignmentResult;

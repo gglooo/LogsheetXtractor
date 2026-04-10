@@ -10,7 +10,7 @@ public interface INotificationService
     );
 
     Task NotifyLogsheetAutomaticallyAlignedAsync(
-        LogsheetAutomaticallyAlignedEvent notificationEvent,
+        LogsheetAutomaticAlignmentFinished notificationEvent,
         CancellationToken ct
     );
 }
