@@ -1,16 +1,17 @@
 using System.Text.Json.Serialization;
-using LogsheetXtractor.API.Extensions;
+using JasperFx.Core;
 using LogsheetXtractor.API.Middleware;
 using LogsheetXtractor.API.Notifications;
 using LogsheetXtractor.Application;
 using LogsheetXtractor.Application.Interfaces;
-using LogsheetXtractor.Application.MessageProcessing;
 using LogsheetXtractor.Infrastructure.Installers;
 using LogsheetXtractor.Infrastructure.Middleware;
 using Mapster;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Wolverine;
 using Wolverine.EntityFrameworkCore;
+using Wolverine.ErrorHandling;
 using Wolverine.FluentValidation;
 using Wolverine.Http;
 using Wolverine.Sqlite;
@@ -35,9 +36,7 @@ builder.Host.UseWolverine(opts =>
         opts.Policies.UseDurableLocalQueues();
         opts.PersistMessagesWithSqlite(builder.Configuration.GetConnectionString("DefaultConnection")!);
     }
-
-    opts.ApplyRetryPolicies(MessageRetryPolicies.All());
-
+    
     opts.Policies.AddMiddleware(typeof(CredentialCookieMiddleware));
 });
 builder.Services.AddWolverineHttp();
