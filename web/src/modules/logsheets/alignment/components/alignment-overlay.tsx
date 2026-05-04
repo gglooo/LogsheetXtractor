@@ -174,7 +174,7 @@ export const AlignmentOverlay = ({
     return (
         <svg
             ref={svgRef}
-            className="absolute inset-0 w-full h-full"
+            className="absolute inset-0 w-full h-full overflow-visible"
             style={{ zIndex: 50 }}
         >
             {activePoint ? (
