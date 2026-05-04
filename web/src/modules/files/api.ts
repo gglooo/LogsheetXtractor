@@ -1,6 +1,8 @@
 import { fileSchema } from "@/modules/files/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
+const IMMUTABLE_FILE_STALE_TIME = Infinity;
+
 export const useUploadFileMutation = () =>
     useMutation({
         mutationFn: async (file: File) => {
@@ -48,6 +50,7 @@ export const useFile = (fileId: string | undefined | null) =>
     useQuery({
         queryKey: ["file", fileId],
         refetchOnWindowFocus: false,
+        staleTime: IMMUTABLE_FILE_STALE_TIME,
         queryFn: () => fileQueryFn(`/api/files/${fileId}`),
         enabled: !!fileId,
     });
@@ -56,6 +59,7 @@ export const usePdfFileImage = (fileId: string | undefined | null) =>
     useQuery({
         queryKey: ["file-image", fileId],
         refetchOnWindowFocus: false,
+        staleTime: IMMUTABLE_FILE_STALE_TIME,
         queryFn: () => fileQueryFn(`/api/files/${fileId}/image`),
         retry: (_, error) =>
             !(error instanceof Error && error.message.includes("Not Found")),

@@ -19,6 +19,10 @@ const PdfSkeleton = ({ width, height }: { width: number; height: number }) => (
     />
 );
 
+type PdfFileData = {
+    data: Uint8Array;
+};
+
 export const PdfViewer = ({
     fileId,
     pageNumber,
@@ -31,7 +35,7 @@ export const PdfViewer = ({
     const intl = useIntl();
     const file = useFile(fileId);
     const fileBytes = file.data?.bytes;
-    const fileData = useMemo(() => {
+    const fileData = useMemo<PdfFileData | undefined>(() => {
         return fileBytes
             ? { data: new Uint8Array(fileBytes.slice(0)) }
             : undefined;
@@ -39,15 +43,75 @@ export const PdfViewer = ({
 
     const { scale, width } = useSvgZoom();
 
-    const [numPages, setNumPages] = useState<number | null>(null);
+    const [loadedDocument, setLoadedDocument] = useState<{
+        fileId: string;
+        numPages: number;
+    } | null>(null);
+    const numPages =
+        loadedDocument?.fileId === fileId ? loadedDocument.numPages : null;
 
     const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-        setNumPages(numPages);
+        setLoadedDocument({ fileId, numPages });
         onNumPagesLoaded?.(numPages);
     };
 
+    const renderedPages = useMemo(() => {
+        if (numPages === null) {
+            return null;
+        }
+
+        if (pageNumber) {
+            return pageNumber > numPages ? (
+                <div
+                    className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-muted/20 border border-dashed rounded-md absolute inset-0 z-20 backdrop-blur-sm"
+                    style={{
+                        width: width * scale,
+                        height: width * scale * A4_ASPECT_RATIO,
+                    }}
+                >
+                    <p className="font-medium text-lg mb-1">
+                        {intl.formatMessage({
+                            id: "pdf.pageNotFound.title",
+                            defaultMessage: "Page Not Found",
+                        })}
+                    </p>
+                    <p className="text-sm">
+                        {intl.formatMessage(
+                            {
+                                id: "pdf.pageNotFound.description",
+                                defaultMessage:
+                                    "This document only has {numPages} {numPages, plural, one {page} other {pages}}, but page {pageNumber} was requested.",
+                            },
+                            { numPages, pageNumber },
+                        )}
+                    </p>
+                </div>
+            ) : (
+                <Page
+                    pageNumber={pageNumber}
+                    width={width * scale}
+                    onLoadError={(error) =>
+                        console.error("Error loading PDF Page:", error)
+                    }
+                />
+            );
+        }
+
+        return Array.from({ length: numPages }, (_, index) => (
+            <Page
+                key={`page_${index}`}
+                pageNumber={index + 1}
+                width={width * scale}
+                onLoadError={(error) =>
+                    console.error("Error loading PDF Page:", error)
+                }
+            />
+        ));
+    }, [intl, numPages, pageNumber, scale, width]);
+
     return !file.isPending && fileData && width > USABLE_WIDTH_THRESHOLD ? (
         <Document
+            key={fileId}
             file={fileData}
             loading={
                 <PdfSkeleton
@@ -64,53 +128,7 @@ export const PdfViewer = ({
             }
             className="select-none"
         >
-            {pageNumber ? (
-                numPages !== null && pageNumber > numPages ? (
-                    <div
-                        className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-muted/20 border border-dashed rounded-md absolute inset-0 z-20 backdrop-blur-sm"
-                        style={{
-                            width: width * scale,
-                            height: width * scale * A4_ASPECT_RATIO,
-                        }}
-                    >
-                        <p className="font-medium text-lg mb-1">
-                            {intl.formatMessage({
-                                id: "pdf.pageNotFound.title",
-                                defaultMessage: "Page Not Found",
-                            })}
-                        </p>
-                        <p className="text-sm">
-                            {intl.formatMessage(
-                                {
-                                    id: "pdf.pageNotFound.description",
-                                    defaultMessage:
-                                        "This document only has {numPages} {numPages, plural, one {page} other {pages}}, but page {pageNumber} was requested.",
-                                },
-                                { numPages, pageNumber },
-                            )}
-                        </p>
-                    </div>
-                ) : (
-                    <Page
-                        pageNumber={pageNumber}
-                        width={width * scale}
-                        onLoadError={(error) =>
-                            console.error("Error loading PDF Page:", error)
-                        }
-                    />
-                )
-            ) : (
-                Object.entries(Array(numPages).fill(null)).map(([index]) => (
-                    <Page
-                        key={`page_${index}`}
-                        pageNumber={Number(index) + 1}
-                        width={width * scale}
-                        onLoadError={(error) =>
-                            console.error("Error loading PDF Page:", error)
-                        }
-                    />
-                ))
-            )}
+            {renderedPages}
         </Document>
     ) : (
         <PdfSkeleton
