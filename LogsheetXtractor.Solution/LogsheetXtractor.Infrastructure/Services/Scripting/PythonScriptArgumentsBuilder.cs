@@ -121,7 +121,7 @@ public class PythonScriptArgumentsBuilder : IPythonScriptArgumentsBuilder
         };
 
         AddAlignmentArguments(args, alignmentInput);
-        AddBacksideArguments(args, backsideInput);
+        AddBacksideArguments(args, backsideInput, false);
 
         return args;
     }
@@ -152,7 +152,8 @@ public class PythonScriptArgumentsBuilder : IPythonScriptArgumentsBuilder
 
     private static void AddBacksideArguments(
         ICollection<string> args,
-        PreparedBacksideInput? backsideInput
+        PreparedBacksideInput? backsideInput,
+        bool includeBacksideConfig = true
     )
     {
         if (backsideInput is null)
@@ -163,7 +164,13 @@ public class PythonScriptArgumentsBuilder : IPythonScriptArgumentsBuilder
         args.Add(PythonCliArgs.Backside);
         args.Add(PythonCliArgs.BacksideTemplate);
         args.Add(backsideInput.BacksideTemplatePath);
-        args.Add(PythonCliArgs.BacksideConfig);
-        args.Add(backsideInput.BacksideConfigPath);
+
+        // Including the backside config when exporting extracted values causes the backside values to be
+        // duplicated.
+        if (includeBacksideConfig)
+        {
+            args.Add(PythonCliArgs.BacksideConfig);
+            args.Add(backsideInput.BacksideConfigPath);
+        }
     }
 }
