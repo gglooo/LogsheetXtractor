@@ -12,6 +12,7 @@ public class CredentialContextProvider(
     IOcrCredentialService ocrCredentialService,
     IFileStorageService fileStorageService,
     ICredentialCookieAccessor cookieAccessor,
+    IUserCredentialCookieProtector credentialCookieProtector,
     ILogger<UserCredentialContext> userContextLogger,
     ILogger<CredentialContextProvider> logger
 ) : ICredentialContextProvider
@@ -19,7 +20,7 @@ public class CredentialContextProvider(
     public async Task<ICredentialContext> GetCredentialContextAsync(CancellationToken ct = default)
     {
         var cookie = cookieAccessor.GetCookie();
-        var keys = CredentialCookieParser.ParseCredentials(cookie);
+        var keys = credentialCookieProtector.Unprotect(cookie);
 
         if (keys != null)
         {

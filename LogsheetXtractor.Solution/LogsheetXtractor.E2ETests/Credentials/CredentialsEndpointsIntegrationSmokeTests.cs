@@ -45,6 +45,10 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         setResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var cookieHeader = GetCookieHeaderValue(setResponse, CredentialsConstants.CookieName);
+        var cookieValue = Uri.UnescapeDataString(cookieHeader.Split('=', 2)[1]);
+        cookieValue.Should().StartWith("v1:");
+        cookieValue.Should().NotContain("google-key");
+        cookieValue.Should().NotContain("azure-key");
 
         using var statusRequest = new HttpRequestMessage(HttpMethod.Get, "/api/credentials/status");
         statusRequest.Headers.Add("Cookie", cookieHeader);
@@ -55,6 +59,23 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         statusPayload.Should().NotBeNull();
         statusPayload!.HasUserCredentials.Should().BeTrue();
         statusPayload.Available.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetStatus_WithLegacyRawJsonCookie_ShouldIgnoreUserCredentials()
+    {
+        using var statusRequest = new HttpRequestMessage(HttpMethod.Get, "/api/credentials/status");
+        statusRequest.Headers.Add(
+            "Cookie",
+            $"{CredentialsConstants.CookieName}={{%22Google%22:%22google-key%22}}"
+        );
+
+        var statusResponse = await _client.SendAsync(statusRequest);
+
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var statusPayload = await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
+        statusPayload.Should().NotBeNull();
+        statusPayload!.HasUserCredentials.Should().BeFalse();
     }
 
     [Fact]

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +6,8 @@ namespace LogsheetXtractor.Infrastructure.Services.Credentials;
 
 public class CredentialService(
     IOcrCredentialService ocrCredentialService,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    IUserCredentialCookieProtector credentialCookieProtector
 ) : ICredentialService
 {
     public Task<IEnumerable<ECredentialType>> GetAvailableCredentialTypesAsync(
@@ -18,7 +18,7 @@ public class CredentialService(
             .HttpContext
             ?.Request
             .Cookies[CredentialsConstants.CookieName];
-        var keys = CredentialCookieParser.ParseCredentials(cookie);
+        var keys = credentialCookieProtector.Unprotect(cookie);
 
         if (keys != null)
         {

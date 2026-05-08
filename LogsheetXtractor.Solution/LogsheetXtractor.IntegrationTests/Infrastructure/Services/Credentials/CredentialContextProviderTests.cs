@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using FluentAssertions;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
@@ -16,6 +15,7 @@ public class CredentialContextProviderTests
     private readonly Mock<IOcrCredentialService> _ocrCredentialServiceMock;
     private readonly Mock<IFileStorageService> _fileStorageServiceMock;
     private readonly Mock<ICredentialCookieAccessor> _cookieAccessorMock;
+    private readonly Mock<IUserCredentialCookieProtector> _credentialCookieProtectorMock;
     private readonly Mock<ILogger<UserCredentialContext>> _userContextLoggerMock;
     private readonly Mock<ILogger<CredentialContextProvider>> _loggerMock;
     private readonly CredentialContextProvider _provider;
@@ -25,6 +25,7 @@ public class CredentialContextProviderTests
         _ocrCredentialServiceMock = new Mock<IOcrCredentialService>();
         _fileStorageServiceMock = new Mock<IFileStorageService>();
         _cookieAccessorMock = new Mock<ICredentialCookieAccessor>();
+        _credentialCookieProtectorMock = new Mock<IUserCredentialCookieProtector>();
         _userContextLoggerMock = new Mock<ILogger<UserCredentialContext>>();
         _loggerMock = new Mock<ILogger<CredentialContextProvider>>();
 
@@ -32,6 +33,7 @@ public class CredentialContextProviderTests
             _ocrCredentialServiceMock.Object,
             _fileStorageServiceMock.Object,
             _cookieAccessorMock.Object,
+            _credentialCookieProtectorMock.Object,
             _userContextLoggerMock.Object,
             _loggerMock.Object
         );
@@ -46,8 +48,11 @@ public class CredentialContextProviderTests
             { ECredentialType.Google, "some-google-key" },
             { ECredentialType.Azure, "some-azure-key" },
         };
-        var cookieString = JsonSerializer.Serialize(credentials);
+        const string cookieString = "v1:protected-cookie";
         _cookieAccessorMock.Setup(c => c.GetCookie()).Returns(cookieString);
+        _credentialCookieProtectorMock
+            .Setup(p => p.Unprotect(cookieString))
+            .Returns(credentials);
 
         _fileStorageServiceMock
             .Setup(s =>

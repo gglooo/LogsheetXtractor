@@ -1,10 +1,11 @@
-using System.Text.Json;
 using FluentResults;
 using LogsheetXtractor.API.Extensions;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Features.Credentials.DTOs;
 using LogsheetXtractor.Application.Features.Credentials.SetUserCredentials;
+using LogsheetXtractor.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Wolverine;
 using Wolverine.Http;
 
@@ -19,13 +20,15 @@ public static class CredentialsEndpoints
     public static async Task<IResult> GetCredentialsStatus(
         IMessageBus bus,
         HttpContext httpContext,
+        IUserCredentialCookieProtector credentialCookieProtector,
         CancellationToken ct
     )
     {
+        var keys = credentialCookieProtector.Unprotect(
+            httpContext.Request.Cookies[CredentialsConstants.CookieName]
+        );
         var result = await bus.InvokeAsync<Result<CredentialsStatusDto?>>(
-            new GetCredentialsStatusQuery(
-                httpContext.Request.Cookies[CredentialsConstants.CookieName]
-            ),
+            new GetCredentialsStatusQuery(keys),
             ct
         );
 
@@ -44,6 +47,8 @@ public static class CredentialsEndpoints
         [FromBody] SetUserCredentialsRequest request,
         HttpContext httpContext,
         IMessageBus bus,
+        IUserCredentialCookieProtector credentialCookieProtector,
+        IOptions<UserCredentialCookieOptions> cookieOptions,
         CancellationToken ct
     )
     {
@@ -58,14 +63,18 @@ public static class CredentialsEndpoints
         var options = new CookieOptions
         {
             HttpOnly = true,
-            // TODO: will the app always run behind HTTP?
-            Secure = false,
+            Secure = httpContext.Request.IsHttps,
             SameSite = SameSiteMode.Lax,
-            Expires = DateTime.UtcNow.AddYears(1),
+            Expires = DateTimeOffset.UtcNow.Add(cookieOptions.Value.Ttl),
+            Path = "/api",
         };
 
-        var keysJson = JsonSerializer.Serialize(request.Keys);
-        httpContext.Response.Cookies.Append(CredentialsConstants.CookieName, keysJson, options);
+        var protectedCookie = credentialCookieProtector.Protect(request.Keys);
+        httpContext.Response.Cookies.Append(
+            CredentialsConstants.CookieName,
+            protectedCookie,
+            options
+        );
 
         return result.ToHttpResult();
     }
@@ -83,7 +92,10 @@ public static class CredentialsEndpoints
 
         if (result.IsSuccess)
         {
-            httpContext.Response.Cookies.Delete(CredentialsConstants.CookieName);
+            httpContext.Response.Cookies.Delete(
+                CredentialsConstants.CookieName,
+                new CookieOptions { Path = "/api" }
+            );
         }
 
         return result.ToHttpResult();
