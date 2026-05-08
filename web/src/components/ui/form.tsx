@@ -21,11 +21,13 @@ import type z from "zod";
 type Props<T extends z.ZodType<FieldValues, FieldValues>> = {
     schema: T;
     defaultValues?: DefaultValues<z.input<T>>;
+    onSubmit?: (values: z.infer<T>) => Promise<void> | void;
 } & React.PropsWithChildren;
 
 const Form = <T extends z.ZodType<FieldValues, FieldValues>>({
     schema,
     defaultValues,
+    onSubmit,
     children,
 }: Props<T>) => {
     const methods = useForm({
@@ -34,9 +36,13 @@ const Form = <T extends z.ZodType<FieldValues, FieldValues>>({
         mode: "onChange",
     });
 
+    const handleFormSubmit = onSubmit
+        ? methods.handleSubmit((values) => onSubmit(values as z.infer<T>))
+        : (e: React.FormEvent<HTMLFormElement>) => e.preventDefault();
+
     return (
         <FormProvider {...methods}>
-            <form onSubmit={(e) => e.preventDefault()}>{children}</form>
+            <form onSubmit={handleFormSubmit}>{children}</form>
         </FormProvider>
     );
 };
