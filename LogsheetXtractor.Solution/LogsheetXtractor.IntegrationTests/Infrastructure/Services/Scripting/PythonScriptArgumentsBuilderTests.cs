@@ -129,8 +129,8 @@ public class PythonScriptArgumentsBuilderTests
         args.Should().Contain(PythonCliArgs.Backside);
         args.Should().Contain(PythonCliArgs.BacksideTemplate);
         args.Should().Contain("back.pdf");
-        args.Should().Contain(PythonCliArgs.BacksideConfig);
-        args.Should().Contain("back-config.json");
+        args.Should().NotContain(PythonCliArgs.BacksideConfig);
+        args.Should().NotContain("back-config.json");
     }
 
     [Fact]
