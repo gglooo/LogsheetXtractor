@@ -17,7 +17,6 @@ import { useTemplate } from "@/modules/templates/api";
 import { BotIcon, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 type AlignmentEditorProps = {
@@ -33,7 +32,6 @@ const getDefaultCoords = (w: number, h: number): Position[] => [
 
 export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     const intl = useIntl();
-    const navigate = useNavigate();
 
     const templateQuery = useTemplate(logsheet.template.id);
     const template = templateQuery.data;
@@ -75,6 +73,11 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
     const alignMutation = useAlignLogsheetMutation();
     const automaticAlignMutation = useAutomaticAlignLogsheetMutation();
 
+    const saveStateCleanup = () => {
+        setIsFrontDirty(false);
+        setIsBackDirty(false);
+    };
+
     const handleSave = async () => {
         try {
             const shouldSendFrontside =
@@ -95,7 +98,7 @@ export const AlignmentEditor = ({ logsheet }: AlignmentEditorProps) => {
                     defaultMessage: "Alignment saved",
                 }),
             );
-            navigate(`/templates/${logsheet.template.id}/logsheets`);
+            saveStateCleanup();
         } catch (error) {
             console.error(error);
             toast.error(
