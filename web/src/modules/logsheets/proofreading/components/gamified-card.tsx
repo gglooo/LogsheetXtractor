@@ -15,7 +15,7 @@ import {
     type ExtractedValueType,
 } from "@/modules/logsheets/schema";
 import { CheckIcon } from "lucide-react";
-import { useFormContext, useFormState } from "react-hook-form";
+import { useFormState } from "react-hook-form";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
 
@@ -27,11 +27,9 @@ type GamifiedCardProps = {
 };
 
 const SubmitButton = ({
-    onSubmit,
     onSkip,
     isFetching,
 }: {
-    onSubmit: () => void;
     onSkip?: () => void;
     isFetching?: boolean;
 }) => {
@@ -57,10 +55,9 @@ const SubmitButton = ({
                 </Button>
             )}
             <Button
-                type="button"
+                type="submit"
                 className="flex-1 gap-2"
                 disabled={isDisabled}
-                onClick={onSubmit}
             >
                 {isDisabled ? <Spinner /> : <CheckIcon className="h-4 w-4" />}
                 {intl.formatMessage({
@@ -75,16 +72,13 @@ const SubmitButton = ({
 const GamifiedCardForm = ({
     extractedValue,
     isFetching,
-    onSubmit,
     onSkip,
 }: {
     extractedValue: ExtractedValueType;
     isFetching?: boolean;
-    onSubmit: (values: ExtractedValueFormValues) => Promise<void>;
     onSkip?: () => void;
 }) => {
     const intl = useIntl();
-    const { handleSubmit } = useFormContext<ExtractedValueFormValues>();
 
     return (
         <div className="flex flex-col gap-4">
@@ -99,7 +93,6 @@ const GamifiedCardForm = ({
             />
             <ExtractedValueCorrectedField roiType={extractedValue.roiType} />
             <SubmitButton
-                onSubmit={() => handleSubmit(onSubmit)()}
                 onSkip={onSkip}
                 isFetching={isFetching}
             />
@@ -172,11 +165,11 @@ export const GamifiedCard = ({
                         ...extractedValue,
                         correctedValue: defaultCorrectedValue,
                     }}
+                    onSubmit={handleSubmit}
                 >
                     <div className="flex flex-col gap-2">
                         <GamifiedCardForm
                             extractedValue={extractedValue}
-                            onSubmit={handleSubmit}
                             onSkip={onSkip}
                             isFetching={isFetching}
                         />

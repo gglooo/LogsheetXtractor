@@ -12,7 +12,7 @@ import {
 } from "@/modules/logsheets/schema";
 import type { RoiValidationConditionType } from "@/modules/rois/validation/schema";
 import { CheckIcon } from "lucide-react";
-import { useFormContext, useFormState } from "react-hook-form";
+import { useFormState } from "react-hook-form";
 import { useIntl } from "react-intl";
 import { toast } from "sonner";
 
@@ -22,17 +22,16 @@ type Props = {
     onVerified?: (verifiedExtractedValue: ExtractedValueType) => void;
 };
 
-const SubmitButton = ({ onSubmit }: { onSubmit: () => void }) => {
+const SubmitButton = () => {
     const intl = useIntl();
     const { isSubmitting } = useFormState();
 
     return (
         <Button
-            type="button"
+            type="submit"
             variant="outline"
             size="sm"
             disabled={isSubmitting}
-            onClick={onSubmit}
             className="h-9 w-9 p-0"
         >
             <CheckIcon className="h-4 w-4" />
@@ -48,17 +47,10 @@ const SubmitButton = ({ onSubmit }: { onSubmit: () => void }) => {
 
 const FormContent = ({
     extractedValue,
-    onSubmitCallback,
 }: {
     extractedValue: ExtractedValueType;
-    onSubmitCallback: (values: ExtractedValueFormValues) => Promise<void>;
 }) => {
     const intl = useIntl();
-    const { handleSubmit } = useFormContext<ExtractedValueFormValues>();
-
-    const onSubmit = () => {
-        handleSubmit(onSubmitCallback)();
-    };
 
     return (
         <div className="flex gap-2">
@@ -82,7 +74,7 @@ const FormContent = ({
                 </div>
             </div>
             <div className="flex items-end">
-                <SubmitButton onSubmit={onSubmit} />
+                <SubmitButton />
             </div>
         </div>
     );
@@ -132,12 +124,10 @@ export const ExtractedValueForm = ({
                 ...extractedValue,
                 correctedValue: defaultCorrectedValue,
             }}
+            onSubmit={onSubmit}
         >
             <div className="flex flex-col gap-4">
-                <FormContent
-                    extractedValue={extractedValue}
-                    onSubmitCallback={onSubmit}
-                />
+                <FormContent extractedValue={extractedValue} />
                 <ExtractedValueValidationWarnings
                     warnings={extractedValue.validationWarnings}
                     validationCondition={validationCondition}
