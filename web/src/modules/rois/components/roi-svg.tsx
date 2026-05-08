@@ -1,0 +1,196 @@
+import {
+    DEFAULT_ROI_COLOR,
+    DUPLICATE_ROI_COLOR,
+    SELECTED_ROI_COLOR,
+} from "@/modules/pdf/const";
+import type { DetectedRoiType, RoiType } from "@/modules/rois/schema";
+import type { Coordinates } from "@/schema";
+import React, { useState } from "react";
+
+type Props = {
+    roi: DetectedRoiType;
+    scale: number;
+    isSelected?: boolean;
+    isDragging?: boolean;
+    isResizeable?: boolean;
+    isDuplicate?: boolean;
+    guideLineCoordinates?: Coordinates;
+    onDelete?: (id: string) => void;
+    onRoiClick?: (e: React.MouseEvent, id: string) => void;
+    onRoiContextMenu?: (e: React.MouseEvent, id: string) => void;
+    onRoiDrag?: (e: React.MouseEvent, id: string) => void;
+    onRoiResizeStart?: (e: React.MouseEvent, id: string) => void;
+    onMouseMove?: (e: React.MouseEvent, roi: RoiType) => void;
+};
+
+export const RoiSvg = React.memo(
+    ({
+        roi,
+        scale,
+        isSelected,
+        isDragging,
+        guideLineCoordinates,
+        isResizeable = true,
+        isDuplicate = false,
+        onDelete,
+        onRoiClick,
+        onRoiContextMenu,
+        onRoiDrag,
+        onRoiResizeStart,
+        onMouseMove,
+    }: Props) => {
+        const [isHovered, setIsHovered] = useState(false);
+        const { x, y, width, height } = roi.coordinates;
+
+        const scaledX = x * scale;
+        const scaledY = y * scale;
+        const scaledWidth = width * scale;
+        const scaledHeight = height * scale;
+
+        const stroke = isSelected
+            ? SELECTED_ROI_COLOR
+            : isDuplicate
+              ? DUPLICATE_ROI_COLOR
+              : DEFAULT_ROI_COLOR;
+
+        const handleClick = (e: React.MouseEvent) => {
+            if (!isDragging && roi.id) {
+                onRoiClick?.(e, roi.id);
+            }
+        };
+
+        return (
+            <g
+                id={`roi-${roi.id}`}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onMouseDown={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    if (e.button !== 0) {
+                        return;
+                    }
+                    if (roi.id) {
+                        onRoiDrag?.(e, roi.id);
+                    }
+                }}
+                onContextMenu={(e: React.MouseEvent) => {
+                    if (!roi.id) {
+                        return;
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    handleClick(e);
+                    onRoiContextMenu?.(e, roi.id);
+                }}
+                onMouseMove={(e) => {
+                    onMouseMove?.(e, roi as RoiType);
+                }}
+                onClick={handleClick}
+                className="cursor-pointer"
+            >
+                <rect
+                    x={scaledX}
+                    y={scaledY}
+                    width={scaledWidth}
+                    height={scaledHeight}
+                    fill={
+                        isHovered
+                            ? "rgba(59, 130, 246, 0.2)"
+                            : "rgba(59, 130, 246, 0.1)"
+                    }
+                    stroke={stroke}
+                    strokeWidth="2"
+                    className="transition-colors pointer-events-auto"
+                />
+
+                {guideLineCoordinates && isHovered ? (
+                    <rect
+                        x={guideLineCoordinates.x * scale}
+                        y={guideLineCoordinates.y * scale}
+                        width={guideLineCoordinates.width * scale}
+                        height={guideLineCoordinates.height * scale}
+                        fill="rgb(120,120,120)"
+                        strokeDasharray="4"
+                    />
+                ) : null}
+
+                {isHovered || isSelected ? (
+                    <>
+                        <defs>
+                            <filter x="0" y="0" width="1" height="1" id="solid">
+                                <feFlood floodColor="yellow" />
+                                <feComposite
+                                    in="SourceGraphic"
+                                    operator="xor"
+                                />
+                            </filter>
+                        </defs>
+                        <text
+                            filter="url(#solid)"
+                            x={scaledX}
+                            y={scaledY + scaledHeight + 14}
+                            className="text-[12px] font-bold select-none pointer-events-none"
+                        >
+                            {" "}
+                            {roi.variableName}
+                        </text>
+                        <text
+                            x={scaledX}
+                            y={scaledY + scaledHeight + 14}
+                            className="text-[12px] font-bold select-none pointer-events-none"
+                        >
+                            {roi.variableName}
+                        </text>
+                    </>
+                ) : null}
+
+                {isHovered && onDelete && (
+                    <g
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(roi.id ?? "unnamed_roi");
+                        }}
+                    >
+                        <circle
+                            cx={scaledX + scaledWidth}
+                            cy={scaledY}
+                            r="10"
+                            className="fill-red-500 hover:fill-red-600 shadow"
+                        />
+                        <text
+                            x={scaledX + scaledWidth}
+                            y={scaledY + 4}
+                            textAnchor="middle"
+                            className="fill-white text-[12px] font-bold pointer-events-none"
+                        >
+                            ×
+                        </text>
+                    </g>
+                )}
+
+                {roi.id && isResizeable ? (
+                    <g
+                        className="cursor-nwse-resize"
+                        onMouseDown={(e) => {
+                            e.stopPropagation();
+                            if (e.button !== 0) {
+                                return;
+                            }
+                            onRoiResizeStart?.(e, roi.id!);
+                        }}
+                    >
+                        <rect
+                            x={scaledX + scaledWidth - 5}
+                            y={scaledY + scaledHeight - 5}
+                            width="10"
+                            height="10"
+                            className="fill-transparent pointer-events-auto"
+                        />
+                    </g>
+                ) : null}
+            </g>
+        );
+    },
+);
