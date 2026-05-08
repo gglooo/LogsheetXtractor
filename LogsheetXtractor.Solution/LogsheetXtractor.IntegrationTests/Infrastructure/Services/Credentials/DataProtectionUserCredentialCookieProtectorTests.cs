@@ -27,7 +27,7 @@ public sealed class DataProtectionUserCredentialCookieProtectorTests : IDisposab
             }
         );
 
-        protectedCookie.Should().StartWith("v1:");
+        protectedCookie.Should().StartWith(CredentialProtectionConstants.ProtectedValuePrefix);
         protectedCookie.Should().NotContain("google-key");
         protectedCookie.Should().NotContain("azure-key");
 

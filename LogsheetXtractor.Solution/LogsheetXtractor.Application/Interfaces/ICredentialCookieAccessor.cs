@@ -1,7 +1,12 @@
+using LogsheetXtractor.Application.Features.Credentials;
+
 namespace LogsheetXtractor.Application.Interfaces;
 
 public interface ICredentialCookieAccessor
 {
     string? GetCookie();
-    void SetBackgroundCookie(string cookie);
+    IReadOnlyDictionary<ECredentialType, string>? GetBackgroundCredentials();
+    string? GetBackgroundCredentialError();
+    void SetBackgroundCredentials(IReadOnlyDictionary<ECredentialType, string> credentials);
+    void SetBackgroundCredentialError(string errorMessage);
 }

@@ -37,11 +37,21 @@ public static class InfrastructureInstaller
         services.Configure<UserCredentialCookieOptions>(
             config.GetSection(UserCredentialCookieOptions.SectionName)
         );
+        services.Configure<UserCredentialBackgroundSnapshotOptions>(
+            config.GetSection(UserCredentialBackgroundSnapshotOptions.SectionName)
+        );
         services.PostConfigure<UserCredentialCookieOptions>(options =>
         {
             if (options.Ttl <= TimeSpan.Zero)
             {
                 options.Ttl = TimeSpan.FromDays(365);
+            }
+        });
+        services.PostConfigure<UserCredentialBackgroundSnapshotOptions>(options =>
+        {
+            if (options.Ttl <= TimeSpan.Zero)
+            {
+                options.Ttl = TimeSpan.FromDays(7);
             }
         });
 
@@ -89,6 +99,7 @@ public static class InfrastructureInstaller
         services.AddScoped<IPdfQrCodeScanner, PdfQrCodeScanner>();
         services.AddScoped<ICredentialCookieAccessor, CredentialCookieAccessor>();
         services.AddSingleton<IUserCredentialCookieProtector, DataProtectionUserCredentialCookieProtector>();
+        services.AddSingleton<IUserCredentialSnapshotProtector, DataProtectionUserCredentialSnapshotProtector>();
 
         services.AddRoiValidation();
 

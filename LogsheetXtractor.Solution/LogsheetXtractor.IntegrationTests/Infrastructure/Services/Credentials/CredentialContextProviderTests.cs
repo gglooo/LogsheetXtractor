@@ -1,5 +1,6 @@
 using System.Text;
 using FluentAssertions;
+using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Infrastructure.Services.Credentials;
@@ -68,8 +69,9 @@ public class CredentialContextProviderTests
         var result = await _provider.GetCredentialContextAsync();
 
         // Assert
-        result.Should().BeOfType<UserCredentialContext>();
-        var userContext = (UserCredentialContext)result;
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeOfType<UserCredentialContext>();
+        var userContext = (UserCredentialContext)result.Value;
 
         userContext.CredentialPaths.Should().HaveCount(2);
         userContext
@@ -115,8 +117,9 @@ public class CredentialContextProviderTests
         var result = await _provider.GetCredentialContextAsync();
 
         // Assert
-        result.Should().BeOfType<SystemCredentialContext>();
-        var systemContext = (SystemCredentialContext)result;
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeOfType<SystemCredentialContext>();
+        var systemContext = (SystemCredentialContext)result.Value;
         systemContext.CredentialPaths.Should().BeEquivalentTo(systemPaths);
     }
 
@@ -136,8 +139,29 @@ public class CredentialContextProviderTests
         var result = await _provider.GetCredentialContextAsync();
 
         // Assert
-        result.Should().BeOfType<SystemCredentialContext>();
-        var systemContext = (SystemCredentialContext)result;
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeOfType<SystemCredentialContext>();
+        var systemContext = (SystemCredentialContext)result.Value;
         systemContext.CredentialPaths.Should().BeEquivalentTo(systemPaths);
+    }
+
+    [Fact]
+    public async Task GetCredentialContextAsync_ShouldFail_WhenBackgroundSnapshotIsInvalid()
+    {
+        // Arrange
+        _cookieAccessorMock
+            .Setup(c => c.GetBackgroundCredentialError())
+            .Returns(CredentialsConstants.ExpiredBackgroundSnapshotMessage);
+
+        // Act
+        var result = await _provider.GetCredentialContextAsync();
+
+        // Assert
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle(e =>
+            e is InvalidStateError
+            && e.Message == CredentialsConstants.ExpiredBackgroundSnapshotMessage
+        );
+        _ocrCredentialServiceMock.Verify(s => s.GetAvailableCredentialsPath(), Times.Never);
     }
 }

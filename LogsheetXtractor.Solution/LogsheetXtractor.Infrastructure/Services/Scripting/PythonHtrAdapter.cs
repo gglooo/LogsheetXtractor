@@ -47,7 +47,13 @@ public class PythonHtrAdapter(
             input.Template.Id
         );
 
-        await using var context = await credentialContextProvider.GetCredentialContextAsync(ct);
+        var contextResult = await credentialContextProvider.GetCredentialContextAsync(ct);
+        if (contextResult.IsFailed)
+        {
+            return Result.Fail<SelectRoisOutputDto>(contextResult.Errors);
+        }
+
+        await using var context = contextResult.Value;
         var credentials = context.CredentialPaths.ToList();
         var areGoogleCredentialsAvailable = credentials.Any(c => c.Item1 == ECredentialType.Google);
         if (!areGoogleCredentialsAvailable)
@@ -159,7 +165,13 @@ public class PythonHtrAdapter(
     {
         logger.LogInformation("Processing logsheet: {LogsheetId}", input.Logsheet.Id);
 
-        await using var context = await credentialContextProvider.GetCredentialContextAsync(ct);
+        var contextResult = await credentialContextProvider.GetCredentialContextAsync(ct);
+        if (contextResult.IsFailed)
+        {
+            return Result.Fail<ProcessLogsheetOutputDto>(contextResult.Errors);
+        }
+
+        await using var context = contextResult.Value;
         var credentials = context.CredentialPaths.ToList();
 
         if (credentials.Count == 0)

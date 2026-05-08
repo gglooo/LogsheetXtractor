@@ -1,4 +1,5 @@
 using FluentAssertions;
+using FluentResults;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Features.File.Interfaces;
 using LogsheetXtractor.Application.Features.PdfCropper;
@@ -84,7 +85,7 @@ public class PythonHtrAdapterTests
 
         _credentialContextProviderMock
             .Setup(x => x.GetCredentialContextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(contextMock.Object);
+            .ReturnsAsync(Result.Ok<ICredentialContext>(contextMock.Object));
 
         _fileStorageServiceMock
             .Setup(x => x.GetResolvedPath(template.File.StoragePath))
@@ -186,7 +187,7 @@ public class PythonHtrAdapterTests
 
         _credentialContextProviderMock
             .Setup(x => x.GetCredentialContextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(contextMock.Object);
+            .ReturnsAsync(Result.Ok<ICredentialContext>(contextMock.Object));
 
         _fileStorageServiceMock
             .Setup(x => x.GetResolvedPath(template.File.StoragePath))

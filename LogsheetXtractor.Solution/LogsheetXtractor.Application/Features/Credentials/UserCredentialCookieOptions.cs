@@ -6,3 +6,10 @@ public sealed class UserCredentialCookieOptions
 
     public TimeSpan Ttl { get; set; } = TimeSpan.FromDays(365);
 }
+
+public sealed class UserCredentialBackgroundSnapshotOptions
+{
+    public const string SectionName = "UserCredentialBackgroundSnapshot";
+
+    public TimeSpan Ttl { get; set; } = TimeSpan.FromDays(7);
+}

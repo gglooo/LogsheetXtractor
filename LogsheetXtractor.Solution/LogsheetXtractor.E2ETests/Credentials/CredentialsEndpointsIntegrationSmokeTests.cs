@@ -48,7 +48,7 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
 
         var cookieHeader = GetCookieHeaderValue(setResponse, CredentialsConstants.CookieName);
         var cookieValue = Uri.UnescapeDataString(cookieHeader.Split('=', 2)[1]);
-        cookieValue.Should().StartWith("v1:");
+        cookieValue.Should().StartWith(CredentialProtectionConstants.ProtectedValuePrefix);
         cookieValue.Should().NotContain("google-key");
         cookieValue.Should().NotContain("azure-key");
 

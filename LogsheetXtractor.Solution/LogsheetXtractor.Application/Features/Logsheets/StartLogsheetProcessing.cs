@@ -21,6 +21,8 @@ public static class StartLogsheetProcessingHandler
         IAppDbContext dbContext,
         IMessageBus bus,
         ICredentialCookieAccessor credentialCookieAccessor,
+        IUserCredentialCookieProtector credentialCookieProtector,
+        IUserCredentialSnapshotProtector credentialSnapshotProtector,
         ILogger<StartLogsheetProcessingCommand> logger,
         CancellationToken ct
     )
@@ -57,7 +59,9 @@ public static class StartLogsheetProcessingHandler
         logsheet.Status = ELogSheetStatus.Processing;
         await bus.PublishWithContextAsync(
             new ProcessLogsheetDataCommand(command.LogsheetId, command.Options),
-            credentialCookieAccessor
+            credentialCookieAccessor,
+            credentialCookieProtector,
+            credentialSnapshotProtector
         );
 
         await dbContext.SaveChangesAsync(ct);

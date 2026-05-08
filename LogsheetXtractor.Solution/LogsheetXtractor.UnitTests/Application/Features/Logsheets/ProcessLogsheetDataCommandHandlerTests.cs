@@ -21,7 +21,6 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<ILogsheetService> _logsheetServiceMock = new();
-    private readonly Mock<ICredentialCookieAccessor> _accessorMock = new();
     private readonly Mock<IMessageBus> _busMock = new();
 
     [Fact]
@@ -34,7 +33,6 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
             _dbContext,
             _busMock.Object,
             _logsheetServiceMock.Object,
-            _accessorMock.Object,
             CancellationToken.None
         );
 
