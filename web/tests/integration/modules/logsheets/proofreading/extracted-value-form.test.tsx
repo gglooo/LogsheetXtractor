@@ -29,6 +29,13 @@ const extractedValue: ExtractedValueType = {
     validationRulesVersion: null,
 };
 
+const numberExtractedValue: ExtractedValueType = {
+    ...extractedValue,
+    roiType: "Number",
+    variableName: "temperature",
+    value: "12.5",
+};
+
 afterEach(() => {
     window.fetch = originalFetch;
     vi.restoreAllMocks();
@@ -68,5 +75,40 @@ describe("ExtractedValueForm", () => {
             );
         });
         expect(onVerified).toHaveBeenCalledWith(extractedValue);
+    });
+
+    it("submits a decimal number when Enter is pressed in the corrected value field", async () => {
+        const user = userEvent.setup();
+        const onVerified = vi.fn();
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify({ ok: true }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+        window.fetch = fetchMock as typeof fetch;
+
+        renderWithProviders(
+            <ExtractedValueForm
+                extractedValue={numberExtractedValue}
+                validationCondition={null}
+                onVerified={onVerified}
+            />,
+        );
+
+        const correctedValueInput = screen.getByLabelText("Corrected value");
+        await user.clear(correctedValueInput);
+        await user.type(correctedValueInput, "15.75{Enter}");
+
+        await waitFor(() => {
+            expect(fetchMock).toHaveBeenCalledWith(
+                `/api/extracted-values/${ids.extracted}/verify`,
+                expect.objectContaining({
+                    method: "POST",
+                    body: JSON.stringify({ correctedValue: "15.75" }),
+                }),
+            );
+        });
+        expect(onVerified).toHaveBeenCalledWith(numberExtractedValue);
     });
 });

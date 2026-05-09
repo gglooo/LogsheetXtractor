@@ -42,7 +42,9 @@ const Form = <T extends z.ZodType<FieldValues, FieldValues>>({
 
     return (
         <FormProvider {...methods}>
-            <form onSubmit={handleFormSubmit}>{children}</form>
+            <form onSubmit={handleFormSubmit} noValidate>
+                {children}
+            </form>
         </FormProvider>
     );
 };
