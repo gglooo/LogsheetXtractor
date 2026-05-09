@@ -22,7 +22,7 @@ public static class StartBatchLogsheetProcessingHandler
         IMessageBus bus,
         ICredentialCookieAccessor credentialCookieAccessor,
         IUserCredentialCookieProtector credentialCookieProtector,
-        IUserCredentialSnapshotProtector credentialSnapshotProtector,
+        IUserCredentialHandleStore credentialHandleStore,
         ILogger<StartBatchLogsheetProcessingCommand> logger,
         CancellationToken ct
     )
@@ -55,7 +55,8 @@ public static class StartBatchLogsheetProcessingHandler
                 new ProcessLogsheetDataCommand(logsheet.Id, command.options),
                 credentialCookieAccessor,
                 credentialCookieProtector,
-                credentialSnapshotProtector
+                credentialHandleStore,
+                ct
             );
 
             anyLogsheetsProcessed = true;

@@ -136,12 +136,12 @@ public class CredentialContextProviderTests
     }
 
     [Fact]
-    public async Task GetCredentialContextAsync_ShouldFail_WhenBackgroundSnapshotIsInvalid()
+    public async Task GetCredentialContextAsync_ShouldFail_WhenBackgroundCredentialsAreInvalid()
     {
         // Arrange
         _cookieAccessorMock
             .Setup(c => c.GetBackgroundCredentialError())
-            .Returns(CredentialsConstants.ExpiredBackgroundSnapshotMessage);
+            .Returns(CredentialsConstants.ExpiredBackgroundCredentialHandleMessage);
 
         // Act
         var result = await _provider.GetCredentialContextAsync();
@@ -150,7 +150,7 @@ public class CredentialContextProviderTests
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainSingle(e =>
             e is InvalidStateError
-            && e.Message == CredentialsConstants.ExpiredBackgroundSnapshotMessage
+            && e.Message == CredentialsConstants.ExpiredBackgroundCredentialHandleMessage
         );
         _ocrCredentialServiceMock.Verify(s => s.GetAvailableCredentialsPath(), Times.Never);
     }

@@ -11,24 +11,25 @@ namespace LogsheetXtractor.IntegrationTests.Infrastructure.Middleware;
 public class CredentialCookieMiddlewareTests
 {
     [Fact]
-    public void Before_ShouldExposeUnprotectedBackgroundCredentials_WhenSnapshotIsValid()
+    public async Task BeforeAsync_ShouldExposeBackgroundCredentials_WhenHandleIsValid()
     {
         var envelope = new Envelope(new object());
-        envelope.Headers[CredentialsConstants.BackgroundSnapshotHeaderName] = "v1:snapshot";
+        envelope.Headers[CredentialsConstants.BackgroundHandleHeaderName] = "credential-handle";
         var credentials = new Dictionary<ECredentialType, string>
         {
             [ECredentialType.Google] = "google-key",
         };
         var accessorMock = new Mock<ICredentialCookieAccessor>();
-        var snapshotProtectorMock = new Mock<IUserCredentialSnapshotProtector>();
-        snapshotProtectorMock
-            .Setup(p => p.Unprotect("v1:snapshot"))
-            .Returns(Result.Ok(credentials));
+        var handleStoreMock = new Mock<IUserCredentialHandleStore>();
+        handleStoreMock
+            .Setup(s => s.ResolveAsync("credential-handle", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok<IReadOnlyDictionary<ECredentialType, string>>(credentials));
 
-        CredentialCookieMiddleware.Before(
+        await CredentialCookieMiddleware.BeforeAsync(
             envelope,
             accessorMock.Object,
-            snapshotProtectorMock.Object
+            handleStoreMock.Object,
+            CancellationToken.None
         );
 
         accessorMock.Verify(a => a.SetBackgroundCredentials(credentials), Times.Once);
@@ -36,33 +37,57 @@ public class CredentialCookieMiddlewareTests
     }
 
     [Fact]
-    public void Before_ShouldExposeExpectedError_WhenSnapshotIsInvalid()
+    public async Task BeforeAsync_ShouldExposeExpectedError_WhenHandleIsInvalid()
     {
         var envelope = new Envelope(new object());
-        envelope.Headers[CredentialsConstants.BackgroundSnapshotHeaderName] = "v1:snapshot";
+        envelope.Headers[CredentialsConstants.BackgroundHandleHeaderName] = "credential-handle";
         var accessorMock = new Mock<ICredentialCookieAccessor>();
-        var snapshotProtectorMock = new Mock<IUserCredentialSnapshotProtector>();
-        snapshotProtectorMock
-            .Setup(p => p.Unprotect("v1:snapshot"))
-            .Returns(
-                Result.Fail<Dictionary<ECredentialType, string>>(
-                    new InvalidStateError(CredentialsConstants.ExpiredBackgroundSnapshotMessage)
+        var handleStoreMock = new Mock<IUserCredentialHandleStore>();
+        handleStoreMock
+            .Setup(s => s.ResolveAsync("credential-handle", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(
+                Result.Fail<IReadOnlyDictionary<ECredentialType, string>>(
+                    new InvalidStateError(
+                        CredentialsConstants.ExpiredBackgroundCredentialHandleMessage
+                    )
                 )
             );
 
-        CredentialCookieMiddleware.Before(
+        await CredentialCookieMiddleware.BeforeAsync(
             envelope,
             accessorMock.Object,
-            snapshotProtectorMock.Object
+            handleStoreMock.Object,
+            CancellationToken.None
         );
 
         accessorMock.Verify(
-            a => a.SetBackgroundCredentialError(CredentialsConstants.ExpiredBackgroundSnapshotMessage),
+            a => a.SetBackgroundCredentialError(
+                CredentialsConstants.ExpiredBackgroundCredentialHandleMessage
+            ),
             Times.Once
         );
         accessorMock.Verify(
             a => a.SetBackgroundCredentials(It.IsAny<IReadOnlyDictionary<ECredentialType, string>>()),
             Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task AfterAsync_ShouldReleaseCredentialHandle_WhenHandleExists()
+    {
+        var envelope = new Envelope(new object());
+        envelope.Headers[CredentialsConstants.BackgroundHandleHeaderName] = "credential-handle";
+        var handleStoreMock = new Mock<IUserCredentialHandleStore>();
+
+        await CredentialCookieMiddleware.AfterAsync(
+            envelope,
+            handleStoreMock.Object,
+            CancellationToken.None
+        );
+
+        handleStoreMock.Verify(
+            s => s.ReleaseAsync("credential-handle", CancellationToken.None),
+            Times.Once
         );
     }
 }

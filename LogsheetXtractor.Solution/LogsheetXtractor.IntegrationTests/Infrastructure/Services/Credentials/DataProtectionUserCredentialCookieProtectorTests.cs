@@ -82,6 +82,22 @@ public sealed class DataProtectionUserCredentialCookieProtectorTests : IDisposab
         credentials.Should().BeNull();
     }
 
+    [Fact]
+    public void ProtectedEnvelope_ShouldUseDateTimeOffsetForExpiration()
+    {
+        var envelopeType = typeof(DataProtectionUserCredentialCookieProtector).GetNestedType(
+            "ProtectedCredentialEnvelope",
+            System.Reflection.BindingFlags.NonPublic
+        );
+
+        envelopeType
+            .Should()
+            .NotBeNull()
+            .And.Subject!.GetProperty("ExpiresAtUtc")!
+            .PropertyType.Should()
+            .Be<DateTimeOffset>();
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_keyDirectory))

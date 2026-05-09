@@ -6,12 +6,13 @@ namespace LogsheetXtractor.Application.Extensions;
 
 public static class MessageBusExtensions
 {
-    public static ValueTask PublishWithContextAsync<T>(
+    public static async ValueTask PublishWithContextAsync<T>(
         this IMessageBus bus,
         T message,
         ICredentialCookieAccessor cookieAccessor,
         IUserCredentialCookieProtector cookieProtector,
-        IUserCredentialSnapshotProtector snapshotProtector
+        IUserCredentialHandleStore credentialHandleStore,
+        CancellationToken ct = default
     )
     {
         var cookie = cookieAccessor.GetCookie();
@@ -20,10 +21,14 @@ public static class MessageBusExtensions
 
         if (keys is not null)
         {
-            options.Headers[CredentialsConstants.BackgroundSnapshotHeaderName] =
-                snapshotProtector.Protect(keys);
+            var handleResult = await credentialHandleStore.CreateAsync(keys, ct);
+            if (handleResult.IsSuccess)
+            {
+                options.Headers[CredentialsConstants.BackgroundHandleHeaderName] =
+                    handleResult.Value;
+            }
         }
 
-        return bus.PublishAsync(message, options);
+        await bus.PublishAsync(message, options);
     }
 }

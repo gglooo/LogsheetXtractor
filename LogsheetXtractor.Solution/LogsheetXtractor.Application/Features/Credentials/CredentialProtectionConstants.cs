@@ -7,6 +7,6 @@ public static class CredentialProtectionConstants
     public static readonly string ProtectedValuePrefix = $"v{EnvelopeVersion}:";
     public static readonly string CookieProtectionPurpose =
         $"LogsheetXtractor.UserOcrCredentials.v{EnvelopeVersion}";
-    public static readonly string BackgroundSnapshotProtectionPurpose =
-        $"LogsheetXtractor.UserOcrCredentials.Background.v{EnvelopeVersion}";
+    public static readonly string BackgroundHandleProtectionPurpose =
+        $"LogsheetXtractor.UserOcrCredentials.Handle.v{EnvelopeVersion}";
 }

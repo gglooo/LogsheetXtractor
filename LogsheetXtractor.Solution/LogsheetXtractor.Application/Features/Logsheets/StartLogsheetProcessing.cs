@@ -22,7 +22,7 @@ public static class StartLogsheetProcessingHandler
         IMessageBus bus,
         ICredentialCookieAccessor credentialCookieAccessor,
         IUserCredentialCookieProtector credentialCookieProtector,
-        IUserCredentialSnapshotProtector credentialSnapshotProtector,
+        IUserCredentialHandleStore credentialHandleStore,
         ILogger<StartLogsheetProcessingCommand> logger,
         CancellationToken ct
     )
@@ -61,7 +61,8 @@ public static class StartLogsheetProcessingHandler
             new ProcessLogsheetDataCommand(command.LogsheetId, command.Options),
             credentialCookieAccessor,
             credentialCookieProtector,
-            credentialSnapshotProtector
+            credentialHandleStore,
+            ct
         );
 
         await dbContext.SaveChangesAsync(ct);

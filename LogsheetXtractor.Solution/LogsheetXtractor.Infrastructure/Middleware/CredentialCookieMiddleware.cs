@@ -6,21 +6,22 @@ namespace LogsheetXtractor.Infrastructure.Middleware;
 
 public static class CredentialCookieMiddleware
 {
-    public static void Before(
+    public static async Task BeforeAsync(
         Envelope envelope,
         ICredentialCookieAccessor cookieAccessor,
-        IUserCredentialSnapshotProtector snapshotProtector
+        IUserCredentialHandleStore credentialHandleStore,
+        CancellationToken ct
     )
     {
         if (
             envelope.Headers.TryGetValue(
-                CredentialsConstants.BackgroundSnapshotHeaderName,
-                out var snapshot
+                CredentialsConstants.BackgroundHandleHeaderName,
+                out var handle
             )
-            && snapshot != null
+            && handle != null
         )
         {
-            var result = snapshotProtector.Unprotect(snapshot);
+            var result = await credentialHandleStore.ResolveAsync(handle, ct);
             if (result.IsSuccess)
             {
                 cookieAccessor.SetBackgroundCredentials(result.Value);
@@ -29,8 +30,26 @@ public static class CredentialCookieMiddleware
 
             cookieAccessor.SetBackgroundCredentialError(
                 result.Errors.FirstOrDefault()?.Message
-                    ?? CredentialsConstants.ExpiredBackgroundSnapshotMessage
+                    ?? CredentialsConstants.ExpiredBackgroundCredentialHandleMessage
             );
+        }
+    }
+
+    public static async Task AfterAsync(
+        Envelope envelope,
+        IUserCredentialHandleStore credentialHandleStore,
+        CancellationToken ct
+    )
+    {
+        if (
+            envelope.Headers.TryGetValue(
+                CredentialsConstants.BackgroundHandleHeaderName,
+                out var handle
+            )
+            && handle != null
+        )
+        {
+            await credentialHandleStore.ReleaseAsync(handle, ct);
         }
     }
 }

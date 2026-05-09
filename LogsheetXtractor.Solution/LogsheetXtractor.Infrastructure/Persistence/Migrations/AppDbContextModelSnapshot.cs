@@ -190,6 +190,29 @@ namespace LogsheetXtractor.Infrastructure.Persistence.Migrations
                     b.ToTable("PredefinedRoiValidationConditions");
                 });
 
+            modelBuilder.Entity("LogsheetXtractor.Infrastructure.Persistence.Entities.UserCredentialHandle", b =>
+                {
+                    b.Property<string>("Handle")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("IssuedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProtectedPayload")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Handle");
+
+                    b.HasIndex("ExpiresAtUtc");
+
+                    b.ToTable("UserCredentialHandles");
+                });
+
             modelBuilder.Entity("LogsheetXtractor.Domain.Entities.Residual", b =>
                 {
                     b.Property<Guid>("Id")

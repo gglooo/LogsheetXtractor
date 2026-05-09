@@ -1,3 +1,4 @@
+using FluentResults;
 using FluentAssertions;
 using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Credentials;
@@ -21,7 +22,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
     private readonly Mock<IMessageBus> _busMock = new();
     private readonly Mock<ICredentialCookieAccessor> _accessorMock = new();
     private readonly Mock<IUserCredentialCookieProtector> _cookieProtectorMock = new();
-    private readonly Mock<IUserCredentialSnapshotProtector> _snapshotProtectorMock = new();
+    private readonly Mock<IUserCredentialHandleStore> _credentialHandleStoreMock = new();
     private readonly Mock<ILogger<StartBatchLogsheetProcessingCommand>> _loggerMock = new();
 
     public StartBatchLogsheetProcessingCommandHandlerTests() { }
@@ -69,7 +70,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
             _busMock.Object,
             _accessorMock.Object,
             _cookieProtectorMock.Object,
-            _snapshotProtectorMock.Object,
+            _credentialHandleStoreMock.Object,
             _loggerMock.Object,
             CancellationToken.None
         );
@@ -109,7 +110,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task Handle_ShouldPublishEncryptedSnapshotHeaders_WhenProtectedCookieIsValid()
+    public async Task Handle_ShouldPublishCredentialHandleHeaders_WhenProtectedCookieIsValid()
     {
         var logsheet = new Logsheet
         {
@@ -122,7 +123,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         const string cookie = "v1:protected-cookie";
-        const string snapshot = "v1:protected-background-snapshot";
+        const string handle = "credential-handle";
         var credentials = new Dictionary<ECredentialType, string>
         {
             [ECredentialType.Azure] = "raw-secret",
@@ -130,7 +131,9 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
 
         _accessorMock.Setup(a => a.GetCookie()).Returns(cookie);
         _cookieProtectorMock.Setup(p => p.Unprotect(cookie)).Returns(credentials);
-        _snapshotProtectorMock.Setup(p => p.Protect(credentials)).Returns(snapshot);
+        _credentialHandleStoreMock
+            .Setup(s => s.CreateAsync(credentials, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok(handle));
 
         var result = await StartBatchLogsheetProcessingHandler.Handle(
             new StartBatchLogsheetProcessingCommand(new[] { logsheet.Id }, null),
@@ -138,7 +141,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
             _busMock.Object,
             _accessorMock.Object,
             _cookieProtectorMock.Object,
-            _snapshotProtectorMock.Object,
+            _credentialHandleStoreMock.Object,
             _loggerMock.Object,
             CancellationToken.None
         );
@@ -149,9 +152,8 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
                 b.PublishAsync(
                     It.IsAny<ProcessLogsheetDataCommand>(),
                     It.Is<DeliveryOptions>(o =>
-                        o.Headers.ContainsKey(CredentialsConstants.BackgroundSnapshotHeaderName)
-                        && o.Headers[CredentialsConstants.BackgroundSnapshotHeaderName]
-                            == snapshot
+                        o.Headers.ContainsKey(CredentialsConstants.BackgroundHandleHeaderName)
+                        && o.Headers[CredentialsConstants.BackgroundHandleHeaderName] == handle
                         && !o.Headers.ContainsKey("UserCookie")
                         && !o.Headers.Values.Any(v => v != null && v.Contains("raw-secret"))
                     )
@@ -181,7 +183,7 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
             _busMock.Object,
             _accessorMock.Object,
             _cookieProtectorMock.Object,
-            _snapshotProtectorMock.Object,
+            _credentialHandleStoreMock.Object,
             _loggerMock.Object,
             CancellationToken.None
         );

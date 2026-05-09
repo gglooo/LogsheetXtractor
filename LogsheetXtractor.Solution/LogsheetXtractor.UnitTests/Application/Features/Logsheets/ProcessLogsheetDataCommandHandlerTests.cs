@@ -1,19 +1,10 @@
-using FluentAssertions;
-using FluentResults;
-using LogsheetXtractor.Application.Errors;
-using LogsheetXtractor.Application.Extensions;
 using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Features.Logsheets.Events;
-using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Interfaces;
-using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Infrastructure.Persistence;
 using LogsheetXtractor.UnitTests.Common;
-using MapsterMapper;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using Wolverine;
-using Xunit;
 
 namespace LogsheetXtractor.UnitTests.Application.Features.Logsheets;
 
