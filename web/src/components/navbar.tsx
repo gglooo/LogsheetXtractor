@@ -57,69 +57,72 @@ export function Navbar() {
                 </div>
 
                 <div className="md:hidden">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-9 w-9"
-                            >
-                                <Menu className="h-5 w-5" />
-                                <span className="sr-only">
-                                    {intl.formatMessage({
-                                        id: "navbar.toggleMenu",
-                                        defaultMessage: "Toggle menu",
-                                    })}
-                                </span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-50">
-                            <DropdownMenuLabel>
-                                {intl.formatMessage({
-                                    id: "navbar.menu",
-                                    defaultMessage: "Menu",
-                                })}
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                {intl.formatMessage({
-                                    id: "navbar.login",
-                                    defaultMessage: "Log in",
-                                })}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <PlusIcon className="mr-2 h-4 w-4" />
-                                {intl.formatMessage({
-                                    id: "navbar.newTemplate",
-                                    defaultMessage: "New template",
-                                })}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link
-                                    to={`${baseLogsheetsPath}/gamified-proofread`}
-                                    className="w-full cursor-pointer"
+                    <CreateTemplateAction
+                        trigger={(
+                            openCreateTemplateDialog,
+                            createTemplateLabel,
+                        ) => (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-9 w-9"
+                                    >
+                                        <Menu className="h-5 w-5" />
+                                        <span className="sr-only">
+                                            {intl.formatMessage({
+                                                id: "navbar.toggleMenu",
+                                                defaultMessage: "Toggle menu",
+                                            })}
+                                        </span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-50"
                                 >
-                                    <ListChecks className="mr-2 h-4 w-4" />
-                                    {intl.formatMessage({
-                                        id: "navbar.proofreading.quick",
-                                        defaultMessage: "Quick review",
-                                    })}
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link
-                                    to="/settings"
-                                    className="w-full cursor-pointer"
-                                >
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    {intl.formatMessage({
-                                        id: "navbar.settings",
-                                        defaultMessage: "Settings",
-                                    })}
-                                </Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                    <DropdownMenuLabel>
+                                        {intl.formatMessage({
+                                            id: "navbar.menu",
+                                            defaultMessage: "Menu",
+                                        })}
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onSelect={openCreateTemplateDialog}
+                                    >
+                                        <PlusIcon className="mr-2 h-4 w-4" />
+                                        {createTemplateLabel}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            to={`${baseLogsheetsPath}/gamified-proofread`}
+                                            className="w-full cursor-pointer"
+                                        >
+                                            <ListChecks className="mr-2 h-4 w-4" />
+                                            {intl.formatMessage({
+                                                id: "navbar.proofreading.quick",
+                                                defaultMessage: "Quick review",
+                                            })}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link
+                                            to="/settings"
+                                            className="w-full cursor-pointer"
+                                        >
+                                            <Settings className="mr-2 h-4 w-4" />
+                                            {intl.formatMessage({
+                                                id: "navbar.settings",
+                                                defaultMessage: "Settings",
+                                            })}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    />
                 </div>
             </div>
         </header>

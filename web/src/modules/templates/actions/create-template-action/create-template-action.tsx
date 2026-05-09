@@ -9,31 +9,35 @@ import {
 import { Form } from "@/components/ui/form";
 import { CreateTemplateWizard } from "@/modules/templates/actions/create-template-action/create-template-wizard";
 import { createTemplateSchema } from "@/modules/templates/schema";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
-export const CreateTemplateAction = () => {
+type CreateTemplateActionProps = {
+    trigger?: (open: () => void, label: string) => ReactNode;
+};
+
+export const CreateTemplateAction = ({ trigger }: CreateTemplateActionProps) => {
     const intl = useIntl();
     const [showModal, setShowModal] = useState(false);
+    const label = intl.formatMessage({
+        id: "templates.actions.createTemplate",
+        defaultMessage: "Create template",
+    });
+    const openDialog = () => setShowModal(true);
 
     return (
         <>
-            <Button onClick={() => setShowModal(true)}>
-                {intl.formatMessage({
-                    id: "templates.actions.createTemplate",
-                    defaultMessage: "Create template",
-                })}
-            </Button>
+            {trigger ? (
+                trigger(openDialog, label)
+            ) : (
+                <Button onClick={openDialog}>{label}</Button>
+            )}
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
-                            {intl.formatMessage({
-                                id: "templates.actions.createTemplate",
-                                defaultMessage: "Create template",
-                            })}
-                        </DialogTitle>
+                        <DialogTitle>{label}</DialogTitle>
                         <DialogDescription>
                             {intl.formatMessage({
                                 id: "templates.actions.createTemplate.description",
