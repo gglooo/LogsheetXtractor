@@ -3,6 +3,7 @@ using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Domain.ValueObjects;
 using LogsheetXtractor.Domain.ValueObjects.RoiValidation;
+using LogsheetXtractor.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using File = LogsheetXtractor.Domain.Entities.File;
@@ -34,6 +35,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Logsheet> Logsheets { get; set; }
     public DbSet<ExtractedValue> ExtractedValues { get; set; }
     public DbSet<PredefinedRoiValidationCondition> PredefinedRoiValidationConditions { get; set; }
+    public DbSet<UserCredentialHandle> UserCredentialHandles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -183,6 +185,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 );
 
             entity.HasIndex(p => new { p.Code, p.RoiType }).IsUnique();
+        });
+
+        modelBuilder.Entity<UserCredentialHandle>(entity =>
+        {
+            entity.HasKey(h => h.Handle);
+
+            entity.Property(h => h.Handle).HasMaxLength(32).IsRequired();
+            entity.Property(h => h.ProtectedPayload).IsRequired();
+            entity.Property(h => h.IssuedAtUtc).IsRequired();
+            entity.Property(h => h.ExpiresAtUtc).IsRequired();
+
+            entity.HasIndex(h => h.ExpiresAtUtc);
         });
 
         base.OnModelCreating(modelBuilder);

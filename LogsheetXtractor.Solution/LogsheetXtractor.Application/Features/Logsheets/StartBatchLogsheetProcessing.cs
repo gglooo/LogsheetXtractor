@@ -51,7 +51,8 @@ public static class StartBatchLogsheetProcessingHandler
 
             await bus.PublishWithContextAsync(
                 new ProcessLogsheetDataCommand(logsheet.Id, command.options),
-                credentialCookieAccessor
+                credentialCookieAccessor,
+                ct
             );
 
             anyLogsheetsProcessed = true;

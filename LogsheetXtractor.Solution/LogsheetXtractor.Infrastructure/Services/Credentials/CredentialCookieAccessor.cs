@@ -7,7 +7,8 @@ namespace LogsheetXtractor.Infrastructure.Services.Credentials;
 public class CredentialCookieAccessor(IHttpContextAccessor httpContextAccessor)
     : ICredentialCookieAccessor
 {
-    private string? _backgroundCookie;
+    private IReadOnlyDictionary<ECredentialType, string>? _backgroundCredentials;
+    private string? _backgroundCredentialError;
 
     public string? GetCookie()
     {
@@ -20,11 +21,28 @@ public class CredentialCookieAccessor(IHttpContextAccessor httpContextAccessor)
             return httpCookie;
         }
 
-        return _backgroundCookie;
+        return null;
     }
 
-    public void SetBackgroundCookie(string cookie)
+    public IReadOnlyDictionary<ECredentialType, string>? GetBackgroundCredentials()
     {
-        _backgroundCookie = cookie;
+        return _backgroundCredentials;
+    }
+
+    public string? GetBackgroundCredentialError()
+    {
+        return _backgroundCredentialError;
+    }
+
+    public void SetBackgroundCredentials(IReadOnlyDictionary<ECredentialType, string> credentials)
+    {
+        _backgroundCredentials = credentials;
+        _backgroundCredentialError = null;
+    }
+
+    public void SetBackgroundCredentialError(string errorMessage)
+    {
+        _backgroundCredentials = null;
+        _backgroundCredentialError = errorMessage;
     }
 }

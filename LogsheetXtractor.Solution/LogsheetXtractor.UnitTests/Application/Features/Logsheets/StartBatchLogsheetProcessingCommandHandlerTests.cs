@@ -1,5 +1,5 @@
 using FluentAssertions;
-using LogsheetXtractor.Application.Errors;
+using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Entities;
@@ -98,6 +98,48 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
                         c.LogsheetId == logsheet2.Id && c.Options == options
                     ),
                     It.IsAny<DeliveryOptions>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_ShouldPublishCredentialHandleHeaders_WhenProtectedCookieIsValid()
+    {
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Status = ELogSheetStatus.Pending,
+            Template = null!,
+            File = null!,
+        };
+        _dbContext.Logsheets.Add(logsheet);
+        await _dbContext.SaveChangesAsync();
+
+        const string browserHandle = "0123456789abcdef0123456789abcdef";
+
+        _accessorMock.Setup(a => a.GetCookie()).Returns(browserHandle);
+
+        var result = await StartBatchLogsheetProcessingHandler.Handle(
+            new StartBatchLogsheetProcessingCommand(new[] { logsheet.Id }, null),
+            _dbContext,
+            _busMock.Object,
+            _accessorMock.Object,
+            _loggerMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+        _busMock.Verify(
+            b =>
+                b.PublishAsync(
+                    It.IsAny<ProcessLogsheetDataCommand>(),
+                    It.Is<DeliveryOptions>(o =>
+                        o.Headers.ContainsKey(CredentialsConstants.UserCredentialHandleHeaderName)
+                        && o.Headers[CredentialsConstants.UserCredentialHandleHeaderName] == browserHandle
+                        && !o.Headers.ContainsKey("UserCookie")
+                        && !o.Headers.Values.Any(v => v != null && v.Contains("secret"))
+                    )
                 ),
             Times.Once
         );

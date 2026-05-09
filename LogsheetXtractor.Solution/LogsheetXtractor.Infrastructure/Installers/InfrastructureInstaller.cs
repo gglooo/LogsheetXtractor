@@ -9,6 +9,7 @@ using LogsheetXtractor.Application.Features.Residuals;
 using LogsheetXtractor.Application.Features.ROIs;
 using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Features.Template.Interfaces;
+using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Infrastructure.Persistence;
 using LogsheetXtractor.Infrastructure.Persistence.Interceptors;
@@ -19,6 +20,7 @@ using LogsheetXtractor.Infrastructure.Services.Scripting;
 using LogsheetXtractor.Infrastructure.Services.Storage;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,8 +31,28 @@ public static class InfrastructureInstaller
     public static void AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
         var connectionString = config.GetConnectionString("DefaultConnection");
+        var storagePath = config.GetValue<string>("Storage:LocalStoragePath");
 
         TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
+        services.Configure<UserCredentialCookieOptions>(
+            config.GetSection(UserCredentialCookieOptions.SectionName)
+        );
+        services.PostConfigure<UserCredentialCookieOptions>(options =>
+        {
+            if (options.Ttl <= TimeSpan.Zero)
+            {
+                options.Ttl = TimeSpan.FromDays(365);
+            }
+        });
+
+        var dataProtectionBuilder = services.AddDataProtection()
+            .SetApplicationName("LogsheetXtractor");
+        if (!string.IsNullOrWhiteSpace(storagePath))
+        {
+            var keyDirectory = new DirectoryInfo(Path.Combine(storagePath, "keys"));
+            keyDirectory.Create();
+            dataProtectionBuilder.PersistKeysToFileSystem(keyDirectory);
+        }
 
         services.AddSingleton<SoftDeleteInterceptor>();
         services.AddDbContext<AppDbContext>(
@@ -41,7 +63,7 @@ public static class InfrastructureInstaller
                     .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>())
         );
 
-        services.AddScoped<IAppDbContext, AppDbContext>();
+        services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         services.AddSingleton<IDocLib>(_ => DocLib.Instance);
 
@@ -53,6 +75,8 @@ public static class InfrastructureInstaller
         services.AddScoped<IOcrCredentialService, OcrCredentialService>();
         services.AddScoped<ICredentialService, CredentialService>();
         services.AddScoped<ICredentialContextProvider, CredentialContextProvider>();
+        services.AddSingleton<ITemporaryCredentialFileStore, TemporaryCredentialFileStore>();
+        services.AddHostedService<TemporaryCredentialFileCleanupHostedService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IResidualService, ResidualService>();
         services.AddScoped<ILogsheetService, LogsheetService>();
@@ -66,6 +90,7 @@ public static class InfrastructureInstaller
         services.AddScoped<IExtractedValuesService, ExtractedValuesService>();
         services.AddScoped<IPdfQrCodeScanner, PdfQrCodeScanner>();
         services.AddScoped<ICredentialCookieAccessor, CredentialCookieAccessor>();
+        services.AddScoped<IUserCredentialHandleStore, DatabaseUserCredentialHandleStore>();
 
         services.AddRoiValidation();
 

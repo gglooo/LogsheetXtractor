@@ -1,6 +1,8 @@
+using FluentResults;
+
 namespace LogsheetXtractor.Infrastructure.Services.Credentials;
 
 public interface ICredentialContextProvider
 {
-    Task<ICredentialContext> GetCredentialContextAsync(CancellationToken ct = default);
+    Task<Result<ICredentialContext>> GetCredentialContextAsync(CancellationToken ct = default);
 }

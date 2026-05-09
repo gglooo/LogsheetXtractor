@@ -1,4 +1,3 @@
-using LogsheetXtractor.Application.Extensions;
 using LogsheetXtractor.Application.Features.Logsheets.Events;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Enums;
@@ -21,7 +20,6 @@ public static class ProcessLogsheetDataHandler
         IAppDbContext dbContext,
         IMessageBus bus,
         ILogsheetService logsheetService,
-        ICredentialCookieAccessor credentialCookieAccessor,
         CancellationToken ct
     )
     {
@@ -31,13 +29,12 @@ public static class ProcessLogsheetDataHandler
         );
         if (logsheet is null)
         {
-            await bus.PublishWithContextAsync(
+            await bus.PublishAsync(
                 new LogsheetProcessingFinishedEvent(
                     request.LogsheetId,
                     false,
                     "Logsheet not found"
-                ),
-                credentialCookieAccessor
+                )
             );
             await dbContext.SaveChangesAsync(ct);
             return;
@@ -56,13 +53,12 @@ public static class ProcessLogsheetDataHandler
                 errorMsg = string.Join(", ", processResult.Errors.Select(e => e.Message));
             }
 
-            await bus.PublishWithContextAsync(
+            await bus.PublishAsync(
                 new LogsheetProcessingFinishedEvent(
                     request.LogsheetId,
                     processResult.IsSuccess,
                     errorMsg
-                ),
-                credentialCookieAccessor
+                )
             );
 
             await dbContext.SaveChangesAsync(ct);
@@ -81,13 +77,12 @@ public static class ProcessLogsheetDataHandler
                 failedLogsheet.ErrorMessage = $"Exception during processing: {ex.Message}";
             }
 
-            await bus.PublishWithContextAsync(
+            await bus.PublishAsync(
                 new LogsheetProcessingFinishedEvent(
                     request.LogsheetId,
                     false,
                     $"Exception during processing: {ex.Message}"
-                ),
-                credentialCookieAccessor
+                )
             );
 
             await dbContext.SaveChangesAsync(CancellationToken.None);

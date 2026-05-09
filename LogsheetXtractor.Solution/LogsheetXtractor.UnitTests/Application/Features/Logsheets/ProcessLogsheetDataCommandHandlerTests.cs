@@ -1,19 +1,10 @@
-using FluentAssertions;
-using FluentResults;
-using LogsheetXtractor.Application.Errors;
-using LogsheetXtractor.Application.Extensions;
 using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Features.Logsheets.Events;
-using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Interfaces;
-using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Infrastructure.Persistence;
 using LogsheetXtractor.UnitTests.Common;
-using MapsterMapper;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using Wolverine;
-using Xunit;
 
 namespace LogsheetXtractor.UnitTests.Application.Features.Logsheets;
 
@@ -21,7 +12,6 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<ILogsheetService> _logsheetServiceMock = new();
-    private readonly Mock<ICredentialCookieAccessor> _accessorMock = new();
     private readonly Mock<IMessageBus> _busMock = new();
 
     [Fact]
@@ -34,7 +24,6 @@ public class ProcessLogsheetDataCommandHandlerTests : IDisposable
             _dbContext,
             _busMock.Object,
             _logsheetServiceMock.Object,
-            _accessorMock.Object,
             CancellationToken.None
         );
 

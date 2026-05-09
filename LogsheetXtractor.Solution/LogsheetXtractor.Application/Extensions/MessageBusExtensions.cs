@@ -1,3 +1,4 @@
+using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
 using Wolverine;
 
@@ -5,17 +6,20 @@ namespace LogsheetXtractor.Application.Extensions;
 
 public static class MessageBusExtensions
 {
-    public static ValueTask PublishWithContextAsync<T>(this IMessageBus bus, T message,
-        ICredentialCookieAccessor cookieAccessor)
+    public static async ValueTask PublishWithContextAsync<T>(
+        this IMessageBus bus,
+        T message,
+        ICredentialCookieAccessor cookieAccessor,
+        CancellationToken ct = default
+    )
     {
         var cookie = cookieAccessor.GetCookie();
-
         var options = new DeliveryOptions();
-        if (!string.IsNullOrEmpty(cookie))
+        if (cookie is not null)
         {
-            options.Headers["UserCookie"] = cookie;
+            options.Headers[CredentialsConstants.UserCredentialHandleHeaderName] = cookie;
         }
 
-        return bus.PublishAsync(message, options);
+        await bus.PublishAsync(message, options);
     }
 }
