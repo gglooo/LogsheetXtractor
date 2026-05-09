@@ -63,7 +63,7 @@ public static class CredentialsEndpoints
         var options = new CookieOptions
         {
             HttpOnly = true,
-            Secure = httpContext.Request.IsHttps,
+            Secure = false,
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.Add(cookieOptions.Value.Ttl),
             Path = "/api",

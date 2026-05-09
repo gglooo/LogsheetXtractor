@@ -4,7 +4,6 @@ using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Infrastructure.Services.Credentials;
-using LogsheetXtractor.Infrastructure.Services.Storage;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -14,7 +13,7 @@ namespace LogsheetXtractor.IntegrationTests.Infrastructure.Services.Credentials;
 public class CredentialContextProviderTests
 {
     private readonly Mock<IOcrCredentialService> _ocrCredentialServiceMock;
-    private readonly Mock<IFileStorageService> _fileStorageServiceMock;
+    private readonly Mock<ITemporaryCredentialFileStore> _temporaryCredentialFileStoreMock;
     private readonly Mock<ICredentialCookieAccessor> _cookieAccessorMock;
     private readonly Mock<IUserCredentialCookieProtector> _credentialCookieProtectorMock;
     private readonly Mock<ILogger<UserCredentialContext>> _userContextLoggerMock;
@@ -24,7 +23,7 @@ public class CredentialContextProviderTests
     public CredentialContextProviderTests()
     {
         _ocrCredentialServiceMock = new Mock<IOcrCredentialService>();
-        _fileStorageServiceMock = new Mock<IFileStorageService>();
+        _temporaryCredentialFileStoreMock = new Mock<ITemporaryCredentialFileStore>();
         _cookieAccessorMock = new Mock<ICredentialCookieAccessor>();
         _credentialCookieProtectorMock = new Mock<IUserCredentialCookieProtector>();
         _userContextLoggerMock = new Mock<ILogger<UserCredentialContext>>();
@@ -32,7 +31,7 @@ public class CredentialContextProviderTests
 
         _provider = new CredentialContextProvider(
             _ocrCredentialServiceMock.Object,
-            _fileStorageServiceMock.Object,
+            _temporaryCredentialFileStoreMock.Object,
             _cookieAccessorMock.Object,
             _credentialCookieProtectorMock.Object,
             _userContextLoggerMock.Object,
@@ -55,15 +54,10 @@ public class CredentialContextProviderTests
             .Setup(p => p.Unprotect(cookieString))
             .Returns(credentials);
 
-        _fileStorageServiceMock
-            .Setup(s =>
-                s.SaveTemporaryFileAsync(
-                    It.IsAny<byte[]>(),
-                    It.IsAny<string>(),
-                    It.IsAny<CancellationToken>()
-                )
-            )
-            .ReturnsAsync((byte[] bytes, string name, CancellationToken ct) => $"temp/{name}");
+        var savedFileCounter = 0;
+        _temporaryCredentialFileStoreMock
+            .Setup(s => s.SaveAsync(It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => $"temp/{++savedFileCounter:N}.json");
 
         // Act
         var result = await _provider.GetCredentialContextAsync();
@@ -76,27 +70,23 @@ public class CredentialContextProviderTests
         userContext.CredentialPaths.Should().HaveCount(2);
         userContext
             .CredentialPaths.Should()
-            .Contain(p => p.Item1 == ECredentialType.Google && p.Item2.Contains("google"));
+            .Contain(p => p.Item1 == ECredentialType.Google && !p.Item2.Contains("google"));
         userContext
             .CredentialPaths.Should()
-            .Contain(p => p.Item1 == ECredentialType.Azure && p.Item2.Contains("azure"));
+            .Contain(p => p.Item1 == ECredentialType.Azure && !p.Item2.Contains("azure"));
 
-        _fileStorageServiceMock.Verify(
-            s =>
-                s.SaveTemporaryFileAsync(
-                    It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "some-google-key"),
-                    It.Is<string>(n => n.Contains("google")),
-                    It.IsAny<CancellationToken>()
-                ),
+        _temporaryCredentialFileStoreMock.Verify(
+            s => s.SaveAsync(
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "some-google-key"),
+                It.IsAny<CancellationToken>()
+            ),
             Times.Once
         );
-        _fileStorageServiceMock.Verify(
-            s =>
-                s.SaveTemporaryFileAsync(
-                    It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "some-azure-key"),
-                    It.Is<string>(n => n.Contains("azure")),
-                    It.IsAny<CancellationToken>()
-                ),
+        _temporaryCredentialFileStoreMock.Verify(
+            s => s.SaveAsync(
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "some-azure-key"),
+                It.IsAny<CancellationToken>()
+            ),
             Times.Once
         );
     }

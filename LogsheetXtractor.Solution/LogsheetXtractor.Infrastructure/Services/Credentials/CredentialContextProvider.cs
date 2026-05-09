@@ -3,14 +3,13 @@ using FluentResults;
 using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
-using LogsheetXtractor.Infrastructure.Services.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace LogsheetXtractor.Infrastructure.Services.Credentials;
 
 public class CredentialContextProvider(
     IOcrCredentialService ocrCredentialService,
-    IFileStorageService fileStorageService,
+    ITemporaryCredentialFileStore temporaryCredentialFileStore,
     ICredentialCookieAccessor cookieAccessor,
     IUserCredentialCookieProtector credentialCookieProtector,
     ILogger<UserCredentialContext> userContextLogger,
@@ -57,17 +56,12 @@ public class CredentialContextProvider(
         foreach (var kvp in keys)
         {
             var contentBytes = Encoding.UTF8.GetBytes(kvp.Value);
-            var fileName = $"{Guid.NewGuid()}_{kvp.Key.ToString().ToLower()}_creds.json";
-            var tempPath = await fileStorageService.SaveTemporaryFileAsync(
-                contentBytes,
-                fileName,
-                ct
-            );
+            var tempPath = await temporaryCredentialFileStore.SaveAsync(contentBytes, ct);
             tempPaths.Add((kvp.Key, tempPath));
         }
 
         return Result.Ok<ICredentialContext>(
-            new UserCredentialContext(tempPaths, fileStorageService, userContextLogger)
+            new UserCredentialContext(tempPaths, temporaryCredentialFileStore, userContextLogger)
         );
     }
 }

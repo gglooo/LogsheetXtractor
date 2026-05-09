@@ -1,12 +1,11 @@
 using LogsheetXtractor.Application.Features.Credentials;
-using LogsheetXtractor.Infrastructure.Services.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace LogsheetXtractor.Infrastructure.Services.Credentials;
 
 public class UserCredentialContext(
     IEnumerable<(ECredentialType, string)> temporaryCredentialPaths,
-    IFileStorageService fileStorageService,
+    ITemporaryCredentialFileStore temporaryCredentialFileStore,
     ILogger<UserCredentialContext> logger
 ) : ICredentialContext
 {
@@ -19,11 +18,10 @@ public class UserCredentialContext(
         {
             try
             {
-                if (fileStorageService.DeleteFile(path))
+                if (temporaryCredentialFileStore.Delete(path))
                 {
                     logger.LogInformation(
-                        "Successfully deleted temporary personal credential file: {Path}",
-                        path
+                        "Successfully deleted a temporary personal credential file."
                     );
                 }
             }
@@ -31,8 +29,7 @@ public class UserCredentialContext(
             {
                 logger.LogError(
                     ex,
-                    "Failed to delete temporary personal credential file: {Path}",
-                    path
+                    "Failed to delete a temporary personal credential file."
                 );
             }
         }

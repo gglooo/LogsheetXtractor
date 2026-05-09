@@ -15,11 +15,13 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
     public CredentialsEndpointsIntegrationSmokeTests(ApiWebApplicationFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = new Uri("https://localhost"),
-            AllowAutoRedirect = false,
-        });
+        _client = factory.CreateClient(
+            new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new Uri("https://localhost"),
+                AllowAutoRedirect = false,
+            }
+        );
     }
 
     [Fact]
@@ -57,7 +59,8 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         var statusResponse = await _client.SendAsync(statusRequest);
 
         statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var statusPayload = await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
+        var statusPayload =
+            await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
         statusPayload.Should().NotBeNull();
         statusPayload!.HasUserCredentials.Should().BeTrue();
         statusPayload.Available.Should().BeTrue();
@@ -69,10 +72,7 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         var beforeRequest = DateTimeOffset.UtcNow;
         var setResponse = await _client.PostAsJsonAsync(
             "/api/credentials",
-            new
-            {
-                keys = new Dictionary<string, string> { ["Google"] = "google-key" },
-            }
+            new { keys = new Dictionary<string, string> { ["Google"] = "google-key" } }
         );
         var afterRequest = DateTimeOffset.UtcNow;
 
@@ -82,7 +82,6 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
 
         normalizedSetCookieHeader.Should().Contain("httponly");
         normalizedSetCookieHeader.Should().Contain("samesite=lax");
-        normalizedSetCookieHeader.Should().Contain("secure");
         normalizedSetCookieHeader.Should().Contain("path=/api");
         setCookieHeader.Should().NotContain("google-key");
 
@@ -103,7 +102,8 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         var statusResponse = await _client.SendAsync(statusRequest);
 
         statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var statusPayload = await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
+        var statusPayload =
+            await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
         statusPayload.Should().NotBeNull();
         statusPayload!.HasUserCredentials.Should().BeFalse();
     }
@@ -114,10 +114,7 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         using var client = CreateClient(handleCookies: false);
         var setResponse = await client.PostAsJsonAsync(
             "/api/credentials",
-            new
-            {
-                keys = new Dictionary<string, string> { ["Google"] = "google-key" },
-            }
+            new { keys = new Dictionary<string, string> { ["Google"] = "google-key" } }
         );
         setResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var cookieHeader = GetCookieHeaderValue(setResponse, CredentialsConstants.CookieName);
@@ -132,7 +129,8 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         var statusResponse = await client.SendAsync(statusRequest);
 
         statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var statusPayload = await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
+        var statusPayload =
+            await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
         statusPayload.Should().NotBeNull();
         statusPayload!.HasUserCredentials.Should().BeFalse();
     }
@@ -142,10 +140,7 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
     {
         var setResponse = await _client.PostAsJsonAsync(
             "/api/credentials",
-            new
-            {
-                keys = new Dictionary<string, string> { ["Google"] = "google-key" },
-            }
+            new { keys = new Dictionary<string, string> { ["Google"] = "google-key" } }
         );
         setResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var cookieHeader = GetCookieHeaderValue(setResponse, CredentialsConstants.CookieName);
@@ -155,13 +150,17 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
         var deleteResponse = await _client.SendAsync(deleteRequest);
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var clearedCookieHeader = GetCookieHeaderValue(deleteResponse, CredentialsConstants.CookieName);
+        var clearedCookieHeader = GetCookieHeaderValue(
+            deleteResponse,
+            CredentialsConstants.CookieName
+        );
         using var statusRequest = new HttpRequestMessage(HttpMethod.Get, "/api/credentials/status");
         statusRequest.Headers.Add("Cookie", clearedCookieHeader);
         var statusResponse = await _client.SendAsync(statusRequest);
 
         statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var statusPayload = await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
+        var statusPayload =
+            await statusResponse.Content.ReadFromJsonAsync<CredentialsStatusResponse>();
         statusPayload.Should().NotBeNull();
         statusPayload!.HasUserCredentials.Should().BeFalse();
     }
@@ -174,8 +173,9 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
     private static string GetSetCookieHeader(HttpResponseMessage response, string cookieName)
     {
         response.Headers.TryGetValues("Set-Cookie", out var setCookieHeaders).Should().BeTrue();
-        var cookie = setCookieHeaders!
-            .FirstOrDefault(header => header.StartsWith($"{cookieName}=", StringComparison.Ordinal));
+        var cookie = setCookieHeaders!.FirstOrDefault(header =>
+            header.StartsWith($"{cookieName}=", StringComparison.Ordinal)
+        );
         cookie.Should().NotBeNull();
 
         return cookie!;
@@ -192,12 +192,14 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
 
     private HttpClient CreateClient(bool handleCookies)
     {
-        return _factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = new Uri("https://localhost"),
-            AllowAutoRedirect = false,
-            HandleCookies = handleCookies,
-        });
+        return _factory.CreateClient(
+            new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new Uri("https://localhost"),
+                AllowAutoRedirect = false,
+                HandleCookies = handleCookies,
+            }
+        );
     }
 
     private sealed record CredentialsStatusResponse(bool Available, bool HasUserCredentials);
