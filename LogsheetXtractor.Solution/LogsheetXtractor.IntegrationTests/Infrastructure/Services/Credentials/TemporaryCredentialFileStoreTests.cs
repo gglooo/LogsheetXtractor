@@ -107,6 +107,25 @@ public sealed class TemporaryCredentialFileStoreTests : IDisposable
             .Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
     }
 
+    [Fact]
+    public async Task SaveAsync_ShouldNotMakeCredentialFileReadableOutsideOwner_WhenUnixPermissionsAreSupported()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = await _store.SaveAsync(Encoding.UTF8.GetBytes("secret-value"));
+
+        var fileMode = File.GetUnixFileMode(path);
+        fileMode.Should().NotHaveFlag(UnixFileMode.GroupRead);
+        fileMode.Should().NotHaveFlag(UnixFileMode.OtherRead);
+
+        var directoryMode = File.GetUnixFileMode(Path.GetDirectoryName(path)!);
+        directoryMode.Should().NotHaveFlag(UnixFileMode.GroupExecute);
+        directoryMode.Should().NotHaveFlag(UnixFileMode.OtherExecute);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_storageDirectory))

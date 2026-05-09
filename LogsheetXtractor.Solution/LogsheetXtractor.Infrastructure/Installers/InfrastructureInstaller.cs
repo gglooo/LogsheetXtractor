@@ -86,6 +86,7 @@ public static class InfrastructureInstaller
         services.AddScoped<ICredentialService, CredentialService>();
         services.AddScoped<ICredentialContextProvider, CredentialContextProvider>();
         services.AddSingleton<ITemporaryCredentialFileStore, TemporaryCredentialFileStore>();
+        services.AddHostedService<TemporaryCredentialFileCleanupHostedService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IResidualService, ResidualService>();
         services.AddScoped<ILogsheetService, LogsheetService>();

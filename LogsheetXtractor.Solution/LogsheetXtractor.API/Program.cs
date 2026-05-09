@@ -5,7 +5,6 @@ using LogsheetXtractor.Application;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Infrastructure.Installers;
 using LogsheetXtractor.Infrastructure.Middleware;
-using LogsheetXtractor.Infrastructure.Services.Credentials;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Wolverine;
@@ -80,16 +79,6 @@ using (var scope = app.Services.CreateScope())
         {
             Directory.CreateDirectory(storagePath);
             logger.LogInformation("Created storage directory: {Path}", storagePath);
-        }
-
-        var credentialFileStore = services.GetRequiredService<ITemporaryCredentialFileStore>();
-        var staleCredentialFileCount = credentialFileStore.CleanupStaleFiles(TimeSpan.FromHours(24));
-        if (staleCredentialFileCount > 0)
-        {
-            logger.LogInformation(
-                "Deleted {Count} stale temporary personal credential files.",
-                staleCredentialFileCount
-            );
         }
 
         var context =
