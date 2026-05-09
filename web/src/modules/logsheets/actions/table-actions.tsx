@@ -201,22 +201,12 @@ export const LogsheetTableActions = ({
                         id: "logsheets.actions.proofread",
                         defaultMessage: "Proofread",
                     })}
-                    disabled={
-                        !stateMachine.canProofread() || isCredentialsMissing
-                    }
+                    disabled={!stateMachine.canProofread()}
                     onClick={() => {
                         navigate(
                             `/templates/${templateId}/logsheets/${logsheet.id}/proofread`,
                         );
                     }}
-                    tooltip={
-                        isCredentialsMissing
-                            ? noCredentialsTooltip
-                            : intl.formatMessage({
-                                  id: "logsheets.actions.proofread",
-                                  defaultMessage: "Proofread",
-                              })
-                    }
                 >
                     <FileSignature className="h-4 w-4" />
                 </Button>
