@@ -32,8 +32,8 @@ public sealed class DataProtectionUserCredentialSnapshotProtector(
         var ttl = options.Value.Ttl > TimeSpan.Zero ? options.Value.Ttl : TimeSpan.FromDays(7);
         var envelope = new ProtectedCredentialEnvelope(
             CredentialProtectionConstants.EnvelopeVersion,
-            issuedAtUtc.UtcDateTime,
-            issuedAtUtc.Add(ttl).UtcDateTime,
+            issuedAtUtc,
+            issuedAtUtc.Add(ttl),
             normalizedKeys
         );
 
@@ -108,8 +108,8 @@ public sealed class DataProtectionUserCredentialSnapshotProtector(
 
     private sealed record ProtectedCredentialEnvelope(
         int Version,
-        DateTime IssuedAtUtc,
-        DateTime ExpiresAtUtc,
+        DateTimeOffset IssuedAtUtc,
+        DateTimeOffset ExpiresAtUtc,
         Dictionary<ECredentialType, string> Keys
     );
 }

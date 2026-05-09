@@ -57,7 +57,7 @@ public class CredentialContextProviderTests
         var savedFileCounter = 0;
         _temporaryCredentialFileStoreMock
             .Setup(s => s.SaveAsync(It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() => $"temp/{++savedFileCounter:N}.json");
+            .ReturnsAsync(() => $"temp/{++savedFileCounter}.json");
 
         // Act
         var result = await _provider.GetCredentialContextAsync();

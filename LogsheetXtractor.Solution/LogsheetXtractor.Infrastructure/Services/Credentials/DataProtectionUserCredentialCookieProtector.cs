@@ -30,8 +30,8 @@ public sealed class DataProtectionUserCredentialCookieProtector(
             : TimeSpan.FromDays(365);
         var envelope = new ProtectedCredentialEnvelope(
             CredentialProtectionConstants.EnvelopeVersion,
-            issuedAtUtc.UtcDateTime,
-            issuedAtUtc.Add(ttl).UtcDateTime,
+            issuedAtUtc,
+            issuedAtUtc.Add(ttl),
             normalizedKeys
         );
 
@@ -99,8 +99,8 @@ public sealed class DataProtectionUserCredentialCookieProtector(
 
     private sealed record ProtectedCredentialEnvelope(
         int Version,
-        DateTime IssuedAtUtc,
-        DateTime ExpiresAtUtc,
+        DateTimeOffset IssuedAtUtc,
+        DateTimeOffset ExpiresAtUtc,
         Dictionary<ECredentialType, string> Keys
     );
 }
