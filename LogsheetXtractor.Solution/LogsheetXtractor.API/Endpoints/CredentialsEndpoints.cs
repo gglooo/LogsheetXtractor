@@ -20,15 +20,12 @@ public static class CredentialsEndpoints
     public static async Task<IResult> GetCredentialsStatus(
         IMessageBus bus,
         HttpContext httpContext,
-        IUserCredentialCookieProtector credentialCookieProtector,
         CancellationToken ct
     )
     {
-        var keys = credentialCookieProtector.Unprotect(
-            httpContext.Request.Cookies[CredentialsConstants.CookieName]
-        );
+        var handle = httpContext.Request.Cookies[CredentialsConstants.CookieName];
         var result = await bus.InvokeAsync<Result<CredentialsStatusDto?>>(
-            new GetCredentialsStatusQuery(keys),
+            new GetCredentialsStatusQuery(handle),
             ct
         );
 
@@ -48,13 +45,13 @@ public static class CredentialsEndpoints
         HttpContext httpContext,
         IMessageBus bus,
         IConfiguration configuration,
-        IUserCredentialCookieProtector credentialCookieProtector,
         IOptions<UserCredentialCookieOptions> cookieOptions,
         CancellationToken ct
     )
     {
-        var command = new SetUserCredentialsCommand(request.Keys);
-        var result = await bus.InvokeAsync<Result>(command, ct);
+        var previousHandle = httpContext.Request.Cookies[CredentialsConstants.CookieName];
+        var command = new SetUserCredentialsCommand(request.Keys, previousHandle);
+        var result = await bus.InvokeAsync<Result<string>>(command, ct);
 
         if (!result.IsSuccess)
         {
@@ -70,14 +67,13 @@ public static class CredentialsEndpoints
             Path = "/api",
         };
 
-        var protectedCookie = credentialCookieProtector.Protect(request.Keys);
         httpContext.Response.Cookies.Append(
             CredentialsConstants.CookieName,
-            protectedCookie,
+            result.Value,
             options
         );
 
-        return result.ToHttpResult();
+        return Result.Ok().ToHttpResult();
     }
 
     [WolverineDelete("/api/credentials")]
@@ -88,7 +84,8 @@ public static class CredentialsEndpoints
         CancellationToken ct
     )
     {
-        var command = new DeleteUserCredentialsCommand();
+        var handle = httpContext.Request.Cookies[CredentialsConstants.CookieName];
+        var command = new DeleteUserCredentialsCommand(handle);
         var result = await bus.InvokeAsync<Result>(command, ct);
 
         if (result.IsSuccess)

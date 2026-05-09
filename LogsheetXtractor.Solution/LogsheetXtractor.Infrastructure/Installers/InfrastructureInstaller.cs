@@ -37,21 +37,11 @@ public static class InfrastructureInstaller
         services.Configure<UserCredentialCookieOptions>(
             config.GetSection(UserCredentialCookieOptions.SectionName)
         );
-        services.Configure<UserCredentialBackgroundHandleOptions>(
-            config.GetSection(UserCredentialBackgroundHandleOptions.SectionName)
-        );
         services.PostConfigure<UserCredentialCookieOptions>(options =>
         {
             if (options.Ttl <= TimeSpan.Zero)
             {
                 options.Ttl = TimeSpan.FromDays(365);
-            }
-        });
-        services.PostConfigure<UserCredentialBackgroundHandleOptions>(options =>
-        {
-            if (options.Ttl <= TimeSpan.Zero)
-            {
-                options.Ttl = TimeSpan.FromDays(7);
             }
         });
 
@@ -73,7 +63,7 @@ public static class InfrastructureInstaller
                     .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>())
         );
 
-        services.AddScoped<IAppDbContext, AppDbContext>();
+        services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         services.AddSingleton<IDocLib>(_ => DocLib.Instance);
 
@@ -101,7 +91,6 @@ public static class InfrastructureInstaller
         services.AddScoped<IPdfQrCodeScanner, PdfQrCodeScanner>();
         services.AddScoped<ICredentialCookieAccessor, CredentialCookieAccessor>();
         services.AddScoped<IUserCredentialHandleStore, DatabaseUserCredentialHandleStore>();
-        services.AddSingleton<IUserCredentialCookieProtector, DataProtectionUserCredentialCookieProtector>();
 
         services.AddRoiValidation();
 

@@ -1,6 +1,4 @@
-using FluentResults;
 using FluentAssertions;
-using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Interfaces;
@@ -21,8 +19,6 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IMessageBus> _busMock = new();
     private readonly Mock<ICredentialCookieAccessor> _accessorMock = new();
-    private readonly Mock<IUserCredentialCookieProtector> _cookieProtectorMock = new();
-    private readonly Mock<IUserCredentialHandleStore> _credentialHandleStoreMock = new();
     private readonly Mock<ILogger<StartBatchLogsheetProcessingCommand>> _loggerMock = new();
 
     public StartBatchLogsheetProcessingCommandHandlerTests() { }
@@ -69,8 +65,6 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
             _dbContext,
             _busMock.Object,
             _accessorMock.Object,
-            _cookieProtectorMock.Object,
-            _credentialHandleStoreMock.Object,
             _loggerMock.Object,
             CancellationToken.None
         );
@@ -122,26 +116,15 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         _dbContext.Logsheets.Add(logsheet);
         await _dbContext.SaveChangesAsync();
 
-        const string cookie = "v1:protected-cookie";
-        const string handle = "credential-handle";
-        var credentials = new Dictionary<ECredentialType, string>
-        {
-            [ECredentialType.Azure] = "raw-secret",
-        };
+        const string browserHandle = "0123456789abcdef0123456789abcdef";
 
-        _accessorMock.Setup(a => a.GetCookie()).Returns(cookie);
-        _cookieProtectorMock.Setup(p => p.Unprotect(cookie)).Returns(credentials);
-        _credentialHandleStoreMock
-            .Setup(s => s.CreateAsync(credentials, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Ok(handle));
+        _accessorMock.Setup(a => a.GetCookie()).Returns(browserHandle);
 
         var result = await StartBatchLogsheetProcessingHandler.Handle(
             new StartBatchLogsheetProcessingCommand(new[] { logsheet.Id }, null),
             _dbContext,
             _busMock.Object,
             _accessorMock.Object,
-            _cookieProtectorMock.Object,
-            _credentialHandleStoreMock.Object,
             _loggerMock.Object,
             CancellationToken.None
         );
@@ -152,10 +135,10 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
                 b.PublishAsync(
                     It.IsAny<ProcessLogsheetDataCommand>(),
                     It.Is<DeliveryOptions>(o =>
-                        o.Headers.ContainsKey(CredentialsConstants.BackgroundHandleHeaderName)
-                        && o.Headers[CredentialsConstants.BackgroundHandleHeaderName] == handle
+                        o.Headers.ContainsKey(CredentialsConstants.UserCredentialHandleHeaderName)
+                        && o.Headers[CredentialsConstants.UserCredentialHandleHeaderName] == browserHandle
                         && !o.Headers.ContainsKey("UserCookie")
-                        && !o.Headers.Values.Any(v => v != null && v.Contains("raw-secret"))
+                        && !o.Headers.Values.Any(v => v != null && v.Contains("secret"))
                     )
                 ),
             Times.Once
@@ -182,8 +165,6 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
             _dbContext,
             _busMock.Object,
             _accessorMock.Object,
-            _cookieProtectorMock.Object,
-            _credentialHandleStoreMock.Object,
             _loggerMock.Object,
             CancellationToken.None
         );

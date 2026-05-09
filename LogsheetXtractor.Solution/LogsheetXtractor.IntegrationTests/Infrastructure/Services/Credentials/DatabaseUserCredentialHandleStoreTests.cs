@@ -7,7 +7,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace LogsheetXtractor.IntegrationTests.Infrastructure.Services.Credentials;
 
@@ -16,6 +15,7 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
     private readonly ServiceProvider _serviceProvider;
     private readonly List<IServiceScope> _scopes = [];
+    private AppDbContext _storeDbContext = null!;
 
     public DatabaseUserCredentialHandleStoreTests()
     {
@@ -41,7 +41,11 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
             [ECredentialType.Amazon] = "   ",
         };
 
-        var createResult = await store.CreateAsync(credentials);
+        var createResult = await store.CreateAsync(
+            credentials,
+            TimeSpan.FromDays(7)
+        );
+        await _storeDbContext.SaveChangesAsync();
 
         createResult.IsSuccess.Should().BeTrue();
         createResult.Value.Should().HaveLength(32);
@@ -55,7 +59,10 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
             storedHandle.ProtectedPayload.Should().NotContain("azure-key");
         }
 
-        var resolveResult = await store.ResolveAsync(createResult.Value);
+        var resolveResult = await store.ResolveAsync(
+            createResult.Value
+        );
+        await _storeDbContext.SaveChangesAsync();
 
         resolveResult.IsSuccess.Should().BeTrue();
         resolveResult.Value.Should().BeEquivalentTo(
@@ -72,8 +79,10 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
     {
         var store = CreateStore(TimeSpan.FromDays(7));
         var createResult = await store.CreateAsync(
-            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "google-key" }
+            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "google-key" },
+            TimeSpan.FromDays(7)
         );
+        await _storeDbContext.SaveChangesAsync();
 
         using (var scope = _serviceProvider.CreateScope())
         {
@@ -82,8 +91,12 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
             storedHandle.ProtectedPayload = "tampered";
             await dbContext.SaveChangesAsync();
         }
+        _storeDbContext.ChangeTracker.Clear();
 
-        var resolveResult = await store.ResolveAsync(createResult.Value);
+        var resolveResult = await store.ResolveAsync(
+            createResult.Value
+        );
+        await _storeDbContext.SaveChangesAsync();
 
         resolveResult.IsFailed.Should().BeTrue();
         resolveResult.Errors.Should().ContainSingle(e =>
@@ -95,16 +108,21 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task ResolveAsync_ShouldRejectAndDeleteExpiredHandle()
+    public async Task ResolveAsync_ShouldRejectExpiredHandle()
     {
         var store = CreateStore(TimeSpan.FromMilliseconds(10));
         var createResult = await store.CreateAsync(
-            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "google-key" }
+            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "google-key" },
+            TimeSpan.FromMilliseconds(10)
         );
+        await _storeDbContext.SaveChangesAsync();
 
         await Task.Delay(TimeSpan.FromMilliseconds(50));
 
-        var resolveResult = await store.ResolveAsync(createResult.Value);
+        var resolveResult = await store.ResolveAsync(
+            createResult.Value
+        );
+        await _storeDbContext.SaveChangesAsync();
 
         resolveResult.IsFailed.Should().BeTrue();
         resolveResult.Errors.Should().ContainSingle(e =>
@@ -120,10 +138,13 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
     {
         var store = CreateStore(TimeSpan.FromDays(7));
         var createResult = await store.CreateAsync(
-            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "google-key" }
+            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "google-key" },
+            TimeSpan.FromDays(7)
         );
+        await _storeDbContext.SaveChangesAsync();
 
         await store.ReleaseAsync(createResult.Value);
+        await _storeDbContext.SaveChangesAsync();
 
         using var verifyScope = _serviceProvider.CreateScope();
         var verifyContext = verifyScope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -135,14 +156,18 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
     {
         var expiredStore = CreateStore(TimeSpan.FromMilliseconds(10));
         await expiredStore.CreateAsync(
-            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "old-key" }
+            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "old-key" },
+            TimeSpan.FromMilliseconds(10)
         );
+        await _storeDbContext.SaveChangesAsync();
         await Task.Delay(TimeSpan.FromMilliseconds(50));
 
         var freshStore = CreateStore(TimeSpan.FromDays(7));
         await freshStore.CreateAsync(
-            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "fresh-key" }
+            new Dictionary<ECredentialType, string> { [ECredentialType.Google] = "fresh-key" },
+            TimeSpan.FromDays(7)
         );
+        await _storeDbContext.SaveChangesAsync();
 
         var deletedCount = await freshStore.CleanupExpiredAsync();
 
@@ -170,10 +195,11 @@ public sealed class DatabaseUserCredentialHandleStoreTests : IDisposable
         var scope = _serviceProvider.CreateScope();
         _scopes.Add(scope);
 
+        _storeDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
         return new DatabaseUserCredentialHandleStore(
             provider,
-            scope.ServiceProvider.GetRequiredService<AppDbContext>(),
-            Options.Create(new UserCredentialBackgroundHandleOptions { Ttl = ttl }),
+            _storeDbContext,
             NullLogger<DatabaseUserCredentialHandleStore>.Instance
         );
     }

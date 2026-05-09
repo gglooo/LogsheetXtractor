@@ -21,8 +21,6 @@ public static class StartBatchLogsheetProcessingHandler
         IAppDbContext dbContext,
         IMessageBus bus,
         ICredentialCookieAccessor credentialCookieAccessor,
-        IUserCredentialCookieProtector credentialCookieProtector,
-        IUserCredentialHandleStore credentialHandleStore,
         ILogger<StartBatchLogsheetProcessingCommand> logger,
         CancellationToken ct
     )
@@ -54,8 +52,6 @@ public static class StartBatchLogsheetProcessingHandler
             await bus.PublishWithContextAsync(
                 new ProcessLogsheetDataCommand(logsheet.Id, command.options),
                 credentialCookieAccessor,
-                credentialCookieProtector,
-                credentialHandleStore,
                 ct
             );
 

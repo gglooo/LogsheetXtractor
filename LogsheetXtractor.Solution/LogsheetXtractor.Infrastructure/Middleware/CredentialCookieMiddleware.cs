@@ -10,12 +10,13 @@ public static class CredentialCookieMiddleware
         Envelope envelope,
         ICredentialCookieAccessor cookieAccessor,
         IUserCredentialHandleStore credentialHandleStore,
+        IAppDbContext dbContext,
         CancellationToken ct
     )
     {
         if (
             envelope.Headers.TryGetValue(
-                CredentialsConstants.BackgroundHandleHeaderName,
+                CredentialsConstants.UserCredentialHandleHeaderName,
                 out var handle
             )
             && handle != null
@@ -32,24 +33,7 @@ public static class CredentialCookieMiddleware
                 result.Errors.FirstOrDefault()?.Message
                     ?? CredentialsConstants.ExpiredBackgroundCredentialHandleMessage
             );
-        }
-    }
-
-    public static async Task AfterAsync(
-        Envelope envelope,
-        IUserCredentialHandleStore credentialHandleStore,
-        CancellationToken ct
-    )
-    {
-        if (
-            envelope.Headers.TryGetValue(
-                CredentialsConstants.BackgroundHandleHeaderName,
-                out var handle
-            )
-            && handle != null
-        )
-        {
-            await credentialHandleStore.ReleaseAsync(handle, ct);
+            await dbContext.SaveChangesAsync(ct);
         }
     }
 }

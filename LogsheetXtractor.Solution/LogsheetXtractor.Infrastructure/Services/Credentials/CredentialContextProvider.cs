@@ -11,7 +11,7 @@ public class CredentialContextProvider(
     IOcrCredentialService ocrCredentialService,
     ITemporaryCredentialFileStore temporaryCredentialFileStore,
     ICredentialCookieAccessor cookieAccessor,
-    IUserCredentialCookieProtector credentialCookieProtector,
+    IUserCredentialHandleStore credentialHandleStore,
     ILogger<UserCredentialContext> userContextLogger,
     ILogger<CredentialContextProvider> logger
 ) : ICredentialContextProvider
@@ -20,25 +20,23 @@ public class CredentialContextProvider(
         CancellationToken ct = default
     )
     {
-        var backgroundError = cookieAccessor.GetBackgroundCredentialError();
-        if (!string.IsNullOrWhiteSpace(backgroundError))
-        {
-            logger.LogWarning(
-                "Background user credential snapshot could not be used: {Error}",
-                backgroundError
-            );
-            return Result.Fail<ICredentialContext>(new InvalidStateError(backgroundError));
-        }
-
-        var keys = cookieAccessor.GetBackgroundCredentials();
-
+        var keys = await ResolveActiveHttpCredentialsAsync(ct);
         if (keys is null)
         {
-            var cookie = cookieAccessor.GetCookie();
-            keys = credentialCookieProtector.Unprotect(cookie);
+            var backgroundError = cookieAccessor.GetBackgroundCredentialError();
+            if (!string.IsNullOrWhiteSpace(backgroundError))
+            {
+                logger.LogWarning(
+                    "Background user credential handle could not be used: {Error}",
+                    backgroundError
+                );
+                return Result.Fail<ICredentialContext>(new InvalidStateError(backgroundError));
+            }
+
+            keys = cookieAccessor.GetBackgroundCredentials();
         }
 
-        if (keys == null)
+        if (keys is null)
         {
             logger.LogInformation(
                 "No valid user credentials found. Falling back to system credentials."
@@ -63,5 +61,24 @@ public class CredentialContextProvider(
         return Result.Ok<ICredentialContext>(
             new UserCredentialContext(tempPaths, temporaryCredentialFileStore, userContextLogger)
         );
+    }
+
+    private async Task<IReadOnlyDictionary<ECredentialType, string>?> ResolveActiveHttpCredentialsAsync(
+        CancellationToken ct
+    )
+    {
+        var handle = cookieAccessor.GetCookie();
+        if (!IsValidHandle(handle))
+        {
+            return null;
+        }
+
+        var result = await credentialHandleStore.ResolveAsync(handle, ct);
+        return result.IsSuccess ? result.Value : null;
+    }
+
+    private static bool IsValidHandle(string? handle)
+    {
+        return handle is { Length: 32 } && handle.All(Uri.IsHexDigit);
     }
 }

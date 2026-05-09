@@ -10,23 +10,14 @@ public static class MessageBusExtensions
         this IMessageBus bus,
         T message,
         ICredentialCookieAccessor cookieAccessor,
-        IUserCredentialCookieProtector cookieProtector,
-        IUserCredentialHandleStore credentialHandleStore,
         CancellationToken ct = default
     )
     {
         var cookie = cookieAccessor.GetCookie();
         var options = new DeliveryOptions();
-        var keys = cookieProtector.Unprotect(cookie);
-
-        if (keys is not null)
+        if (cookie is not null)
         {
-            var handleResult = await credentialHandleStore.CreateAsync(keys, ct);
-            if (handleResult.IsSuccess)
-            {
-                options.Headers[CredentialsConstants.BackgroundHandleHeaderName] =
-                    handleResult.Value;
-            }
+            options.Headers[CredentialsConstants.UserCredentialHandleHeaderName] = cookie;
         }
 
         await bus.PublishAsync(message, options);

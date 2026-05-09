@@ -10,14 +10,12 @@ using LogsheetXtractor.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace LogsheetXtractor.Infrastructure.Services.Credentials;
 
 public sealed class DatabaseUserCredentialHandleStore(
     IDataProtectionProvider dataProtectionProvider,
     AppDbContext dbContext,
-    IOptions<UserCredentialBackgroundHandleOptions> options,
     ILogger<DatabaseUserCredentialHandleStore> logger
 ) : IUserCredentialHandleStore
 {
@@ -26,13 +24,13 @@ public sealed class DatabaseUserCredentialHandleStore(
         Converters = { new JsonStringEnumConverter() },
     };
 
-    private readonly IDataProtector _protector =
-        dataProtectionProvider.CreateProtector(
-            CredentialProtectionConstants.BackgroundHandleProtectionPurpose
-        );
+    private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector(
+        CredentialProtectionConstants.UserCredentialHandleProtectionPurpose
+    );
 
     public async Task<Result<string>> CreateAsync(
         IReadOnlyDictionary<ECredentialType, string> credentials,
+        TimeSpan ttl,
         CancellationToken ct = default
     )
     {
@@ -43,8 +41,8 @@ public sealed class DatabaseUserCredentialHandleStore(
         }
 
         var issuedAtUtc = DateTimeOffset.UtcNow;
-        var ttl = options.Value.Ttl > TimeSpan.Zero ? options.Value.Ttl : TimeSpan.FromDays(7);
-        var expiresAtUtc = issuedAtUtc.Add(ttl);
+        var effectiveTtl = ttl > TimeSpan.Zero ? ttl : TimeSpan.FromDays(7);
+        var expiresAtUtc = issuedAtUtc.Add(effectiveTtl);
         var envelope = new ProtectedCredentialHandleEnvelope(
             CredentialProtectionConstants.EnvelopeVersion,
             issuedAtUtc,
@@ -65,8 +63,7 @@ public sealed class DatabaseUserCredentialHandleStore(
             }
         );
 
-        await dbContext.SaveChangesAsync(ct);
-        return Result.Ok(handle);
+        return await Task.FromResult(Result.Ok(handle));
     }
 
     public async Task<Result<IReadOnlyDictionary<ECredentialType, string>>> ResolveAsync(
@@ -79,9 +76,10 @@ public sealed class DatabaseUserCredentialHandleStore(
             return Failed<IReadOnlyDictionary<ECredentialType, string>>();
         }
 
-        var storedHandle = await dbContext
-            .UserCredentialHandles.AsNoTracking()
-            .FirstOrDefaultAsync(h => h.Handle == handle, ct);
+        var storedHandle = await dbContext.UserCredentialHandles.FirstOrDefaultAsync(
+            h => h.Handle == handle,
+            ct
+        );
 
         if (storedHandle is null)
         {
@@ -90,7 +88,7 @@ public sealed class DatabaseUserCredentialHandleStore(
 
         if (storedHandle.ExpiresAtUtc <= DateTime.UtcNow)
         {
-            await DeleteHandleAsync(handle, ct);
+            StageDelete(storedHandle);
             return Failed<IReadOnlyDictionary<ECredentialType, string>>();
         }
 
@@ -108,28 +106,32 @@ public sealed class DatabaseUserCredentialHandleStore(
                 || envelope.ExpiresAtUtc <= DateTimeOffset.UtcNow
             )
             {
-                await DeleteHandleAsync(handle, ct);
+                StageDelete(storedHandle);
                 return Failed<IReadOnlyDictionary<ECredentialType, string>>();
             }
 
             var normalizedCredentials = Normalize(envelope.Keys);
-            return normalizedCredentials.Count == 0
-                ? Failed<IReadOnlyDictionary<ECredentialType, string>>()
-                : Result.Ok<IReadOnlyDictionary<ECredentialType, string>>(normalizedCredentials);
+            if (normalizedCredentials.Count == 0)
+            {
+                StageDelete(storedHandle);
+                return Failed<IReadOnlyDictionary<ECredentialType, string>>();
+            }
+
+            return Result.Ok<IReadOnlyDictionary<ECredentialType, string>>(normalizedCredentials);
         }
         catch (CryptographicException)
         {
-            await DeleteHandleAsync(handle, ct);
+            StageDelete(storedHandle);
             return Failed<IReadOnlyDictionary<ECredentialType, string>>();
         }
         catch (JsonException)
         {
-            await DeleteHandleAsync(handle, ct);
+            StageDelete(storedHandle);
             return Failed<IReadOnlyDictionary<ECredentialType, string>>();
         }
         catch (ArgumentException)
         {
-            await DeleteHandleAsync(handle, ct);
+            StageDelete(storedHandle);
             return Failed<IReadOnlyDictionary<ECredentialType, string>>();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -146,7 +148,14 @@ public sealed class DatabaseUserCredentialHandleStore(
             return;
         }
 
-        await DeleteHandleAsync(handle, ct);
+        var storedHandle = await dbContext.UserCredentialHandles.FirstOrDefaultAsync(
+            h => h.Handle == handle,
+            ct
+        );
+        if (storedHandle is not null)
+        {
+            StageDelete(storedHandle);
+        }
     }
 
     public async Task<int> CleanupExpiredAsync(CancellationToken ct = default)
@@ -157,11 +166,9 @@ public sealed class DatabaseUserCredentialHandleStore(
             .ExecuteDeleteAsync(ct);
     }
 
-    private async Task DeleteHandleAsync(string handle, CancellationToken ct)
+    private void StageDelete(UserCredentialHandle handle)
     {
-        await dbContext
-            .UserCredentialHandles.Where(h => h.Handle == handle)
-            .ExecuteDeleteAsync(ct);
+        dbContext.UserCredentialHandles.Remove(handle);
     }
 
     private static bool IsValidHandle(string handle)

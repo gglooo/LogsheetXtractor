@@ -50,7 +50,8 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
 
         var cookieHeader = GetCookieHeaderValue(setResponse, CredentialsConstants.CookieName);
         var cookieValue = Uri.UnescapeDataString(cookieHeader.Split('=', 2)[1]);
-        cookieValue.Should().StartWith(CredentialProtectionConstants.ProtectedValuePrefix);
+        cookieValue.Should().HaveLength(32);
+        cookieValue.All(Uri.IsHexDigit).Should().BeTrue();
         cookieValue.Should().NotContain("google-key");
         cookieValue.Should().NotContain("azure-key");
 
@@ -67,7 +68,7 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
     }
 
     [Fact]
-    public async Task SetCredentials_ShouldCreateProtectedApiCookieWithOneYearLifetime()
+    public async Task SetCredentials_ShouldCreateOpaqueApiCookieWithOneYearLifetime()
     {
         var beforeRequest = DateTimeOffset.UtcNow;
         var setResponse = await _client.PostAsJsonAsync(
@@ -109,7 +110,7 @@ public class CredentialsEndpointsIntegrationSmokeTests : IClassFixture<ApiWebApp
     }
 
     [Fact]
-    public async Task GetStatus_WithTamperedProtectedCookie_ShouldIgnoreUserCredentials()
+    public async Task GetStatus_WithTamperedHandleCookie_ShouldIgnoreUserCredentials()
     {
         using var client = CreateClient(handleCookies: false);
         var setResponse = await client.PostAsJsonAsync(

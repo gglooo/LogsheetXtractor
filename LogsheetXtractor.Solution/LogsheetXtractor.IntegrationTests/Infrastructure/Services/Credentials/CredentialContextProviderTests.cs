@@ -1,5 +1,6 @@
 using System.Text;
 using FluentAssertions;
+using FluentResults;
 using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Credentials;
 using LogsheetXtractor.Application.Interfaces;
@@ -15,7 +16,7 @@ public class CredentialContextProviderTests
     private readonly Mock<IOcrCredentialService> _ocrCredentialServiceMock;
     private readonly Mock<ITemporaryCredentialFileStore> _temporaryCredentialFileStoreMock;
     private readonly Mock<ICredentialCookieAccessor> _cookieAccessorMock;
-    private readonly Mock<IUserCredentialCookieProtector> _credentialCookieProtectorMock;
+    private readonly Mock<IUserCredentialHandleStore> _credentialHandleStoreMock;
     private readonly Mock<ILogger<UserCredentialContext>> _userContextLoggerMock;
     private readonly Mock<ILogger<CredentialContextProvider>> _loggerMock;
     private readonly CredentialContextProvider _provider;
@@ -25,7 +26,7 @@ public class CredentialContextProviderTests
         _ocrCredentialServiceMock = new Mock<IOcrCredentialService>();
         _temporaryCredentialFileStoreMock = new Mock<ITemporaryCredentialFileStore>();
         _cookieAccessorMock = new Mock<ICredentialCookieAccessor>();
-        _credentialCookieProtectorMock = new Mock<IUserCredentialCookieProtector>();
+        _credentialHandleStoreMock = new Mock<IUserCredentialHandleStore>();
         _userContextLoggerMock = new Mock<ILogger<UserCredentialContext>>();
         _loggerMock = new Mock<ILogger<CredentialContextProvider>>();
 
@@ -33,7 +34,7 @@ public class CredentialContextProviderTests
             _ocrCredentialServiceMock.Object,
             _temporaryCredentialFileStoreMock.Object,
             _cookieAccessorMock.Object,
-            _credentialCookieProtectorMock.Object,
+            _credentialHandleStoreMock.Object,
             _userContextLoggerMock.Object,
             _loggerMock.Object
         );
@@ -48,11 +49,16 @@ public class CredentialContextProviderTests
             { ECredentialType.Google, "some-google-key" },
             { ECredentialType.Azure, "some-azure-key" },
         };
-        const string cookieString = "v1:protected-cookie";
-        _cookieAccessorMock.Setup(c => c.GetCookie()).Returns(cookieString);
-        _credentialCookieProtectorMock
-            .Setup(p => p.Unprotect(cookieString))
-            .Returns(credentials);
+        const string handle = "0123456789abcdef0123456789abcdef";
+        _cookieAccessorMock.Setup(c => c.GetCookie()).Returns(handle);
+        _credentialHandleStoreMock
+            .Setup(s =>
+                s.ResolveAsync(
+                    handle,
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(Result.Ok<IReadOnlyDictionary<ECredentialType, string>>(credentials));
 
         var savedFileCounter = 0;
         _temporaryCredentialFileStoreMock
@@ -85,6 +91,76 @@ public class CredentialContextProviderTests
         _temporaryCredentialFileStoreMock.Verify(
             s => s.SaveAsync(
                 It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "some-azure-key"),
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task GetCredentialContextAsync_ShouldPreferActiveHttpCookie_WhenBackgroundCredentialsExist()
+    {
+        var httpCredentials = new Dictionary<ECredentialType, string>
+        {
+            { ECredentialType.Google, "http-google-key" },
+        };
+        var backgroundCredentials = new Dictionary<ECredentialType, string>
+        {
+            { ECredentialType.Google, "background-google-key" },
+        };
+        const string handle = "0123456789abcdef0123456789abcdef";
+        _cookieAccessorMock.Setup(c => c.GetCookie()).Returns(handle);
+        _cookieAccessorMock
+            .Setup(c => c.GetBackgroundCredentials())
+            .Returns(backgroundCredentials);
+        _credentialHandleStoreMock
+            .Setup(s => s.ResolveAsync(handle, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Ok<IReadOnlyDictionary<ECredentialType, string>>(httpCredentials));
+        _temporaryCredentialFileStoreMock
+            .Setup(s => s.SaveAsync(It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("temp/http.json");
+
+        var result = await _provider.GetCredentialContextAsync();
+
+        result.IsSuccess.Should().BeTrue();
+        _temporaryCredentialFileStoreMock.Verify(
+            s => s.SaveAsync(
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "http-google-key"),
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+        _temporaryCredentialFileStoreMock.Verify(
+            s => s.SaveAsync(
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "background-google-key"),
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task GetCredentialContextAsync_ShouldUseBackgroundCredentials_WhenHttpCookieIsMissing()
+    {
+        var backgroundCredentials = new Dictionary<ECredentialType, string>
+        {
+            { ECredentialType.Google, "background-google-key" },
+        };
+        _cookieAccessorMock.Setup(c => c.GetCookie()).Returns((string?)null);
+        _cookieAccessorMock
+            .Setup(c => c.GetBackgroundCredentials())
+            .Returns(backgroundCredentials);
+        _temporaryCredentialFileStoreMock
+            .Setup(s => s.SaveAsync(It.IsAny<byte[]>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("temp/background.json");
+
+        var result = await _provider.GetCredentialContextAsync();
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeOfType<UserCredentialContext>();
+        _temporaryCredentialFileStoreMock.Verify(
+            s => s.SaveAsync(
+                It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "background-google-key"),
                 It.IsAny<CancellationToken>()
             ),
             Times.Once

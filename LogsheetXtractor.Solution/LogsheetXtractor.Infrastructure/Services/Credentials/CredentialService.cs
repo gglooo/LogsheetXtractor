@@ -5,27 +5,13 @@ using Microsoft.AspNetCore.Http;
 namespace LogsheetXtractor.Infrastructure.Services.Credentials;
 
 public class CredentialService(
-    IOcrCredentialService ocrCredentialService,
-    IHttpContextAccessor httpContextAccessor,
-    IUserCredentialCookieProtector credentialCookieProtector
+    IOcrCredentialService ocrCredentialService
 ) : ICredentialService
 {
     public Task<IEnumerable<ECredentialType>> GetAvailableCredentialTypesAsync(
         CancellationToken cancellationToken
     )
     {
-        var cookie = httpContextAccessor
-            .HttpContext
-            ?.Request
-            .Cookies[CredentialsConstants.CookieName];
-        var keys = credentialCookieProtector.Unprotect(cookie);
-
-        if (keys != null)
-        {
-            return Task.FromResult(keys.Select(k => k.Key));
-        }
-
-        // Fallback to server-side credentials if no valid cookie is found
         var availableCredentials = ocrCredentialService
             .GetAvailableCredentialsPath()
             .Select(kvp => kvp.Item1);

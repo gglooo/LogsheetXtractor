@@ -7,6 +7,7 @@ public interface IUserCredentialHandleStore
 {
     Task<Result<string>> CreateAsync(
         IReadOnlyDictionary<ECredentialType, string> credentials,
+        TimeSpan ttl,
         CancellationToken ct = default
     );
 
@@ -15,7 +16,10 @@ public interface IUserCredentialHandleStore
         CancellationToken ct = default
     );
 
-    Task ReleaseAsync(string? handle, CancellationToken ct = default);
+    Task ReleaseAsync(
+        string? handle,
+        CancellationToken ct = default
+    );
 
     Task<int> CleanupExpiredAsync(CancellationToken ct = default);
 }
