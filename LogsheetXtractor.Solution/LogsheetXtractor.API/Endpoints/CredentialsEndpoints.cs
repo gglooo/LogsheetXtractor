@@ -47,6 +47,7 @@ public static class CredentialsEndpoints
         [FromBody] SetUserCredentialsRequest request,
         HttpContext httpContext,
         IMessageBus bus,
+        IConfiguration configuration,
         IUserCredentialCookieProtector credentialCookieProtector,
         IOptions<UserCredentialCookieOptions> cookieOptions,
         CancellationToken ct
@@ -63,7 +64,7 @@ public static class CredentialsEndpoints
         var options = new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
+            Secure = configuration.GetValue<bool?>("Credentials:CookieSecure") ?? false,
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.Add(cookieOptions.Value.Ttl),
             Path = "/api",
