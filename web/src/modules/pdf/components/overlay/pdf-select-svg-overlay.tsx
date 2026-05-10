@@ -38,6 +38,7 @@ export const SelectSvgOverlay = ({
     const { isSelectedRoi, setSelectedRoiIds } = useSelectedRois();
 
     const interactionMode = useRef<InteractionMode>(null);
+    const suppressNextClickRef = useRef(false);
     const dragControls = useDrag();
     const dragControlsRef = useRef(dragControls);
 
@@ -140,7 +141,19 @@ export const SelectSvgOverlay = ({
             resizeEnded?.(getMovedRois());
             dragControls.handleResizeEnd();
         } else if (interactionMode.current === "drawing") {
-            handleStopDrawing(handleFinishDrawing);
+            const shouldSuppressClick = e.type === "mouseup";
+            handleStopDrawing((startPos, currentPos) => {
+                if (shouldSuppressClick) {
+                    suppressNextClickRef.current = true;
+                    // Ugly, but prevents a bug when the mouseup event is triggered after selection of ROIs.
+                    // The event them triggers a setSelectedRoiIds([]) call and deselects ROIs immediately.
+                    // This only happens on Firefox, other browser do not have this issue.
+                    window.setTimeout(() => {
+                        suppressNextClickRef.current = false;
+                    }, 0);
+                }
+                handleFinishDrawing(startPos, currentPos);
+            });
         }
 
         interactionMode.current = null;
@@ -174,6 +187,10 @@ export const SelectSvgOverlay = ({
             onMouseUp={onUnifiedMouseUp}
             onMouseLeave={onUnifiedMouseUp}
             onClick={() => {
+                if (suppressNextClickRef.current) {
+                    suppressNextClickRef.current = false;
+                    return;
+                }
                 if (dragControls.isDragging || dragControls.isResizing) {
                     return;
                 }
