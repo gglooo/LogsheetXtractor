@@ -37,7 +37,7 @@ const Harness = () => {
     const moveSelected = () => {
         setRois((previous) =>
             previous.map((roi) =>
-                selectedRoiIds.includes(roi.id)
+                selectedRoiIds.includes(roi.id!)
                     ? {
                           ...roi,
                           coordinates: {
@@ -54,7 +54,7 @@ const Harness = () => {
     const resizeSelected = () => {
         setRois((previous) =>
             previous.map((roi) =>
-                selectedRoiIds.includes(roi.id)
+                selectedRoiIds.includes(roi.id!)
                     ? {
                           ...roi,
                           coordinates: {
@@ -135,7 +135,7 @@ describe("TemplateEditorProvider ROI editing workflow", () => {
 
         await user.click(screen.getByRole("button", { name: "add first" }));
 
-        let rois = getRois();
+        const rois = getRois();
         expect(rois).toHaveLength(1);
         expect(rois[0].variableName).toMatch(/^first-/);
         expect(rois[0].coordinates).toEqual({

@@ -96,4 +96,7 @@ function SubmitButton<T extends FieldValues>({
 
     return <Button onClick={handleSubmit(onSubmit)} {...props} />;
 }
+
+// Pre-existing issue from shadcn/ui
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants, SubmitButton };

@@ -214,5 +214,7 @@ export {
     FormItem,
     FormLabel,
     FormMessage,
+    // Pre-existing issue from shadcn/ui
+    // eslint-disable-next-line react-refresh/only-export-components
     useFormField,
 };

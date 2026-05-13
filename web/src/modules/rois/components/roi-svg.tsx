@@ -163,7 +163,7 @@ export const RoiSvg = React.memo(
                             x={scaledX + scaledWidth}
                             y={scaledY + 4}
                             textAnchor="middle"
-                            className="fill-white text-[12px] font-bold pointer-events-none"
+                            className="fill-white text-[12px] font-bold pointer-events-none select-none"
                         >
                             ×
                         </text>
