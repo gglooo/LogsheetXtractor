@@ -51,6 +51,8 @@ public static class ProcessLogsheetDataHandler
             if (processResult.IsFailed)
             {
                 errorMsg = string.Join(", ", processResult.Errors.Select(e => e.Message));
+                logsheet.Status = ELogSheetStatus.Failed;
+                logsheet.ErrorMessage = errorMsg;
             }
 
             await bus.PublishAsync(

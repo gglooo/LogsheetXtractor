@@ -1,8 +1,11 @@
 import {
     useCompleteProofreadingMutation,
     useExtractedValueImage,
+    useNextLogsheetUnverifiedExtractedValues,
     useRandomUnverifiedExtractedValue,
+    useResetProofreadingMutation,
     useVerifyExtractedValueMutation,
+    useVerifyExtractedValuesMutation,
 } from "@/modules/logsheets/proofreading/api";
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -176,5 +179,116 @@ describe("logsheets proofreading api hooks", () => {
                 queryKey: ["logsheets", ids.logsheet],
             });
         });
+    });
+
+    it("batch verifies extracted values and invalidates related logsheet query", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify([]), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+        window.fetch = fetchMock as typeof fetch;
+
+        const queryClient = createTestQueryClient();
+        const invalidateSpy = vi
+            .spyOn(queryClient, "invalidateQueries")
+            .mockResolvedValue(undefined);
+
+        const { result } = renderHook(
+            () => useVerifyExtractedValuesMutation(ids.logsheet),
+            {
+                wrapper: createQueryClientWrapper(queryClient),
+            },
+        );
+
+        await result.current.mutateAsync({
+            extractedValueIds: [ids.extracted],
+            correctedValue: "accepted",
+        });
+
+        const [url, init] = fetchMock.mock.calls[0];
+        expect(url).toBe("/api/extracted-values/batch/verify");
+        expect(init?.method).toBe("POST");
+        expect(init?.body).toBe(
+            JSON.stringify({
+                ids: [ids.extracted],
+                correctedValue: "accepted",
+            }),
+        );
+
+        await waitFor(() => {
+            expect(invalidateSpy).toHaveBeenCalledWith({
+                queryKey: ["logsheets", ids.logsheet],
+            });
+        });
+    });
+
+    it("resets proofreading and invalidates logsheet detail cache", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+        window.fetch = fetchMock as typeof fetch;
+
+        const queryClient = createTestQueryClient();
+        const invalidateSpy = vi
+            .spyOn(queryClient, "invalidateQueries")
+            .mockResolvedValue(undefined);
+
+        const { result } = renderHook(() => useResetProofreadingMutation(), {
+            wrapper: createQueryClientWrapper(queryClient),
+        });
+
+        await result.current.mutateAsync(ids.logsheet);
+
+        expect(fetchMock).toHaveBeenCalledWith(
+            `/api/logsheets/${ids.logsheet}/proofreading/reset`,
+            { method: "POST" },
+        );
+        await waitFor(() => {
+            expect(invalidateSpy).toHaveBeenCalledWith({
+                queryKey: ["logsheets", ids.logsheet],
+            });
+        });
+    });
+
+    it("fetches the next logsheet unverified value", async () => {
+        const payload = {
+            id: ids.extracted,
+            createdAt: now,
+            updatedAt: null,
+            deletedAt: null,
+            logsheetId: ids.logsheet,
+            roiId: ids.roi,
+            roiType: "Handwritten",
+            variableName: "operator",
+            value: "raw",
+            correctedValue: null,
+            status: "Unverified",
+            validationWarnings: [],
+            validationRulesVersion: null,
+        };
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify(payload), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+        window.fetch = fetchMock as typeof fetch;
+
+        const queryClient = createTestQueryClient();
+        const { result } = renderHook(
+            () => useNextLogsheetUnverifiedExtractedValues(true),
+            {
+                wrapper: createQueryClientWrapper(queryClient),
+            },
+        );
+
+        await waitFor(() => {
+            expect(result.current.isSuccess).toBe(true);
+        });
+
+        expect(fetchMock).toHaveBeenCalledWith(
+            "/api/extracted-values/unverified/next-logsheet",
+        );
+        expect(result.current.data).toEqual(payload);
     });
 });

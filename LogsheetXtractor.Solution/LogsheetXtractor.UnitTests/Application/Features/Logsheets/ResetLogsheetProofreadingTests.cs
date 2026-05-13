@@ -118,6 +118,31 @@ public class ResetLogsheetProofreadingTests : IDisposable
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
     }
 
+    [Fact]
+    public async Task Handle_ShouldFail_WhenLogsheetIsStillProcessing()
+    {
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Status = ELogSheetStatus.Processing,
+        };
+        _dbContext.Logsheets.Add(logsheet);
+        await _dbContext.SaveChangesAsync();
+
+        var result = await ResetLogsheetProofreadingHandler.Handle(
+            new ResetLogsheetProofreadingCommand(logsheet.Id),
+            _dbContext,
+            _loggerMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainItemsAssignableTo<InvalidStateError>();
+
+        var dbLogsheet = await _dbContext.Logsheets.FindAsync(logsheet.Id);
+        dbLogsheet!.Status.Should().Be(ELogSheetStatus.Processing);
+    }
+
     public void Dispose()
     {
         _dbContext.Dispose();

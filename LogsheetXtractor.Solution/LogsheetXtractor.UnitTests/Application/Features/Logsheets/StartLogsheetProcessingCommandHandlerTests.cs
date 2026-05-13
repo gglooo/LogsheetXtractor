@@ -135,6 +135,78 @@ public class StartLogsheetProcessingCommandHandlerTests : IDisposable
     }
 
     [Fact]
+    public async Task Handle_ShouldFail_WhenLogsheetIsSoftDeleted()
+    {
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Status = ELogSheetStatus.Pending,
+            Template = null!,
+            File = null!,
+            DeletedAt = DateTime.UtcNow,
+        };
+        _dbContext.Logsheets.Add(logsheet);
+        await _dbContext.SaveChangesAsync();
+
+        var result = await StartLogsheetProcessingHandler.Handle(
+            new StartLogsheetProcessingCommand(logsheet.Id, null),
+            _dbContext,
+            _busMock.Object,
+            _accessorMock.Object,
+            _loggerMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.Message.Contains("not found"));
+
+        _busMock.Verify(
+            b =>
+                b.PublishAsync(It.IsAny<ProcessLogsheetDataCommand>(), It.IsAny<DeliveryOptions>()),
+            Times.Never
+        );
+    }
+
+    [Theory]
+    [InlineData(ELogSheetStatus.Processing)]
+    [InlineData(ELogSheetStatus.NeedsReview)]
+    [InlineData(ELogSheetStatus.Completed)]
+    public async Task Handle_ShouldFailWithoutPublishing_WhenLogsheetStateCannotBeProcessed(
+        ELogSheetStatus status
+    )
+    {
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Status = status,
+            Template = null!,
+            File = null!,
+        };
+        _dbContext.Logsheets.Add(logsheet);
+        await _dbContext.SaveChangesAsync();
+
+        var result = await StartLogsheetProcessingHandler.Handle(
+            new StartLogsheetProcessingCommand(logsheet.Id, null),
+            _dbContext,
+            _busMock.Object,
+            _accessorMock.Object,
+            _loggerMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsFailed.Should().BeTrue();
+
+        var notUpdatedLogsheet = await _dbContext.Logsheets.FirstAsync(l => l.Id == logsheet.Id);
+        notUpdatedLogsheet.Status.Should().Be(status);
+
+        _busMock.Verify(
+            b =>
+                b.PublishAsync(It.IsAny<ProcessLogsheetDataCommand>(), It.IsAny<DeliveryOptions>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
     public async Task Handle_ShouldFail_WhenLogsheetNotInValidState()
     {
         var logsheet = new Logsheet

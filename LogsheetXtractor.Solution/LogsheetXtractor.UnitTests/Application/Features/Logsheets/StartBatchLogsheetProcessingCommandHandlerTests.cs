@@ -182,6 +182,71 @@ public class StartBatchLogsheetProcessingCommandHandlerTests : IDisposable
         );
     }
 
+    [Fact]
+    public async Task Handle_ShouldProcessExistingValidLogsheets_WhenBatchContainsMissingAndInvalidIds()
+    {
+        var validLogsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Status = ELogSheetStatus.Pending,
+            Template = null!,
+            File = null!,
+        };
+        var invalidLogsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Status = ELogSheetStatus.Completed,
+            Template = null!,
+            File = null!,
+        };
+        var missingLogsheetId = Guid.NewGuid();
+        _dbContext.Logsheets.AddRange(validLogsheet, invalidLogsheet);
+        await _dbContext.SaveChangesAsync();
+
+        var result = await StartBatchLogsheetProcessingHandler.Handle(
+            new StartBatchLogsheetProcessingCommand(
+                [validLogsheet.Id, invalidLogsheet.Id, missingLogsheetId],
+                null
+            ),
+            _dbContext,
+            _busMock.Object,
+            _accessorMock.Object,
+            _loggerMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+
+        var processedLogsheet = await _dbContext.Logsheets.FirstAsync(l =>
+            l.Id == validLogsheet.Id
+        );
+        processedLogsheet.Status.Should().Be(ELogSheetStatus.Processing);
+
+        var skippedLogsheet = await _dbContext.Logsheets.FirstAsync(l =>
+            l.Id == invalidLogsheet.Id
+        );
+        skippedLogsheet.Status.Should().Be(ELogSheetStatus.Completed);
+
+        _busMock.Verify(
+            b =>
+                b.PublishAsync(
+                    It.Is<ProcessLogsheetDataCommand>(c => c.LogsheetId == validLogsheet.Id),
+                    It.IsAny<DeliveryOptions>()
+                ),
+            Times.Once
+        );
+        _busMock.Verify(
+            b =>
+                b.PublishAsync(
+                    It.Is<ProcessLogsheetDataCommand>(c =>
+                        c.LogsheetId == invalidLogsheet.Id || c.LogsheetId == missingLogsheetId
+                    ),
+                    It.IsAny<DeliveryOptions>()
+                ),
+            Times.Never
+        );
+    }
+
     public void Dispose()
     {
         _dbContext.Dispose();
