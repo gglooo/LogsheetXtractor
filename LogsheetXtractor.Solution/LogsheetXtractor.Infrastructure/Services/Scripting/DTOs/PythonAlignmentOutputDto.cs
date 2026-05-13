@@ -6,7 +6,7 @@ namespace LogsheetXtractor.Infrastructure.Services.Scripting.DTOs;
 public class PythonAlignmentOutputDto
 {
     [JsonPropertyName("frontside")]
-    public PythonAlignmentData Frontside { get; init; } = new();
+    public PythonAlignmentData? Frontside { get; init; }
 
     [JsonPropertyName("backside")]
     public PythonAlignmentData? Backside { get; init; }

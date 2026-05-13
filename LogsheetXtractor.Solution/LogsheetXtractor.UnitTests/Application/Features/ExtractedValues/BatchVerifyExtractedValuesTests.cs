@@ -139,4 +139,71 @@ public class BatchVerifyExtractedValuesTests : IDisposable
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().ContainItemsAssignableTo<InvalidStateError>();
     }
+
+    [Fact]
+    public async Task Handle_ShouldKeepAlreadyVerifiedValuesVerified_WhenMixedWithUnverifiedValues()
+    {
+        var template = new LogsheetXtractor.Domain.Entities.Template
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+        };
+        var roi = new LogsheetXtractor.Domain.Entities.Roi
+        {
+            Id = Guid.NewGuid(),
+            Template = template,
+            VariableName = "TestVar",
+        };
+        var logsheet = new LogsheetXtractor.Domain.Entities.Logsheet
+        {
+            Id = Guid.NewGuid(),
+            Status = LogsheetXtractor.Domain.Enums.ELogSheetStatus.NeedsReview,
+            Template = template,
+        };
+        var alreadyVerified = new LogsheetXtractor.Domain.Entities.ExtractedValue
+        {
+            Id = Guid.NewGuid(),
+            Logsheet = logsheet,
+            Roi = roi,
+            Value = "already verified",
+            Status = LogsheetXtractor.Domain.Enums.EVerificationStatus.Verified,
+        };
+        var unverified = new LogsheetXtractor.Domain.Entities.ExtractedValue
+        {
+            Id = Guid.NewGuid(),
+            Logsheet = logsheet,
+            Roi = roi,
+            Value = "needs verification",
+            Status = LogsheetXtractor.Domain.Enums.EVerificationStatus.Unverified,
+        };
+
+        _dbContext.Templates.Add(template);
+        _dbContext.Rois.Add(roi);
+        _dbContext.Logsheets.Add(logsheet);
+        _dbContext.ExtractedValues.AddRange(alreadyVerified, unverified);
+        await _dbContext.SaveChangesAsync();
+
+        _dbContext.ChangeTracker.Clear();
+
+        var command = new BatchVerifyExtractedValuesCommand(
+            new[] { alreadyVerified.Id, unverified.Id }
+        );
+
+        var result = await BatchVerifyExtractedValuesHandler.Handle(
+            command,
+            _dbContext,
+            _mapper,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+
+        var verifiedValues = await _dbContext.ExtractedValues
+            .Where(ev => ev.Id == alreadyVerified.Id || ev.Id == unverified.Id)
+            .ToListAsync();
+
+        verifiedValues.Should().OnlyContain(ev =>
+            ev.Status == LogsheetXtractor.Domain.Enums.EVerificationStatus.Verified
+        );
+    }
 }

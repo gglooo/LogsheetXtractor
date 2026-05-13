@@ -44,6 +44,21 @@ public class FileStorageServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveFileAsync_ShouldAvoidFilenameCollisions()
+    {
+        var fileName = "duplicate.txt";
+
+        var firstStoredFileName = await _fileStorageService.SaveFileAsync(new byte[] { 1 }, fileName);
+        var secondStoredFileName = await _fileStorageService.SaveFileAsync(new byte[] { 2 }, fileName);
+
+        firstStoredFileName.Should().NotBe(secondStoredFileName);
+        File.Exists(Path.Combine(_storageDirectory, firstStoredFileName)).Should().BeTrue();
+        File.Exists(Path.Combine(_storageDirectory, secondStoredFileName)).Should().BeTrue();
+        (await _fileStorageService.ReadFileAsync(firstStoredFileName)).Should().BeEquivalentTo(new byte[] { 1 });
+        (await _fileStorageService.ReadFileAsync(secondStoredFileName)).Should().BeEquivalentTo(new byte[] { 2 });
+    }
+
+    [Fact]
     public async Task ReadFileAsync_ShouldReturnContent()
     {
         var content = new byte[] { 4, 5, 6 };
@@ -120,6 +135,45 @@ public class FileStorageServiceTests : IDisposable
         var readString = await _fileStorageService.ReadAllTextAsync(storedFileName);
 
         readString.Should().Be(contentString);
+    }
+
+    [Fact]
+    public async Task SaveTemporaryFileAsync_ShouldWriteTemporaryFile()
+    {
+        var content = new byte[] { 11, 12 };
+        var fileName = $"{Guid.NewGuid()}_temporary.txt";
+
+        var temporaryPath = await _fileStorageService.SaveTemporaryFileAsync(
+            content,
+            fileName,
+            CancellationToken.None
+        );
+
+        try
+        {
+            temporaryPath.Should().Be(Path.Combine(Path.GetTempPath(), fileName));
+            File.Exists(temporaryPath).Should().BeTrue();
+            (await _fileStorageService.ReadTemporaryFileAsync(temporaryPath, CancellationToken.None))
+                .Should()
+                .BeEquivalentTo(content);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+    }
+
+    [Fact]
+    public void GetTemporaryFile_ShouldThrow_WhenTemporaryFileIsMissing()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_missing.txt");
+
+        var act = () => _fileStorageService.GetTemporaryFile(missingPath);
+
+        act.Should().Throw<FileNotFoundException>();
     }
 
     public void Dispose()

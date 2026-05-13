@@ -96,6 +96,66 @@ public class GetExtractedValueImageTests : IDisposable
         result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
     }
 
+    [Fact]
+    public async Task Handle_ShouldReturnServiceFailure_WhenLogsheetImageIsMissing()
+    {
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            FileId = Guid.NewGuid(),
+            Template = new LogsheetXtractor.Domain.Entities.Template
+            {
+                Name = "T",
+                File = new LogsheetXtractor.Domain.Entities.File { StoredFileName = "t" },
+                FrontsideTemplate = null,
+                Width = 100,
+                Height = 200,
+            },
+        };
+        var roi = new Roi
+        {
+            Id = Guid.NewGuid(),
+            Coordinates = new Coordinates(0, 0, 10, 10),
+            Template = logsheet.Template,
+        };
+        var extractedValue = new ExtractedValue
+        {
+            Id = Guid.NewGuid(),
+            LogsheetId = logsheet.Id,
+            Logsheet = logsheet,
+            RoiId = roi.Id,
+            Roi = roi,
+        };
+
+        _dbContext.Logsheets.Add(logsheet);
+        _dbContext.Rois.Add(roi);
+        _dbContext.ExtractedValues.Add(extractedValue);
+        await _dbContext.SaveChangesAsync();
+
+        _extractedValuesServiceMock
+            .Setup(x =>
+                x.GetExtractedValueImageAsync(
+                    It.Is<GetExtractedValueImageDto>(dto =>
+                        dto.ExtractedValueId == extractedValue.Id
+                        && dto.LogsheetFileId == logsheet.FileId
+                        && dto.PageNumber == 0
+                    ),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(Result.Fail<GetFileDto>(new NotFoundError("Logsheet image not found")));
+
+        var result = await GetExtractedValueImageHandler.Handle(
+            new GetExtractedValueImageQuery(extractedValue.Id),
+            _dbContext,
+            _extractedValuesServiceMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainItemsAssignableTo<NotFoundError>();
+    }
+
     public void Dispose()
     {
         _dbContext.Dispose();

@@ -3,6 +3,7 @@ using FluentAssertions;
 using LogsheetXtractor.Infrastructure.Services.Scripting;
 using LogsheetXtractor.Infrastructure.Services.Scripting.DTOs;
 using LogsheetXtractor.Infrastructure.Services.Storage;
+using LogsheetXtractor.Domain.ValueObjects;
 using Moq;
 using Xunit;
 
@@ -11,15 +12,14 @@ namespace LogsheetXtractor.IntegrationTests.Infrastructure.Services.Scripting;
 public class ScriptOutputParserTests
 {
     private readonly Mock<IFileStorageService> _fileStorageServiceMock = new();
+    private readonly Mock<LogsheetXtractor.Application.Interfaces.ICoordinateTransformerService> _coordinateTransformerMock = new();
     private readonly ScriptOutputParser _parser;
 
     public ScriptOutputParserTests()
     {
-        var coordinateTransformerMock =
-            new Mock<LogsheetXtractor.Application.Interfaces.ICoordinateTransformerService>();
         _parser = new ScriptOutputParser(
             _fileStorageServiceMock.Object,
-            coordinateTransformerMock.Object
+            _coordinateTransformerMock.Object
         );
     }
 
@@ -83,5 +83,74 @@ public class ScriptOutputParserTests
 
         result.Should().NotBeNull();
         result.Rois.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ParseAutomaticAlignmentJson_ShouldNormalizeFrontsideAlignment()
+    {
+        var rawJson = """
+            {
+              "frontside": {
+                "templatePoints": [{ "x": 0, "y": 0 }],
+                "targetPoints": [{ "x": 10, "y": 20 }],
+                "imageWidth": 1000,
+                "imageHeight": 2000
+              }
+            }
+            """;
+        var expectedPoints = new List<PointCoordinate> { new(1, 2) };
+
+        _coordinateTransformerMock
+            .Setup(x =>
+                x.NormalizeAlignmentPoints(
+                    It.IsAny<List<PointCoordinate>>(),
+                    It.IsAny<List<PointCoordinate>>(),
+                    100,
+                    200,
+                    1000,
+                    2000
+                )
+            )
+            .Returns(expectedPoints);
+
+        var result = _parser.ParseAutomaticAlignmentJson(rawJson, 100, 200);
+
+        result.Frontside.Should().BeEquivalentTo(expectedPoints);
+        result.Backside.Should().BeNull();
+    }
+
+    [Fact]
+    public void ParseAutomaticAlignmentJson_ShouldThrow_WhenCliResponseIsMalformed()
+    {
+        var act = () => _parser.ParseAutomaticAlignmentJson("""{"unexpected": true}""", 100, 200);
+
+        act.Should().Throw<ArgumentException>().WithMessage("Invalid alignment JSON format.");
+    }
+
+    [Fact]
+    public void ParseAutomaticAlignmentJson_ShouldThrow_WhenBacksideDimensionsAreMissing()
+    {
+        var rawJson = """
+            {
+              "frontside": {
+                "templatePoints": [{ "x": 0, "y": 0 }],
+                "targetPoints": [{ "x": 10, "y": 20 }],
+                "imageWidth": 1000,
+                "imageHeight": 2000
+              },
+              "backside": {
+                "templatePoints": [{ "x": 0, "y": 0 }],
+                "targetPoints": [{ "x": 30, "y": 40 }],
+                "imageWidth": 1000,
+                "imageHeight": 2000
+              }
+            }
+            """;
+
+        var act = () => _parser.ParseAutomaticAlignmentJson(rawJson, 100, 200);
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("Backside template dimensions must be provided if backside alignment is present.");
     }
 }
