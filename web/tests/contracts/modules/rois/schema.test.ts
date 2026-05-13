@@ -64,6 +64,22 @@ describe("rois schema contracts", () => {
         expect(parsed.rois).toHaveLength(2);
     });
 
+    it("rejects ROI response payloads with renamed variable field", () => {
+        const result = roiSchema.safeParse({
+            id: "11111111-1111-4111-8111-111111111111",
+            createdAt: now,
+            updatedAt: null,
+            deletedAt: null,
+            variable: "studentName",
+            templateId: "22222222-2222-4222-8222-222222222222",
+            type: "Handwritten",
+            coordinates: baseCoordinates,
+            validationCondition: null,
+        });
+
+        expect(result.success).toBe(false);
+    });
+
     it("parses detect rois response with residuals", () => {
         const parsed = detectRoisResponseSchema.parse({
             rois: [

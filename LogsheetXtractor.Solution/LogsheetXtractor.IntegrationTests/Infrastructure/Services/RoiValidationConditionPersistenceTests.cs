@@ -140,6 +140,81 @@ public class RoiValidationConditionPersistenceTests : IDisposable
         persisted.ValidationCondition.Children![0].RuleType.Should().NotBe("number.range");
     }
 
+    [Fact]
+    public async Task SetRoisForTemplateAsync_ShouldPersistNestedValidationGroupsAndRuleParameters()
+    {
+        var (templateId, roiId) = await SeedTemplateWithSingleRoiAsync(
+            initialValidationCondition: null
+        );
+
+        var nestedCondition = new RoiValidationConditionNode
+        {
+            Type = "group",
+            Operator = "OR",
+            Children =
+            [
+                new RoiValidationConditionNode
+                {
+                    Type = "group",
+                    Operator = "AND",
+                    Children =
+                    [
+                        new RoiValidationConditionNode
+                        {
+                            Type = "rule",
+                            RuleType = "number.range",
+                            Params = JsonSerializer.SerializeToElement(new { min = 10, max = 20 }),
+                        },
+                    ],
+                },
+                new RoiValidationConditionNode
+                {
+                    Type = "rule",
+                    RuleType = "number.notInSet",
+                    Params = JsonSerializer.SerializeToElement(new { values = new[] { 13, 17 } }),
+                },
+            ],
+        };
+
+        await using (var dbContext = new AppDbContext(_options))
+        {
+            var service = new RoiService(dbContext, _mapper, Mock.Of<IHtrScriptEngine>());
+
+            var result = await service.SetRoisForTemplateAsync(
+                templateId,
+                [
+                    new SetRoiDto(
+                        roiId.ToString(),
+                        "ROI-1",
+                        ERoiType.Number,
+                        new Coordinates(10, 20, 30, 40),
+                        nestedCondition
+                    ),
+                ],
+                CancellationToken.None
+            );
+
+            result.IsSuccess.Should().BeTrue();
+            await dbContext.SaveChangesAsync();
+        }
+
+        await using var verifyContext = new AppDbContext(_options);
+        var persisted = await verifyContext.Rois.AsNoTracking().SingleAsync(r => r.Id == roiId);
+
+        persisted.ValidationCondition.Should().NotBeNull();
+        persisted.ValidationCondition!.Operator.Should().Be("OR");
+        persisted.ValidationCondition.Children.Should().HaveCount(2);
+        persisted.ValidationCondition.Children![0].Children![0].RuleType.Should().Be("number.range");
+        persisted
+            .ValidationCondition.Children![0]
+            .Children![0]
+            .Params!.Value.GetProperty("max")
+            .GetInt32()
+            .Should()
+            .Be(20);
+        persisted.ValidationCondition.Children![1].RuleType.Should().Be("number.notInSet");
+    }
+
     private async Task<(Guid templateId, Guid roiId)> SeedTemplateWithSingleRoiAsync(
         RoiValidationConditionNode? initialValidationCondition
     )

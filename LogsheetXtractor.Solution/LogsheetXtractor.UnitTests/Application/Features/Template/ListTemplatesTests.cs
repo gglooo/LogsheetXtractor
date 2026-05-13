@@ -113,6 +113,42 @@ public class ListTemplatesTests : IDisposable
         result.Value.Single().RoiCount.Should().Be(3);
     }
 
+    [Fact]
+    public async Task Handle_ShouldExcludeSoftDeletedTemplates()
+    {
+        var activeFile = CreateFile("active.pdf");
+        var deletedFile = CreateFile("deleted.pdf");
+        _dbContext.Files.AddRange(activeFile, deletedFile);
+        await _dbContext.SaveChangesAsync();
+
+        var activeTemplate = new LogsheetXtractor.Domain.Entities.Template
+        {
+            Id = Guid.NewGuid(),
+            Name = "Active Template",
+            FileId = activeFile.Id,
+            Width = 10,
+            Height = 10,
+        };
+        var deletedTemplate = new LogsheetXtractor.Domain.Entities.Template
+        {
+            Id = Guid.NewGuid(),
+            Name = "Deleted Template",
+            FileId = deletedFile.Id,
+            Width = 10,
+            Height = 10,
+            DeletedAt = DateTime.UtcNow,
+        };
+
+        _dbContext.Templates.AddRange(activeTemplate, deletedTemplate);
+        await _dbContext.SaveChangesAsync();
+
+        var result = await ListTemplatesHandler.Handle(new ListTemplatesQuery(null), _dbContext);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().ContainSingle();
+        result.Value.Single().Id.Should().Be(activeTemplate.Id);
+    }
+
     private static LogsheetXtractor.Domain.Entities.File CreateFile(string fileName)
     {
         return new LogsheetXtractor.Domain.Entities.File

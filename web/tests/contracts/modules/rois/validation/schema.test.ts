@@ -81,4 +81,53 @@ describe("roi validation schema contracts", () => {
 
         expect(parsed.condition.children).toHaveLength(1);
     });
+
+    it("rejects predefined condition payloads with missing stable fields", () => {
+        const result = predefinedRoiValidationConditionSchema.safeParse({
+            id: "11111111-1111-4111-8111-111111111111",
+            code: "required",
+            roiType: "Handwritten",
+            condition: {
+                type: "group",
+                operator: "AND",
+                children: [
+                    {
+                        type: "rule",
+                        ruleType: "common.requiredNonEmpty",
+                        params: {},
+                    },
+                ],
+            },
+        });
+
+        expect(result.success).toBe(false);
+    });
+
+    it("parses nested validation groups and rule params", () => {
+        const parsed = roiValidationConditionGroupSchema.parse({
+            type: "group",
+            operator: "OR",
+            children: [
+                {
+                    type: "group",
+                    operator: "AND",
+                    children: [
+                        {
+                            type: "rule",
+                            ruleType: "text.prefix",
+                            params: { value: "LSI" },
+                        },
+                    ],
+                },
+                {
+                    type: "rule",
+                    ruleType: "text.allowedValues",
+                    params: { values: ["N/A", "OK"] },
+                },
+            ],
+        });
+
+        expect(parsed.children).toHaveLength(2);
+        expect(parsed.children[0].type).toBe("group");
+    });
 });

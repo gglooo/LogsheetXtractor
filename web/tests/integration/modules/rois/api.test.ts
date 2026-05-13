@@ -159,4 +159,77 @@ describe("rois api hooks", () => {
             });
         });
     });
+
+    it("set-rois mutation rejects malformed request before sending", async () => {
+        const fetchMock = vi.fn();
+        window.fetch = fetchMock as typeof fetch;
+
+        const { result } = renderHook(() => useSetRoisMutation(templateId), {
+            wrapper: createQueryClientWrapper(createTestQueryClient()),
+        });
+
+        await expect(
+            result.current.mutateAsync({
+                rois: [
+                    {
+                        id: null,
+                        createdAt: now,
+                        updatedAt: null,
+                        deletedAt: null,
+                        variableName: "invalidRoi",
+                        templateId,
+                        type: "Invalid",
+                        coordinates: {
+                            x: 10,
+                            y: 20,
+                            width: 30,
+                            height: 40,
+                        },
+                        validationCondition: null,
+                    },
+                ],
+            }),
+        ).rejects.toThrow();
+
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("detect-rois mutation rejects responses with missing backend fields", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    rois: [
+                        {
+                            id: null,
+                            createdAt: now,
+                            updatedAt: null,
+                            deletedAt: null,
+                            variable: "detectedRoi",
+                            templateId,
+                            type: "Handwritten",
+                            coordinates: {
+                                x: 10,
+                                y: 20,
+                                width: 100,
+                                height: 40,
+                            },
+                            validationCondition: null,
+                        },
+                    ],
+                    residuals: [],
+                }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                },
+            ),
+        );
+        window.fetch = fetchMock as typeof fetch;
+
+        const { result } = renderHook(() => useDetectRoisMutation(), {
+            wrapper: createQueryClientWrapper(createTestQueryClient()),
+        });
+
+        await expect(result.current.mutateAsync(templateId)).rejects.toThrow();
+    });
 });

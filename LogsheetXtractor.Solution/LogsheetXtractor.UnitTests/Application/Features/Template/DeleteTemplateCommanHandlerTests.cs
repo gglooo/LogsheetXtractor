@@ -1,6 +1,8 @@
 using FluentAssertions;
 using LogsheetXtractor.Application.Features.File.Interfaces;
 using LogsheetXtractor.Application.Features.Template;
+using LogsheetXtractor.Domain.Entities;
+using LogsheetXtractor.Domain.Enums;
 using LogsheetXtractor.Infrastructure.Persistence;
 using LogsheetXtractor.UnitTests.Common;
 using Microsoft.EntityFrameworkCore;
@@ -149,6 +151,45 @@ public class DeleteTemplateCommandHandlerTests : IDisposable
             x => x.DeleteFilesAsync(It.IsAny<IEnumerable<Guid>>()),
             Times.Never
         );
+    }
+
+    [Fact]
+    public async Task Handle_ShouldSoftDeleteDependentLogsheets_WhenTemplateIsDeleted()
+    {
+        var templateFileId = Guid.NewGuid();
+        var logsheetFileId = Guid.NewGuid();
+        var template = new LogsheetXtractor.Domain.Entities.Template
+        {
+            Id = Guid.NewGuid(),
+            FileId = templateFileId,
+            File = null!,
+        };
+        var logsheet = new Logsheet
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = template.Id,
+            Template = template,
+            FileId = logsheetFileId,
+            Status = ELogSheetStatus.Completed,
+        };
+
+        _dbContext.Templates.Add(template);
+        _dbContext.Logsheets.Add(logsheet);
+        await _dbContext.SaveChangesAsync();
+
+        var result = await DeleteTemplateHandler.Handle(
+            new DeleteTemplateCommand(template.Id),
+            _dbContext,
+            _fileServiceMock.Object,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+
+        var deletedLogsheet = await _dbContext
+            .Logsheets.IgnoreQueryFilters()
+            .SingleAsync(l => l.Id == logsheet.Id);
+        deletedLogsheet.DeletedAt.Should().NotBeNull();
     }
 
     public void Dispose()

@@ -205,6 +205,60 @@ describe("logsheets api hooks", () => {
         expect(fileQueryFn).not.toHaveBeenCalled();
     });
 
+    it("fetches frontside and backside logsheet image endpoints", async () => {
+        vi.mocked(fileQueryFn).mockResolvedValue({
+            bytes: new ArrayBuffer(16),
+            fileName: "image.png",
+            contentType: "image/png",
+        });
+
+        const queryClient = createTestQueryClient();
+
+        const front = renderHook(() => useLogsheetImage(ids.logsheet, false), {
+            wrapper: createQueryClientWrapper(queryClient),
+        });
+        await waitFor(() => {
+            expect(front.result.current.isSuccess).toBe(true);
+        });
+
+        const back = renderHook(() => useLogsheetImage(ids.logsheet, true), {
+            wrapper: createQueryClientWrapper(queryClient),
+        });
+        await waitFor(() => {
+            expect(back.result.current.isSuccess).toBe(true);
+        });
+
+        expect(fileQueryFn).toHaveBeenCalledWith(
+            `/api/logsheets/${ids.logsheet}/image`,
+        );
+        expect(fileQueryFn).toHaveBeenCalledWith(
+            `/api/logsheets/${ids.logsheet}/image?backside=true`,
+        );
+    });
+
+    it("upload mutation rejects malformed request payload before sending", async () => {
+        vi.mocked(useUserSettings).mockReturnValue({
+            userSettings: mockUserSettings,
+            setUserSettings: vi.fn(),
+        });
+
+        const fetchMock = vi.fn();
+        window.fetch = fetchMock as typeof fetch;
+
+        const { result } = renderHook(() => useUploadLogsheetsMutation(), {
+            wrapper: createQueryClientWrapper(createTestQueryClient()),
+        });
+
+        await expect(
+            result.current.mutateAsync({
+                templateId: "not-a-guid",
+                fileIds: [ids.file],
+            }),
+        ).rejects.toThrow();
+
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it("export logsheets mutation uses fileQueryFn and downloadFile", async () => {
         vi.mocked(fileQueryFn).mockResolvedValue({
             bytes: new ArrayBuffer(16),

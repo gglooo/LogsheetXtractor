@@ -51,6 +51,29 @@ public class GetPredefinedRoiValidationConditionsTests : IDisposable
         result.Value.Select(x => x.Code).Should().Contain(new[] { "year", "month" });
     }
 
+    [Fact]
+    public async Task Handle_ShouldReturnStableConditionResponseShape()
+    {
+        await SeedConditions();
+
+        var result = await GetPredefinedRoiValidationConditionsHandler.Handle(
+            new GetPredefinedRoiValidationConditionsQuery(ERoiType.Barcode),
+            _dbContext,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+        var condition = result.Value.Should().ContainSingle().Subject;
+        condition.Id.Should().NotBeEmpty();
+        condition.Code.Should().Be("barcode-prefix");
+        condition.Label.Should().Be("Barcode Prefix");
+        condition.RoiType.Should().Be(ERoiType.Barcode);
+        condition.Condition.Type.Should().Be("group");
+        condition.Condition.Operator.Should().Be("AND");
+        condition.Condition.Children.Should().ContainSingle();
+        condition.Condition.Children![0].RuleType.Should().Be("text.prefix");
+    }
+
     private async Task SeedConditions()
     {
         var numberCondition = new RoiValidationConditionNode

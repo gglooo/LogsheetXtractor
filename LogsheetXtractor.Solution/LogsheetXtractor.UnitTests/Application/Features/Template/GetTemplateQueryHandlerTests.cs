@@ -81,4 +81,43 @@ public class GetTemplateQueryHandlerTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Handle_ShouldReturnNull_WhenTemplateIsSoftDeleted()
+    {
+        var file = new LogsheetXtractor.Domain.Entities.File
+        {
+            OriginalFileName = "deleted.pdf",
+            StoredFileName = "deleted.pdf",
+            StoragePath = "path",
+            ContentType = "application/pdf",
+        };
+        _dbContext.Files.Add(file);
+        await _dbContext.SaveChangesAsync();
+
+        var templateId = Guid.NewGuid();
+        _dbContext.Templates.Add(
+            new LogsheetXtractor.Domain.Entities.Template
+            {
+                Id = templateId,
+                Name = "Deleted Template",
+                FileId = file.Id,
+                DeletedAt = DateTime.UtcNow,
+            }
+        );
+        await _dbContext.SaveChangesAsync();
+
+        var result = await GetTemplateHandler.Handle(
+            new GetTemplateQuery(templateId),
+            _dbContext,
+            _mapperMock.Object
+        );
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeNull();
+        _mapperMock.Verify(
+            x => x.Map<TemplateDetailDto>(It.IsAny<LogsheetXtractor.Domain.Entities.Template>()),
+            Times.Never
+        );
+    }
 }

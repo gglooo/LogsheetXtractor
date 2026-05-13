@@ -1,7 +1,9 @@
 import {
     useAddTemplateBacksideMutation,
+    useCloneTemplateMutation,
     useCreateTemplateMutation,
     useExportConfigMutation,
+    useTemplate,
     useTemplates,
 } from "@/modules/templates/api";
 import {
@@ -101,6 +103,73 @@ describe("templates api hooks", () => {
 
         expect(result.current.data).toHaveLength(1);
         expect(fetchMock).toHaveBeenCalledWith("/api/templates");
+    });
+
+    it("fetches template detail and rejects renamed response fields", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    ...makeTemplatePayload(),
+                    isEditableTemplate: true,
+                    isEditable: undefined,
+                }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                },
+            ),
+        );
+        window.fetch = fetchMock as typeof fetch;
+
+        const queryClient = createTestQueryClient();
+        const { result } = renderHook(() => useTemplate(ids.template), {
+            wrapper: createQueryClientWrapper(queryClient),
+        });
+
+        await waitFor(() => {
+            expect(result.current.isError).toBe(true);
+        });
+    });
+
+    it("clone-template mutation posts payload and invalidates templates", async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify(makeTemplatePayload()), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+        window.fetch = fetchMock as typeof fetch;
+
+        const queryClient = createTestQueryClient();
+        const invalidateSpy = vi
+            .spyOn(queryClient, "invalidateQueries")
+            .mockResolvedValue(undefined);
+
+        const { result } = renderHook(() => useCloneTemplateMutation(), {
+            wrapper: createQueryClientWrapper(queryClient),
+        });
+
+        await result.current.mutateAsync({
+            templateId: ids.template,
+            newName: "Clone",
+            fileId: ids.uploadedFront,
+            backside: { fileId: ids.uploadedBack },
+        });
+
+        const [url, init] = fetchMock.mock.calls[0];
+        expect(url).toBe(`/api/templates/${ids.template}/clone`);
+        expect(init?.method).toBe("POST");
+        expect(JSON.parse(init?.body as string)).toEqual({
+            newName: "Clone",
+            fileId: ids.uploadedFront,
+            backside: { fileId: ids.uploadedBack },
+        });
+
+        await waitFor(() => {
+            expect(invalidateSpy).toHaveBeenCalledWith({
+                queryKey: ["templates"],
+            });
+        });
     });
 
     it("add-backside mutation invalidates templates and template detail keys", async () => {
