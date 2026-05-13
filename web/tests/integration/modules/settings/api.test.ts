@@ -3,6 +3,7 @@ import {
     useDeleteCredentialsMutation,
     useSetCredentialsMutation,
 } from "@/modules/settings/api";
+import { setUserCredentialsSchema } from "@/modules/settings/schema";
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -112,6 +113,45 @@ describe("settings api hooks", () => {
                 queryKey: ["credentialsStatus"],
             });
         });
+    });
+
+    it("delete credentials mutation invalidates credentialsStatus query", async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(new Response(null, { status: 200 }));
+        window.fetch = fetchMock as typeof fetch;
+
+        const queryClient = createTestQueryClient();
+        const invalidateSpy = vi
+            .spyOn(queryClient, "invalidateQueries")
+            .mockResolvedValue(undefined);
+
+        const { result } = renderHook(() => useDeleteCredentialsMutation(), {
+            wrapper: createQueryClientWrapper(queryClient),
+        });
+
+        await result.current.mutateAsync();
+
+        expect(fetchMock).toHaveBeenCalledWith("/api/credentials", {
+            method: "DELETE",
+        });
+
+        await waitFor(() => {
+            expect(invalidateSpy).toHaveBeenCalledWith({
+                queryKey: ["credentialsStatus"],
+            });
+        });
+    });
+
+    it("credentials payload schema rejects unknown credential providers", () => {
+        expect(() =>
+            setUserCredentialsSchema.parse({
+                keys: {
+                    Google: "g-key",
+                    Unknown: "bad-key",
+                },
+            }),
+        ).toThrow();
     });
 
     it("throws when deleting credentials fails", async () => {

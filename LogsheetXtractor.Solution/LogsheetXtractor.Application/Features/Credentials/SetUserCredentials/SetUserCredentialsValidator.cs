@@ -9,7 +9,7 @@ public class SetUserCredentialsValidator : AbstractValidator<SetUserCredentialsC
         RuleFor(x => x.Keys)
             .NotNull()
             .WithMessage("Credentials cannot be null.")
-            .Must(keys => keys.Any(kvp => !string.IsNullOrWhiteSpace(kvp.Value)))
+            .Must(keys => keys is not null && keys.Any(kvp => !string.IsNullOrWhiteSpace(kvp.Value)))
             .WithMessage("At least one credential must be provided.");
     }
 }

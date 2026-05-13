@@ -2,6 +2,7 @@ import {
     useAlignLogsheetMutation,
     useExportLogsheetsMutation,
     useLogsheetImage,
+    useProcessLogsheetsMutation,
     useProcessLogsheetMutation,
     useUploadLogsheetsMutation,
 } from "@/modules/logsheets/api";
@@ -116,6 +117,69 @@ describe("logsheets api hooks", () => {
                 queryKey: ["logsheets"],
             });
         });
+    });
+
+    it("batch process mutation sends selected ids and invalidates logsheets", async () => {
+        vi.mocked(useUserSettings).mockReturnValue({
+            userSettings: mockUserSettings,
+            setUserSettings: vi.fn(),
+        });
+
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(new Response(null, { status: 200 }));
+        window.fetch = fetchMock as typeof fetch;
+
+        const queryClient = createTestQueryClient();
+        const invalidateSpy = vi
+            .spyOn(queryClient, "invalidateQueries")
+            .mockResolvedValue(undefined);
+
+        const { result } = renderHook(() => useProcessLogsheetsMutation(), {
+            wrapper: createQueryClientWrapper(queryClient),
+        });
+
+        await result.current.mutateAsync([ids.logsheet, ids.logsheet2]);
+
+        expect(fetchMock).toHaveBeenCalledWith("/api/logsheets/batch/process", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                logsheetIds: [ids.logsheet, ids.logsheet2],
+                options: {
+                    uglyCheckboxes: true,
+                },
+            }),
+        });
+
+        await waitFor(() => {
+            expect(invalidateSpy).toHaveBeenCalledWith({
+                queryKey: ["logsheets"],
+            });
+        });
+    });
+
+    it("batch process mutation throws on api failure", async () => {
+        vi.mocked(useUserSettings).mockReturnValue({
+            userSettings: mockUserSettings,
+            setUserSettings: vi.fn(),
+        });
+
+        window.fetch = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(null, { status: 409, statusText: "Conflict" }),
+            ) as typeof fetch;
+
+        const { result } = renderHook(() => useProcessLogsheetsMutation(), {
+            wrapper: createQueryClientWrapper(createTestQueryClient()),
+        });
+
+        await expect(
+            result.current.mutateAsync([ids.logsheet, ids.logsheet2]),
+        ).rejects.toThrow("Conflict");
     });
 
     it("upload mutation sends validated payload using automaticAlignmentOnUpload", async () => {

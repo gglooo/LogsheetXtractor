@@ -168,6 +168,22 @@ describe("LogsheetTableActions", () => {
         expect(screen.getByTitle("Process")).toBeDisabled();
     });
 
+    it("disables process button while process mutation is pending", () => {
+        useProcessLogsheetMutationMock.mockReturnValue({
+            mutateAsync: vi.fn(),
+            isPending: true,
+        });
+
+        renderWithProviders(
+            <LogsheetTableActions
+                logsheet={createLogsheet("Pending")}
+                onPreview={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByTitle("Process")).toBeDisabled();
+    });
+
     it("navigates to proofread route when proofread button is clicked", async () => {
         const user = userEvent.setup();
 

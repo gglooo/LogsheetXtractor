@@ -130,6 +130,160 @@ public class LogsheetExportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportLogsheetDataAsync_ShouldSendStableCoordinatesValuesAndPageNumbers()
+    {
+        var backsideTemplateFile = new LogsheetXtractor.Domain.Entities.File
+        {
+            Id = Guid.NewGuid(),
+            OriginalFileName = "backside-template.pdf",
+            StoredFileName = "backside-template.pdf",
+            StoragePath = "/tmp/backside-template.pdf",
+        };
+        var backsideTemplate = new LogsheetXtractor.Domain.Entities.Template
+        {
+            Id = Guid.NewGuid(),
+            Name = $"backside-{Guid.NewGuid()}",
+            FileId = backsideTemplateFile.Id,
+            File = backsideTemplateFile,
+            Width = 100,
+            Height = 100,
+        };
+        var backsideRoi = new Roi
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = backsideTemplate.Id,
+            Template = backsideTemplate,
+            VariableName = "back_field",
+            Type = ERoiType.Handwritten,
+            Coordinates = new Coordinates(11, 12, 13, 14),
+        };
+        backsideTemplate.Rois.Add(backsideRoi);
+
+        var logsheet = CreateLogsheet(ELogSheetStatus.Completed);
+        logsheet.Template.ForceSetBacksideTemplate(backsideTemplate);
+        logsheet.ExtractedValues.Add(
+            new ExtractedValue
+            {
+                Id = Guid.NewGuid(),
+                LogsheetId = logsheet.Id,
+                Logsheet = logsheet,
+                RoiId = backsideRoi.Id,
+                Roi = backsideRoi,
+                Value = "raw",
+                CorrectedValue = "corrected",
+            }
+        );
+        _dbContext.Templates.Add(backsideTemplate);
+        await _dbContext.SaveChangesAsync();
+
+        List<ExportLogsheetDataDto>? capturedData = null;
+        _scriptEngineMock
+            .Setup(x =>
+                x.ExportLogsheetDataAsync(
+                    It.IsAny<Logsheet>(),
+                    It.IsAny<IEnumerable<ExportLogsheetDataDto>>(),
+                    It.IsAny<LogsheetXtractor.Domain.Entities.File>(),
+                    It.IsAny<LogsheetXtractor.Domain.Entities.File>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback(
+                (
+                    Logsheet _,
+                    IEnumerable<ExportLogsheetDataDto> data,
+                    LogsheetXtractor.Domain.Entities.File _,
+                    LogsheetXtractor.Domain.Entities.File _,
+                    CancellationToken _
+                ) => capturedData = data.ToList()
+            )
+            .ReturnsAsync(
+                Result.Ok(
+                    new GetFileDto
+                    {
+                        FileName = "single.xlsx",
+                        ContentType =
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        Stream = new MemoryStream([1, 2, 3]),
+                    }
+                )
+            );
+
+        var result = await _service.ExportLogsheetDataAsync(logsheet.Id, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        capturedData.Should().NotBeNull();
+        capturedData!.Should().ContainEquivalentOf(
+            new ExportLogsheetDataDto
+            {
+                VariableName = "field_1",
+                Value = "42",
+                Page = 0,
+                Coordinates = new ExportCoordinateDto { X = 1, Y = 2, Width = 3, Height = 4 },
+            }
+        );
+        capturedData.Should().ContainEquivalentOf(
+            new ExportLogsheetDataDto
+            {
+                VariableName = "back_field",
+                Value = "corrected",
+                Page = 1,
+                Coordinates = new ExportCoordinateDto
+                {
+                    X = 11,
+                    Y = 12,
+                    Width = 13,
+                    Height = 14,
+                },
+            }
+        );
+    }
+
+    [Fact]
+    public async Task ExportLogsheetDataAsync_ShouldAllowEmptyExtractedValueSet()
+    {
+        var logsheet = CreateLogsheet(ELogSheetStatus.Completed, includeExtractedValue: false);
+        await _dbContext.SaveChangesAsync();
+
+        IEnumerable<ExportLogsheetDataDto>? capturedData = null;
+        _scriptEngineMock
+            .Setup(x =>
+                x.ExportLogsheetDataAsync(
+                    It.IsAny<Logsheet>(),
+                    It.IsAny<IEnumerable<ExportLogsheetDataDto>>(),
+                    It.IsAny<LogsheetXtractor.Domain.Entities.File>(),
+                    It.IsAny<LogsheetXtractor.Domain.Entities.File>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .Callback(
+                (
+                    Logsheet _,
+                    IEnumerable<ExportLogsheetDataDto> data,
+                    LogsheetXtractor.Domain.Entities.File _,
+                    LogsheetXtractor.Domain.Entities.File _,
+                    CancellationToken _
+                ) => capturedData = data
+            )
+            .ReturnsAsync(
+                Result.Ok(
+                    new GetFileDto
+                    {
+                        FileName = "empty.xlsx",
+                        ContentType =
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        Stream = new MemoryStream([1]),
+                    }
+                )
+            );
+
+        var result = await _service.ExportLogsheetDataAsync(logsheet.Id, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        capturedData.Should().NotBeNull();
+        capturedData!.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ExportBatchLogsheetDataAsync_ShouldExportOnlyCompletedLogsheets()
     {
         var completedLogsheet = CreateLogsheet(ELogSheetStatus.Completed);
@@ -306,7 +460,7 @@ public class LogsheetExportServiceTests : IDisposable
         );
     }
 
-    private Logsheet CreateLogsheet(ELogSheetStatus status)
+    private Logsheet CreateLogsheet(ELogSheetStatus status, bool includeExtractedValue = true)
     {
         var templateFile = new LogsheetXtractor.Domain.Entities.File
         {
@@ -353,16 +507,19 @@ public class LogsheetExportServiceTests : IDisposable
             Status = status,
         };
 
-        var extractedValue = new ExtractedValue
+        if (includeExtractedValue)
         {
-            Id = Guid.NewGuid(),
-            LogsheetId = logsheet.Id,
-            Logsheet = logsheet,
-            RoiId = roi.Id,
-            Roi = roi,
-            Value = "42",
-        };
-        logsheet.ExtractedValues.Add(extractedValue);
+            var extractedValue = new ExtractedValue
+            {
+                Id = Guid.NewGuid(),
+                LogsheetId = logsheet.Id,
+                Logsheet = logsheet,
+                RoiId = roi.Id,
+                Roi = roi,
+                Value = "42",
+            };
+            logsheet.ExtractedValues.Add(extractedValue);
+        }
 
         _dbContext.Logsheets.Add(logsheet);
         return logsheet;
