@@ -73,6 +73,7 @@ public class ResidualServiceTests : IDisposable
             updateResiduals,
             CancellationToken.None
         );
+        await Context.SaveChangesAsync();
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -135,6 +136,7 @@ public class ResidualServiceTests : IDisposable
             updateResiduals,
             CancellationToken.None
         );
+        await Context.SaveChangesAsync();
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -196,6 +198,7 @@ public class ResidualServiceTests : IDisposable
             updateResiduals,
             CancellationToken.None
         );
+        await Context.SaveChangesAsync();
 
         // Assert
         var residualsInDb = await Context

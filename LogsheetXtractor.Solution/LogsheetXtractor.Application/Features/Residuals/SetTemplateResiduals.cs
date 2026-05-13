@@ -33,6 +33,8 @@ public static class SetTemplateResidualsHandler
                 ct
             );
 
+            await dbContext.SaveChangesAsync(ct);
+
             return result;
         }
         catch (Exception ex)

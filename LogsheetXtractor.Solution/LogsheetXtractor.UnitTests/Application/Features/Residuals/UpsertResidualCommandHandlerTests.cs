@@ -1,10 +1,15 @@
 using FluentAssertions;
+using LogsheetXtractor.Application.Common.Mappings;
 using LogsheetXtractor.Application.Features.Residuals;
 using LogsheetXtractor.Application.Features.Residuals.DTOs;
 using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Domain.ValueObjects;
 using LogsheetXtractor.Infrastructure.Persistence;
+using LogsheetXtractor.Infrastructure.Services;
 using LogsheetXtractor.UnitTests.Common;
+using Mapster;
+using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace LogsheetXtractor.UnitTests.Application.Features.Residuals;
@@ -73,6 +78,46 @@ public class UpsertResidualCommandHandlerTests : IDisposable
     }
 
     [Fact]
+    public async Task Handle_ShouldPersistUpsertedResidualAtApplicationBoundary()
+    {
+        var templateId = Guid.NewGuid();
+        await Context.Templates.AddAsync(
+            new LogsheetXtractor.Domain.Entities.Template
+            {
+                Id = templateId,
+                Name = "Template With Upserted Residual",
+                FileId = Guid.NewGuid(),
+            }
+        );
+        await Context.SaveChangesAsync();
+
+        var residualDto = new UpsertResidualDto(
+            null,
+            "Upserted content",
+            new Coordinates(0, 0, 10, 10)
+        );
+        var command = new UpsertResidualCommand(templateId, residualDto);
+        var service = new ResidualService(Context, CreateMapper());
+
+        var result = await UpsertResidualHandler.Handle(
+            command,
+            service,
+            Context,
+            CancellationToken.None
+        );
+
+        result.IsSuccess.Should().BeTrue();
+
+        Context.ChangeTracker.Clear();
+        var persistedResiduals = await Context
+            .Residuals.AsNoTracking()
+            .Where(r => r.TemplateId == templateId)
+            .ToListAsync();
+
+        persistedResiduals.Should().ContainSingle(r => r.Content == "Upserted content");
+    }
+
+    [Fact]
     public async Task Handle_ShouldReturnFail_WhenTemplateNotFound()
     {
         var templateId = Guid.NewGuid();
@@ -88,5 +133,12 @@ public class UpsertResidualCommandHandlerTests : IDisposable
 
         result.IsFailed.Should().BeTrue();
         result.Errors.Should().Contain(e => e.Message == "Template not found");
+    }
+
+    private static IMapper CreateMapper()
+    {
+        var config = new TypeAdapterConfig();
+        new MappingConfig().Register(config);
+        return new Mapper(config);
     }
 }

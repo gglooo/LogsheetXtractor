@@ -61,8 +61,6 @@ public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidua
             }
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-
         return Result.Ok(mapper.Map<IEnumerable<ResidualDto>>(allEntities));
     }
 
@@ -107,8 +105,6 @@ public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidua
         {
             await dbContext.Residuals.AddRangeAsync(newResiduals, cancellationToken);
         }
-
-        await dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Ok(mapper.Map<IEnumerable<ResidualDto>>(allProcessedResiduals));
     }

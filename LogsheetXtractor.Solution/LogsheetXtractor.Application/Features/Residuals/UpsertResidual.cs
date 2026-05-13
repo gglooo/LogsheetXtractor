@@ -30,6 +30,8 @@ public static class UpsertResidualHandler
                 ct
             );
 
+            await dbContext.SaveChangesAsync(ct);
+
             return result;
         }
         catch (Exception ex)
