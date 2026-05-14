@@ -178,7 +178,7 @@ describe("rois api hooks", () => {
                         deletedAt: null,
                         variableName: "invalidRoi",
                         templateId,
-                        type: "Invalid",
+                        type: "Invalid" as never,
                         coordinates: {
                             x: 10,
                             y: 20,

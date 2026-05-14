@@ -2,9 +2,8 @@ import {
     DEFAULT_SCALE,
     SvgWrapper,
 } from "@/modules/canvas/svg-wrapper";
-import { SvgZoomContext } from "@/modules/canvas/context/svg-zoom-context";
+import { useSvgZoom } from "@/modules/canvas/context/svg-zoom-context";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { useContext } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/modules/template-editor/components/history-controls", () => ({
@@ -12,7 +11,7 @@ vi.mock("@/modules/template-editor/components/history-controls", () => ({
 }));
 
 const ZoomConsumer = () => {
-    const { scale, width } = useContext(SvgZoomContext);
+    const { scale, width } = useSvgZoom();
     return (
         <div data-testid="zoom-context">
             {scale}:{width}

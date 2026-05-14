@@ -147,7 +147,7 @@ const renderWithEditor = (
         mode?: TemplateEditorContextType["mode"];
         setRois?: TemplateEditorContextType["setRois"];
         selectedRoiIds?: string[];
-        setSelectedRoiIds?: (ids: string[]) => void;
+        setSelectedRoiIds?: React.Dispatch<React.SetStateAction<string[]>>;
     } = {},
 ) => {
     const editorValue = {

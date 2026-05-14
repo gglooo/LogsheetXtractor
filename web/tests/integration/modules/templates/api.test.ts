@@ -194,6 +194,8 @@ describe("templates api hooks", () => {
             templateId: ids.template,
             name: "Backside",
             fileId: ids.file,
+        } as Parameters<typeof result.current.mutateAsync>[0] & {
+            name: string;
         });
 
         await waitFor(() => {

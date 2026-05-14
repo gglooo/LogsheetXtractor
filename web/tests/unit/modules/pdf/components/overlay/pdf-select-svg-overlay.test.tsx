@@ -4,6 +4,7 @@ import { DragProvider } from "@/modules/pdf/context/drag-context";
 import type { RoiType } from "@/modules/rois/schema";
 import { SelectedRoisContext } from "@/modules/template-editor/hooks/use-selected-rois";
 import { fireEvent, render, screen } from "@testing-library/react";
+import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const rois: RoiType[] = [
@@ -35,7 +36,7 @@ const renderOverlay = ({
     onFinishDrawing = vi.fn(),
 }: {
     isSelectedRoi?: (roiId: string) => boolean;
-    setSelectedRoiIds?: (ids: string[]) => void;
+    setSelectedRoiIds?: React.Dispatch<React.SetStateAction<string[]>>;
     dragEnded?: (rois: RoiType[]) => void;
     resizeEnded?: (rois: RoiType[]) => void;
     onFinishDrawing?: (affectedRoiCount: number) => void;

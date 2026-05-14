@@ -8,6 +8,7 @@ import {
 } from "@/modules/template-editor/hooks/use-template-editor";
 import type { TemplateType } from "@/modules/templates/schema";
 import { fireEvent, render } from "@testing-library/react";
+import type React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 const template: TemplateType = {
@@ -32,7 +33,7 @@ const renderOverlay = ({
 }: {
     mode?: TemplateEditorContextType["mode"];
     addRoi?: TemplateEditorContextType["addRoi"];
-    setSelectedRoiIds?: (ids: string[]) => void;
+    setSelectedRoiIds?: React.Dispatch<React.SetStateAction<string[]>>;
 } = {}) => {
     const editorValue = {
         mode,

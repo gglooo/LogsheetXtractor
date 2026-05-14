@@ -73,7 +73,9 @@ describe("useSelectToolEmptySelectionHelp", () => {
             ({ mode }: { mode: "select" | "draw" | "split" }) =>
                 useSelectToolEmptySelectionHelp({ mode }),
             {
-                initialProps: { mode: "select" as const },
+                initialProps: {
+                    mode: "select" as "select" | "draw" | "split",
+                },
                 wrapper: Wrapper,
             },
         );
