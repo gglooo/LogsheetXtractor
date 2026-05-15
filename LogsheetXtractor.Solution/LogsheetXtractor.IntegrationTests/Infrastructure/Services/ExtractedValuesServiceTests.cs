@@ -7,7 +7,6 @@ using LogsheetXtractor.Application.Features.PdfCropper;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Domain.ValueObjects;
-using LogsheetXtractor.Infrastructure.Services;
 using LogsheetXtractor.IntegrationTests.Common;
 using Moq;
 using Xunit;

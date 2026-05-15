@@ -1,10 +1,10 @@
 using FluentAssertions;
+using LogsheetXtractor.Application.Features.Residuals;
 using LogsheetXtractor.Application.Features.Residuals.DTOs;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Domain.ValueObjects;
 using LogsheetXtractor.Infrastructure.Persistence;
-using LogsheetXtractor.Infrastructure.Services;
 using LogsheetXtractor.IntegrationTests.Common;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;

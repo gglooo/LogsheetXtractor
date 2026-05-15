@@ -5,7 +5,6 @@ using LogsheetXtractor.Application.Features.Residuals.DTOs;
 using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Domain.ValueObjects;
 using LogsheetXtractor.Infrastructure.Persistence;
-using LogsheetXtractor.Infrastructure.Services;
 using LogsheetXtractor.UnitTests.Common;
 using Mapster;
 using MapsterMapper;

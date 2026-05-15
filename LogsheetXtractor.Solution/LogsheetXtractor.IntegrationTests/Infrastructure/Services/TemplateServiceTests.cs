@@ -39,6 +39,10 @@ public class TemplateServiceTests
             _mapperMock.Object,
             new Mock<IHtrScriptEngine>().Object
         );
+        var templateConfigSerializer = new TemplateConfigSerializer(
+            _mapperMock.Object,
+            Mock.Of<ILogger<TemplateConfigSerializer>>()
+        );
         _scriptEngineMock = new Mock<IHtrScriptEngine>();
         _loggerMock = new Mock<ILogger<TemplateService>>();
         _templateService = new TemplateService(
@@ -47,6 +51,7 @@ public class TemplateServiceTests
             residualServiceMock,
             roiServiceMock,
             _scriptEngineMock.Object,
+            templateConfigSerializer,
             _loggerMock.Object
         );
     }

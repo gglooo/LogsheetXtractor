@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using LogsheetXtractor.API.Middleware;
 using LogsheetXtractor.API.Notifications;
 using LogsheetXtractor.Application;
+using LogsheetXtractor.Application.Installers;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Infrastructure.Installers;
 using LogsheetXtractor.Infrastructure.Middleware;
@@ -20,6 +21,7 @@ var isTestingEnvironment = builder.Environment.IsEnvironment("Testing");
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Host.UseWolverine(opts =>
 {

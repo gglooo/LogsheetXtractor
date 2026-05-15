@@ -1,13 +1,12 @@
 using FluentResults;
 using LogsheetXtractor.Application.Errors;
-using LogsheetXtractor.Application.Features.Residuals;
 using LogsheetXtractor.Application.Features.Residuals.DTOs;
 using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Entities;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
-namespace LogsheetXtractor.Infrastructure.Services;
+namespace LogsheetXtractor.Application.Features.Residuals;
 
 public class ResidualService(IAppDbContext dbContext, IMapper mapper) : IResidualService
 {

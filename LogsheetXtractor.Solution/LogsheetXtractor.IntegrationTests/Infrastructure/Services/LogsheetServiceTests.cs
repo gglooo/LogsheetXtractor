@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using FluentAssertions;
 using LogsheetXtractor.Application.Features.ExtractedValues.DTOs;
+using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Features.Logsheets.DTOs;
 using LogsheetXtractor.Application.Features.RoiValidation;
 using LogsheetXtractor.Application.Features.RoiValidation.DTOs;
@@ -8,7 +9,6 @@ using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Features.Scripting.DTOs;
 using LogsheetXtractor.Domain.Entities;
 using LogsheetXtractor.Domain.Enums;
-using LogsheetXtractor.Infrastructure.Services;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

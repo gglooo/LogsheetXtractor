@@ -2,7 +2,7 @@ using LogsheetXtractor.Application.Features.RoiValidation;
 using LogsheetXtractor.Application.Features.RoiValidation.Rules;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LogsheetXtractor.Infrastructure.Installers;
+namespace LogsheetXtractor.Application.Installers;
 
 public static class RoiValidationInstaller
 {
