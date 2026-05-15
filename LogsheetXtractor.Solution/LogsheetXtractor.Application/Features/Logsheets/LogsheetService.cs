@@ -16,11 +16,18 @@ namespace LogsheetXtractor.Application.Features.Logsheets;
 public class LogsheetService(
     IMapper mapper,
     IHtrScriptEngine scriptEngine,
+    IScriptErrorClassifier scriptErrorClassifier,
     IRoiValidationConditionEvaluator roiValidationConditionEvaluator,
     IRoiValidationRuleCatalogProvider roiValidationRuleCatalogProvider,
     ILogger<LogsheetService> logger
 ) : ILogsheetService
 {
+    private const string InvalidOcrCredentialsMessage =
+        "OCR credentials are invalid. Check Settings and try again.";
+
+    private const string GenericOcrProcessingFailureMessage =
+        "OCR processing failed. Try again or check the setup.";
+
     public async Task<Result<LogsheetDetailDto>> AlignLogsheetAsync(
         Logsheet logsheet,
         CancellationToken ct
@@ -99,15 +106,16 @@ public class LogsheetService(
 
             if (outputResult.IsFailed)
             {
-                var errorMessage = outputResult.Errors.FirstOrDefault()?.Message ?? "Unknown error";
+                var rawError = string.Join(", ", outputResult.Errors.Select(e => e.Message));
                 logger.LogError(
                     "Script processing failed for Logsheet {LogsheetId}: {Error}",
                     logsheet.Id,
-                    errorMessage
+                    rawError
                 );
+                var errorMessage = GetUserFacingProcessingFailureMessage(rawError);
                 AdjustAfterFailedProcessing(logsheet, errorMessage);
 
-                return outputResult.ToResult();
+                return Result.Fail(errorMessage);
             }
 
             var output = outputResult.Value;
@@ -133,9 +141,10 @@ public class LogsheetService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Script processing failed for Logsheet {LogsheetId}", logsheet.Id);
-            AdjustAfterFailedProcessing(logsheet, ex.Message);
+            var errorMessage = GetUserFacingProcessingFailureMessage(ex.ToString());
+            AdjustAfterFailedProcessing(logsheet, errorMessage);
 
-            return Result.Fail(ex.Message);
+            return Result.Fail(errorMessage);
         }
     }
 
@@ -177,6 +186,15 @@ public class LogsheetService(
     {
         logsheet.Status = ELogSheetStatus.Failed;
         logsheet.ErrorMessage = errorMessage;
+    }
+
+    private string GetUserFacingProcessingFailureMessage(string rawError)
+    {
+        return scriptErrorClassifier.ClassifyProcessLogsheetFailure(rawError) switch
+        {
+            ScriptFailureKind.OcrCredentialsInvalid => InvalidOcrCredentialsMessage,
+            _ => GenericOcrProcessingFailureMessage,
+        };
     }
 
     private void EvaluateValidationWarnings(Logsheet logsheet, List<ExtractedValue> extractedData)

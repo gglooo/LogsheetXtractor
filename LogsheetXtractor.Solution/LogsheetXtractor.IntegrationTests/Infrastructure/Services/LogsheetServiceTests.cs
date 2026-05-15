@@ -21,6 +21,7 @@ public class LogsheetServiceTests
 {
     private readonly Mock<IMapper> _mapperMock = new();
     private readonly Mock<IHtrScriptEngine> _scriptEngineMock = new();
+    private readonly Mock<IScriptErrorClassifier> _scriptErrorClassifierMock = new();
     private readonly Mock<IRoiValidationConditionEvaluator> _conditionEvaluatorMock = new();
     private readonly Mock<IRoiValidationRuleCatalogProvider> _catalogProviderMock = new();
     private readonly Mock<ILogger<LogsheetService>> _loggerMock = new();
@@ -42,9 +43,14 @@ public class LogsheetServiceTests
             .Setup(x => x.GetCatalog())
             .Returns(new RoiValidationRuleCatalogDto("v1", []));
 
+        _scriptErrorClassifierMock
+            .Setup(x => x.ClassifyProcessLogsheetFailure(It.IsAny<string>()))
+            .Returns(ScriptFailureKind.Unknown);
+
         _service = new LogsheetService(
             _mapperMock.Object,
             _scriptEngineMock.Object,
+            _scriptErrorClassifierMock.Object,
             _conditionEvaluatorMock.Object,
             _catalogProviderMock.Object,
             _loggerMock.Object
@@ -199,6 +205,37 @@ public class LogsheetServiceTests
         var result = await _service.ProcessLogsheetAsync(logsheet, null, CancellationToken.None);
 
         logsheet.Status.Should().Be(ELogSheetStatus.Failed);
-        logsheet.ErrorMessage.Should().Be(errorMessage);
+        logsheet
+            .ErrorMessage.Should()
+            .Be("OCR processing failed. Try again or check the setup.");
+        result.Errors.First().Message.Should().Be(logsheet.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ProcessLogsheetAsync_ShouldSetCredentialMessage_WhenEngineFailureIsCredentialRelated()
+    {
+        var logsheet = new Logsheet { Id = Guid.NewGuid(), Status = ELogSheetStatus.Processing };
+        var rawError = "json.decoder.JSONDecodeError from service_account";
+
+        _scriptEngineMock
+            .Setup(x =>
+                x.ProcessLogsheetAsync(
+                    It.IsAny<ProcessLogsheetInputDto>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ReturnsAsync(FluentResults.Result.Fail(rawError));
+
+        _scriptErrorClassifierMock
+            .Setup(x => x.ClassifyProcessLogsheetFailure(rawError))
+            .Returns(ScriptFailureKind.OcrCredentialsInvalid);
+
+        var result = await _service.ProcessLogsheetAsync(logsheet, null, CancellationToken.None);
+
+        logsheet.Status.Should().Be(ELogSheetStatus.Failed);
+        logsheet
+            .ErrorMessage.Should()
+            .Be("OCR credentials are invalid. Check Settings and try again.");
+        result.Errors.First().Message.Should().Be(logsheet.ErrorMessage);
     }
 }

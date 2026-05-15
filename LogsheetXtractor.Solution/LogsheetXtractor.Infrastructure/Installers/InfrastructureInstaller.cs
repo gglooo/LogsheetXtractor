@@ -67,6 +67,7 @@ public static class InfrastructureInstaller
         services.AddScoped<ITemplateConfigSerializer, TemplateConfigSerializer>();
         services.AddScoped<IHtrScriptEngine, PythonHtrAdapter>();
         services.AddScoped<IScriptExecutor, PythonScriptExecutor>();
+        services.AddScoped<IScriptErrorClassifier, FormHtrScriptErrorClassifier>();
         services.AddScoped<IOcrCredentialService, OcrCredentialService>();
         services.AddScoped<ICredentialService, CredentialService>();
         services.AddScoped<ICredentialContextProvider, CredentialContextProvider>();
