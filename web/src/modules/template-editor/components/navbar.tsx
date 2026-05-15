@@ -32,7 +32,12 @@ export const EditorNavbar = () => {
 
     const handleSaveChanges = async () => {
         if (!template) {
-            toast.error("No template loaded.");
+            toast.error(
+                intl.formatMessage({
+                    id: "template-editor.navbar.save-rois.no-template-message",
+                    defaultMessage: "No template loaded.",
+                }),
+            );
             return;
         }
 
@@ -52,10 +57,20 @@ export const EditorNavbar = () => {
                 rois,
             });
             markAsSaved();
-            toast.success("ROIs saved successfully.");
+            toast.success(
+                intl.formatMessage({
+                    id: "template-editor.navbar.save-rois.success",
+                    defaultMessage: "ROIs saved successfully.",
+                }),
+            );
         } catch (error) {
             console.error("Error saving ROIs:", error);
-            toast.error("Failed to save ROIs.");
+            toast.error(
+                intl.formatMessage({
+                    id: "template-editor.navbar.save-rois.failure",
+                    defaultMessage: "Failed to save ROIs.",
+                }),
+            );
         }
     };
 
