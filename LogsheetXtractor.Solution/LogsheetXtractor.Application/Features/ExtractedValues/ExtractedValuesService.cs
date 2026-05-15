@@ -2,7 +2,6 @@ using FluentResults;
 using LogsheetXtractor.Application.DTOs;
 using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Extensions;
-using LogsheetXtractor.Application.Features.ExtractedValues;
 using LogsheetXtractor.Application.Features.File.Interfaces;
 using LogsheetXtractor.Application.Features.Logsheets.DTOs;
 using LogsheetXtractor.Application.Features.PdfCropper;
@@ -10,7 +9,7 @@ using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace LogsheetXtractor.Infrastructure.Services;
+namespace LogsheetXtractor.Application.Features.ExtractedValues;
 
 public class ExtractedValuesService(
     IFileService fileService,

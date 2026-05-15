@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using LogsheetXtractor.Application.Common.Mappings;
+using LogsheetXtractor.Application.Features.Template;
 using LogsheetXtractor.Application.Features.Template.CreateTemplate;
 using LogsheetXtractor.Application.Features.Residuals;
 using LogsheetXtractor.Application.Features.ROIs;
@@ -259,6 +260,10 @@ public sealed class TemplateServiceExportConfigTests : IDisposable
         var roiServiceMock = new Mock<IRoiService>();
         var scriptEngineMock = new Mock<IHtrScriptEngine>();
         var loggerMock = new Mock<ILogger<TemplateService>>();
+        var templateConfigSerializer = new TemplateConfigSerializer(
+            _mapper,
+            Mock.Of<ILogger<TemplateConfigSerializer>>()
+        );
 
         return new TemplateService(
             context,
@@ -266,6 +271,7 @@ public sealed class TemplateServiceExportConfigTests : IDisposable
             residualServiceMock.Object,
             roiServiceMock.Object,
             scriptEngineMock.Object,
+            templateConfigSerializer,
             loggerMock.Object
         );
     }

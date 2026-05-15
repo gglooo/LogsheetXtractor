@@ -1,22 +1,19 @@
-using System.Text.Json;
 using FluentResults;
 using LogsheetXtractor.Application.Errors;
 using LogsheetXtractor.Application.Features.Residuals;
 using LogsheetXtractor.Application.Features.ROIs;
 using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Features.Scripting.DTOs;
-using LogsheetXtractor.Application.Features.Template;
 using LogsheetXtractor.Application.Features.Template.CreateTemplate;
 using LogsheetXtractor.Application.Features.Template.DTOs;
 using LogsheetXtractor.Application.Features.Template.Interfaces;
 using LogsheetXtractor.Application.Interfaces;
-using LogsheetXtractor.Domain.Entities;
-using LogsheetXtractor.Infrastructure.Services.Scripting.DTOs;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using DomainTemplate = LogsheetXtractor.Domain.Entities.Template;
 
-namespace LogsheetXtractor.Infrastructure.Services;
+namespace LogsheetXtractor.Application.Features.Template;
 
 public class TemplateService(
     IAppDbContext dbContext,
@@ -24,6 +21,7 @@ public class TemplateService(
     IResidualService residualService,
     IRoiService roiService,
     IHtrScriptEngine scriptEngine,
+    ITemplateConfigSerializer templateConfigSerializer,
     ILogger<TemplateService> logger
 ) : ITemplateService
 {
@@ -67,12 +65,12 @@ public class TemplateService(
     {
         logger.LogInformation("Creating template {TemplateName}", command.Name);
 
-        Template? backsideTemplate = null;
+        DomainTemplate? backsideTemplate = null;
         if (command.Backside is not null)
         {
             var backsideName = GenerateBacksideTemplateName(command.Name);
             var backsideResult = command.Backside.ImportedConfig is not null
-                ? await GetTemplateFromImportedConfigAsync(
+                ? GetTemplateFromImportedConfig(
                     command.Backside.ImportedConfig,
                     command.Backside.FileId,
                     backsideName,
@@ -93,7 +91,7 @@ public class TemplateService(
         }
 
         var templateResult = command.ImportedConfig is not null
-            ? await GetTemplateFromImportedConfigAsync(
+            ? GetTemplateFromImportedConfig(
                 command.ImportedConfig,
                 command.FileId,
                 command.Name,
@@ -254,32 +252,7 @@ public class TemplateService(
             return Result.Fail(new NotFoundError("Template not found"));
         }
 
-        var templateConfig = mapper.Map<PythonTemplateConfig>(template);
-        var rois = templateConfig.Rois.ToList();
-        var variableNamesByRoiId = template.Rois.ToDictionary(r => r.Id, r => r.VariableName);
-
-        foreach (var roi in rois)
-        {
-            if (
-                Guid.TryParse(roi.VarName, out var roiId)
-                && variableNamesByRoiId.TryGetValue(roiId, out var variableName)
-            )
-            {
-                // The app uses the unique ROI id as a variable name when interacting with formHTR.
-                // This ensures that the user sees the custom variable names when exporting.
-                roi.VarName = variableName;
-            }
-
-            if (!includeRoiValidations)
-            {
-                roi.ValidationCondition = null;
-            }
-        }
-
-        templateConfig.Rois = rois;
-
-        var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
-        return Result.Ok(JsonSerializer.Serialize(templateConfig, jsonOptions));
+        return templateConfigSerializer.SerializeTemplateConfig(template, includeRoiValidations);
     }
 
     private async Task<Result<PdfDimensionsDto>> CalculateTemplateFileDimensionsAsync(Guid fileId)
@@ -319,7 +292,7 @@ public class TemplateService(
         }
     }
 
-    private async Task<Result<Template>> GetTemplateAsync(
+    private async Task<Result<DomainTemplate>> GetTemplateAsync(
         string templateName,
         Guid fileId,
         Guid? parentId
@@ -332,7 +305,7 @@ public class TemplateService(
         }
 
         return Result.Ok(
-            new Template
+            new DomainTemplate
             {
                 Name = templateName,
                 ParentId = parentId,
@@ -343,39 +316,19 @@ public class TemplateService(
         );
     }
 
-    private async Task<Result<Template>> GetTemplateFromImportedConfigAsync(
+    private Result<DomainTemplate> GetTemplateFromImportedConfig(
         string importedConfig,
         Guid fileId,
         string templateName,
         Guid? parentId
     )
     {
-        try
-        {
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var deserialized = JsonSerializer.Deserialize<PythonTemplateConfig>(
-                importedConfig,
-                options
-            );
-
-            if (deserialized is null)
-            {
-                logger.LogError("Imported configuration deserialized to null");
-                return Result.Fail(new ValidationError("Imported configuration is null"));
-            }
-
-            var template = mapper.Map<Template>(deserialized);
-            template.FileId = fileId;
-            template.Name = templateName;
-            template.ParentId = parentId;
-
-            return Result.Ok(template);
-        }
-        catch (JsonException ex)
-        {
-            logger.LogError(ex, "Invalid imported configuration format");
-            return Result.Fail(new ValidationError("Invalid imported configuration format"));
-        }
+        return templateConfigSerializer.DeserializeTemplateConfig(
+            importedConfig,
+            fileId,
+            templateName,
+            parentId
+        );
     }
 
     private async Task<Guid?> GetBacksideParentIdAsync(

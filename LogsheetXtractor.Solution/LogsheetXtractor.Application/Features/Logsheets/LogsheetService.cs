@@ -1,6 +1,5 @@
 using FluentResults;
 using LogsheetXtractor.Application.Errors;
-using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Features.Logsheets.DTOs;
 using LogsheetXtractor.Application.Features.RoiValidation;
 using LogsheetXtractor.Application.Features.Scripting;
@@ -12,7 +11,7 @@ using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.Logging;
 
-namespace LogsheetXtractor.Infrastructure.Services;
+namespace LogsheetXtractor.Application.Features.Logsheets;
 
 public class LogsheetService(
     IMapper mapper,

@@ -1,5 +1,4 @@
 using FluentResults;
-using LogsheetXtractor.Application.Features.ROIs;
 using LogsheetXtractor.Application.Features.ROIs.DTOs;
 using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Application.Features.Scripting.DTOs;
@@ -8,8 +7,9 @@ using LogsheetXtractor.Application.Interfaces;
 using LogsheetXtractor.Domain.Entities;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using DomainTemplate = LogsheetXtractor.Domain.Entities.Template;
 
-namespace LogsheetXtractor.Infrastructure.Services;
+namespace LogsheetXtractor.Application.Features.ROIs;
 
 public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngine scriptEngine)
     : IRoiService
@@ -66,7 +66,7 @@ public class RoiService(IAppDbContext dbContext, IMapper mapper, IHtrScriptEngin
     }
 
     public async Task<Result<DetectRoisResponseDto>> DetectRoisAsync(
-        Template template,
+        DomainTemplate template,
         CancellationToken cancellationToken
     )
     {

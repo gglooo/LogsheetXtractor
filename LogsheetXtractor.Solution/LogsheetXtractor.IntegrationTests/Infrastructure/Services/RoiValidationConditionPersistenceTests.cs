@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using LogsheetXtractor.Application.Common.Mappings;
+using LogsheetXtractor.Application.Features.ROIs;
 using LogsheetXtractor.Application.Features.ROIs.DTOs;
 using LogsheetXtractor.Application.Features.Scripting;
 using LogsheetXtractor.Domain.Entities;
@@ -8,7 +9,6 @@ using LogsheetXtractor.Domain.Enums;
 using LogsheetXtractor.Domain.ValueObjects;
 using LogsheetXtractor.Domain.ValueObjects.RoiValidation;
 using LogsheetXtractor.Infrastructure.Persistence;
-using LogsheetXtractor.Infrastructure.Services;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Data.Sqlite;
