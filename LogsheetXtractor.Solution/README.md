@@ -20,7 +20,9 @@ From `logsheetXtractor/LogsheetXtractor.Solution/`:
 dotnet restore LogsheetXtractor.Solution.sln
 ```
 
-Install the Python dependency used by the backend script adapter:
+The formHTR tool has a specific installation procedure. It requires some system dependencies that must be installed separately. Refer to the [formHTR package documentation](https://pypi.org/project/formhtr/) for detailed instructions.
+
+After following the installation instructions, install Python dependencies used by the backend script adapter:
 
 ```bash
 python --version
