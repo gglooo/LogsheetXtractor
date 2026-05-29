@@ -1,0 +1,230 @@
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { SidebarGroup } from "@/components/ui/sidebar";
+import { DetectRoisAction } from "@/modules/rois/actions/detect-rois-action";
+import type { DetectRoiResponseType, RoiType } from "@/modules/rois/schema";
+import { ShortcutLabel } from "@/modules/template-editor/components/shortcut-label";
+import {
+    BROWSE_ROI_FORCE_KEY,
+    CLEAR_ROIS_KEY,
+    SELECT_TOOL_KEY,
+    SPLIT_TOOL_KEY,
+    type ShortcutWhitelist,
+} from "@/modules/template-editor/hooks/shortcuts/types";
+import { useKeyboardShortcuts } from "@/modules/template-editor/hooks/shortcuts/use-keyboard-shortcuts";
+import { useBrowseSelectedRois } from "@/modules/template-editor/hooks/use-browse-selected-rois";
+import { useSelectedRois } from "@/modules/template-editor/hooks/use-selected-rois";
+import { useTemplateEditor } from "@/modules/template-editor/hooks/use-template-editor";
+import { DrawToolControls } from "@/modules/template-editor/sidebar/components/draw-tool-controls";
+import { ShortcutTooltip } from "@/modules/template-editor/sidebar/components/shortcut-tooltip";
+import { VARIABLE_NAME_INPUT_ID } from "@/modules/template-editor/sidebar/selected-roi";
+import { copy, paste } from "@/modules/template-editor/utils/copy-paste";
+import { Divide, MousePointer, X } from "lucide-react";
+import { useCallback } from "react";
+import { useIntl } from "react-intl";
+import { useParams } from "react-router-dom";
+
+const PASTE_OFFSET = 80;
+
+const shortcutWhitelist: ShortcutWhitelist = {
+    [VARIABLE_NAME_INPUT_ID]: [BROWSE_ROI_FORCE_KEY],
+};
+
+const adjustRoiAfterPaste = (rois: RoiType[]) => {
+    return rois.map((roi) => {
+        return {
+            ...roi,
+            coordinates: {
+                ...roi.coordinates,
+                x: roi.coordinates.x + PASTE_OFFSET,
+                y: roi.coordinates.y + PASTE_OFFSET,
+            },
+            variableName: `${roi.variableName}_copy`,
+        };
+    });
+};
+
+export const ToolsSidebarGroup = () => {
+    const intl = useIntl();
+
+    const { id } = useParams<{ id: string }>();
+
+    const {
+        addRois,
+        setRois,
+        setRoisAndResiduals,
+        setMode,
+        drawRoiType,
+        setDrawRoiType,
+        cycleDrawRoiType,
+        mode,
+        rois,
+        residuals,
+        undo,
+        redo,
+        roiInputRef,
+        template,
+    } = useTemplateEditor();
+    const { setSelectedRoiIds, isSelectedRoi } = useSelectedRois();
+
+    const handleSetDetectedData = (detectedData: DetectRoiResponseType) => {
+        setRoisAndResiduals(
+            [...rois, ...detectedData.rois],
+            [...residuals, ...detectedData.residuals],
+        );
+    };
+
+    const { selectNextRoi } = useBrowseSelectedRois();
+
+    const setSelectTool = useCallback(() => setMode("select"), [setMode]);
+
+    const setDrawTool = useCallback(() => setMode("draw"), [setMode]);
+
+    const onDrawShortcut = useCallback(() => {
+        if (mode === "draw") {
+            cycleDrawRoiType();
+            return;
+        }
+        setMode("draw");
+    }, [cycleDrawRoiType, mode, setMode]);
+
+    const setSplitTool = useCallback(() => setMode("split"), [setMode]);
+
+    const clearRois = useCallback(() => setRois([]), [setRois]);
+
+    const selectAll = useCallback(() => {
+        setSelectedRoiIds(rois.filter((roi) => roi.id).map((roi) => roi.id!));
+    }, [rois, setSelectedRoiIds]);
+
+    const deleteTool = useCallback(() => {
+        setRois(rois.filter((roi) => !isSelectedRoi(roi.id ?? "")));
+    }, [isSelectedRoi, rois, setRois]);
+
+    const copyTool = useCallback(async () => {
+        await copy(rois.filter((roi) => isSelectedRoi(roi.id ?? "")));
+    }, [isSelectedRoi, rois]);
+
+    const pasteTool = useCallback(async () => {
+        const pastedRois = await paste<RoiType>();
+        const adjustedRois = adjustRoiAfterPaste(pastedRois ?? []);
+        if (!((pastedRois?.length ?? 0) > 0)) {
+            return;
+        }
+
+        const addedRoisIds = addRois(
+            adjustedRois.map((roi) => ({
+                coordinates: roi.coordinates,
+                name: roi.variableName,
+                type: roi.type,
+                validationCondition: roi.validationCondition,
+            })),
+        );
+
+        setSelectedRoiIds(addedRoisIds);
+        setMode("select");
+    }, [addRois, setMode, setSelectedRoiIds]);
+
+    const cutTool = useCallback(() => {
+        const roisToCut = rois.filter((roi) => isSelectedRoi(roi.id ?? ""));
+        copy(roisToCut);
+        deleteTool();
+    }, [deleteTool, isSelectedRoi, rois]);
+
+    const browseRoiTool = useCallback(() => {
+        selectNextRoi();
+    }, [selectNextRoi]);
+
+    const focusRoiInput = useCallback(() => {
+        roiInputRef.current?.focus();
+    }, [roiInputRef]);
+
+    useKeyboardShortcuts(
+        {
+            select: setSelectTool,
+            draw: onDrawShortcut,
+            split: setSplitTool,
+            clear: clearRois,
+            undo,
+            redo,
+            selectAll: selectAll,
+            delete: deleteTool,
+            copy: copyTool,
+            paste: pasteTool,
+            cut: cutTool,
+            browse: browseRoiTool,
+            focusRoiInput,
+        },
+        shortcutWhitelist,
+    );
+
+    return (
+        <SidebarGroup
+            title={intl.formatMessage({
+                id: "templateEditor.sidebar.tools",
+                defaultMessage: "Tools",
+            })}
+        >
+            <div className="flex flex-col gap-2 p-2 w-full">
+                <Button
+                    className="w-full"
+                    variant={mode === "select" ? "default" : "outline"}
+                    onClick={setSelectTool}
+                >
+                    <MousePointer />
+                    <ShortcutLabel
+                        shortcut={SELECT_TOOL_KEY}
+                        label={intl.formatMessage({
+                            id: "templateEditor.sidebar.selectTool",
+                            defaultMessage: "Select",
+                        })}
+                    />
+                </Button>
+                <DrawToolControls
+                    mode={mode}
+                    isEditable={!!template?.isEditable}
+                    drawRoiType={drawRoiType}
+                    setDrawRoiType={setDrawRoiType}
+                    setDrawTool={setDrawTool}
+                />
+                <Button
+                    variant={mode === "split" ? "default" : "outline"}
+                    disabled={rois.length === 0 || !template?.isEditable}
+                    className="w-full"
+                    onClick={setSplitTool}
+                >
+                    <Divide />
+                    <ShortcutLabel
+                        shortcut={SPLIT_TOOL_KEY}
+                        label={intl.formatMessage({
+                            id: "templateEditor.sidebar.split",
+                            defaultMessage: "Split ROI",
+                        })}
+                    />
+                </Button>
+                <Button
+                    variant="outline"
+                    disabled={rois.length === 0 || !template?.isEditable}
+                    className="w-full"
+                    onClick={clearRois}
+                >
+                    <X />
+                    <ShortcutLabel
+                        shortcut={CLEAR_ROIS_KEY}
+                        label={intl.formatMessage({
+                            id: "templateEditor.sidebar.clearRois",
+                            defaultMessage: "Clear ROIs",
+                        })}
+                    />
+                </Button>
+                <DetectRoisAction
+                    templateId={id!}
+                    onResult={handleSetDetectedData}
+                    disabled={!template?.isEditable}
+                    className="flex-1"
+                />
+                <Separator />
+                <ShortcutTooltip />
+            </div>
+        </SidebarGroup>
+    );
+};
