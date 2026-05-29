@@ -1,0 +1,2874 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "LogsheetXtractor.API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/credentials/status": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.CredentialsEndpoints"
+        ],
+        "summary": "GET_api_credentials_status",
+        "description": "GET_api_credentials_status",
+        "operationId": "GET_api_credentials_status",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialsStatusDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/credentials": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.CredentialsEndpoints"
+        ],
+        "summary": "POST_api_credentials",
+        "description": "POST_api_credentials",
+        "operationId": "POST_api_credentials",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserCredentialsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.CredentialsEndpoints"
+        ],
+        "summary": "DELETE_api_credentials",
+        "description": "DELETE_api_credentials",
+        "operationId": "DELETE_api_credentials",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/extracted-values/{id}/image": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ExtractedValueEndpoints"
+        ],
+        "summary": "GET_api_extracted_values_id_image",
+        "description": "GET_api_extracted_values_id_image",
+        "operationId": "GET_api_extracted_values_id_image",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/extracted-values/{id}/verify": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ExtractedValueEndpoints"
+        ],
+        "summary": "POST_api_extracted_values_id_verify",
+        "description": "POST_api_extracted_values_id_verify",
+        "operationId": "POST_api_extracted_values_id_verify",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyExtractedValueDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractedValueDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/extracted-values/batch/verify": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ExtractedValueEndpoints"
+        ],
+        "summary": "POST_api_extracted_values_batch_verify",
+        "description": "POST_api_extracted_values_batch_verify",
+        "operationId": "POST_api_extracted_values_batch_verify",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchVerifyExtractedValuesCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExtractedValueDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/extracted-values/unverified/random": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ExtractedValueEndpoints"
+        ],
+        "summary": "GET_api_extracted_values_unverified_random",
+        "description": "GET_api_extracted_values_unverified_random",
+        "operationId": "GET_api_extracted_values_unverified_random",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractedValueDto"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/extracted-values/unverified/next-logsheet": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ExtractedValueEndpoints"
+        ],
+        "summary": "GET_api_extracted_values_unverified_next_logsheet",
+        "description": "GET_api_extracted_values_unverified_next_logsheet",
+        "operationId": "GET_api_extracted_values_unverified_next_logsheet",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractedValueDto"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/files/upload": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.FileEndpoints"
+        ],
+        "summary": "POST_api_files_upload",
+        "description": "POST_api_files_upload",
+        "operationId": "POST_api_files_upload",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "formFile"
+                ],
+                "type": "object",
+                "properties": {
+                  "formFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "formFile": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/files/{id}": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.FileEndpoints"
+        ],
+        "summary": "GET_api_files_id",
+        "description": "GET_api_files_id",
+        "operationId": "GET_api_files_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/files/{id}/image": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.FileEndpoints"
+        ],
+        "summary": "GET_api_files_id_image",
+        "description": "GET_api_files_id_image",
+        "operationId": "GET_api_files_id_image",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "GET_api_logsheets_id",
+        "description": "GET_api_logsheets_id",
+        "operationId": "GET_api_logsheets_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogsheetDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "PATCH_api_logsheets_id",
+        "description": "PATCH_api_logsheets_id",
+        "operationId": "PATCH_api_logsheets_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchLogsheetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "DELETE_api_logsheets_id",
+        "description": "DELETE_api_logsheets_id",
+        "operationId": "DELETE_api_logsheets_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets",
+        "description": "POST_api_logsheets",
+        "operationId": "POST_api_logsheets",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLogsheetCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/batch": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_batch",
+        "description": "POST_api_logsheets_batch",
+        "operationId": "POST_api_logsheets_batch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchCreateLogsheetCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "DELETE_api_logsheets_batch",
+        "description": "DELETE_api_logsheets_batch",
+        "operationId": "DELETE_api_logsheets_batch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchDeleteLogsheetCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{id}/logsheets": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "GET_api_templates_id_logsheets",
+        "description": "GET_api_templates_id_logsheets",
+        "operationId": "GET_api_templates_id_logsheets",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LogsheetListDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}/process": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_id_process",
+        "description": "POST_api_logsheets_id_process",
+        "operationId": "POST_api_logsheets_id_process",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessLogsheetDataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logsheets/batch/process": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_batch_process",
+        "description": "POST_api_logsheets_batch_process",
+        "operationId": "POST_api_logsheets_batch_process",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartBatchLogsheetProcessingCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}/align": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_id_align",
+        "description": "POST_api_logsheets_id_align",
+        "operationId": "POST_api_logsheets_id_align",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}/alignment/set": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_id_alignment_set",
+        "description": "POST_api_logsheets_id_alignment_set",
+        "operationId": "POST_api_logsheets_id_alignment_set",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLogsheetAlignmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}/proofreading/complete": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_id_proofreading_complete",
+        "description": "POST_api_logsheets_id_proofreading_complete",
+        "operationId": "POST_api_logsheets_id_proofreading_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}/proofreading/reset": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_id_proofreading_reset",
+        "description": "POST_api_logsheets_id_proofreading_reset",
+        "operationId": "POST_api_logsheets_id_proofreading_reset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}/image": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "GET_api_logsheets_id_image",
+        "description": "GET_api_logsheets_id_image",
+        "operationId": "GET_api_logsheets_id_image",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "backside",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/{id}/export": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_id_export",
+        "description": "POST_api_logsheets_id_export",
+        "operationId": "POST_api_logsheets_id_export",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/logsheets/batch/export": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+        ],
+        "summary": "POST_api_logsheets_batch_export",
+        "description": "POST_api_logsheets_batch_export",
+        "operationId": "POST_api_logsheets_batch_export",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchExportLogsheetDataCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{templateId}/residuals": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ResidualEndpoints"
+        ],
+        "summary": "GET_api_templates_templateId_residuals",
+        "description": "GET_api_templates_templateId_residuals",
+        "operationId": "GET_api_templates_templateId_residuals",
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ResidualEndpoints"
+        ],
+        "summary": "POST_api_templates_templateId_residuals",
+        "description": "POST_api_templates_templateId_residuals",
+        "operationId": "POST_api_templates_templateId_residuals",
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResidualRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{templateId}/residuals/set": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ResidualEndpoints"
+        ],
+        "summary": "POST_api_templates_templateId_residuals_set",
+        "description": "POST_api_templates_templateId_residuals_set",
+        "operationId": "POST_api_templates_templateId_residuals_set",
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetResidualRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{templateId}/residuals/upsert": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.ResidualEndpoints"
+        ],
+        "summary": "POST_api_templates_templateId_residuals_upsert",
+        "description": "POST_api_templates_templateId_residuals_upsert",
+        "operationId": "POST_api_templates_templateId_residuals_upsert",
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertResidualRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{templateId}/rois/set": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.RoiEndpoints"
+        ],
+        "summary": "POST_api_templates_templateId_rois_set",
+        "description": "POST_api_templates_templateId_rois_set",
+        "operationId": "POST_api_templates_templateId_rois_set",
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetRoiRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{templateId}/rois": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.RoiEndpoints"
+        ],
+        "summary": "GET_api_templates_templateId_rois",
+        "description": "GET_api_templates_templateId_rois",
+        "operationId": "GET_api_templates_templateId_rois",
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/roi-validation/rules": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.RoiValidationEndpoints"
+        ],
+        "summary": "GET_api_roi_validation_rules",
+        "description": "GET_api_roi_validation_rules",
+        "operationId": "GET_api_roi_validation_rules",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoiValidationRuleCatalogDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/roi-validation/predefined-conditions": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.RoiValidationEndpoints"
+        ],
+        "summary": "GET_api_roi_validation_predefined_conditions",
+        "description": "GET_api_roi_validation_predefined_conditions",
+        "operationId": "GET_api_roi_validation_predefined_conditions",
+        "parameters": [
+          {
+            "name": "roiType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ERoiType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PredefinedRoiValidationConditionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{id}": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "GET_api_templates_id",
+        "description": "GET_api_templates_id",
+        "operationId": "GET_api_templates_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "DELETE_api_templates_id",
+        "description": "DELETE_api_templates_id",
+        "operationId": "DELETE_api_templates_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "GET_api_templates",
+        "description": "GET_api_templates",
+        "operationId": "GET_api_templates",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateListDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "POST_api_templates",
+        "description": "POST_api_templates",
+        "operationId": "POST_api_templates",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{id}/clone": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "POST_api_templates_id_clone",
+        "description": "POST_api_templates_id_clone",
+        "operationId": "POST_api_templates_id_clone",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{id}/backside": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "POST_api_templates_id_backside",
+        "description": "POST_api_templates_id_backside",
+        "operationId": "POST_api_templates_id_backside",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTemplateBacksideRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{id}/detect-rois": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "POST_api_templates_id_detect_rois",
+        "description": "POST_api_templates_id_detect_rois",
+        "operationId": "POST_api_templates_id_detect_rois",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetectRoisResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{id}/export-config": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "POST_api_templates_id_export_config",
+        "description": "POST_api_templates_id_export_config",
+        "operationId": "POST_api_templates_id_export_config",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportTemplateConfigRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/identify-from-file/{fileId}": {
+      "post": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "POST_api_templates_identify_from_file_fileId",
+        "description": "POST_api_templates_identify_from_file_fileId",
+        "operationId": "POST_api_templates_identify_from_file_fileId",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/templates/{id}/preview": {
+      "get": {
+        "tags": [
+          "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+        ],
+        "summary": "GET_api_templates_id_preview",
+        "description": "GET_api_templates_id_preview",
+        "operationId": "GET_api_templates_id_preview",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFileDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddTemplateBacksideRequest": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AlignmentDataDto": {
+        "type": "object",
+        "properties": {
+          "frontside": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PointCoordinateDto"
+            },
+            "nullable": true
+          },
+          "backside": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PointCoordinateDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BatchCreateLogsheetCommand": {
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "backsideTemplateId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "fileIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "performAutomaticAlignment": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BatchDeleteLogsheetCommand": {
+        "type": "object",
+        "properties": {
+          "logsheetIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BatchExportLogsheetDataCommand": {
+        "type": "object",
+        "properties": {
+          "logsheetIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BatchVerifyExtractedValuesCommand": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneTemplateBacksideRequest": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "newName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "backside": {
+            "$ref": "#/components/schemas/CloneTemplateBacksideRequest"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Coordinates": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "y": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateLogsheetCommand": {
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "backsideTemplateId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "performAutomaticAlignment": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateResidualDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateResidualRequest": {
+        "type": "object",
+        "properties": {
+          "residuals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateResidualDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTemplateBacksideCommand": {
+        "type": "object",
+        "properties": {
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "importedConfig": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTemplateCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "importedConfig": {
+            "type": "string",
+            "nullable": true
+          },
+          "backside": {
+            "$ref": "#/components/schemas/CreateTemplateBacksideCommand"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CredentialsStatusDto": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "hasUserCredentials": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DetectRoisResponseDto": {
+        "type": "object",
+        "properties": {
+          "rois": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoiDto"
+            },
+            "nullable": true
+          },
+          "residuals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResidualDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ELogSheetStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "ERoiType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "EVerificationStatus": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "ExportTemplateConfigRequest": {
+        "type": "object",
+        "properties": {
+          "includeRoiValidations": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExtractedValueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "logsheetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roiId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roiType": {
+            "$ref": "#/components/schemas/ERoiType"
+          },
+          "variableName": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "correctedValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/EVerificationStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "validationWarnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoiValidationWarningDto"
+            },
+            "nullable": true
+          },
+          "validationRulesVersion": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetFileDto": {
+        "type": "object",
+        "properties": {
+          "stream": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          },
+          "contentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "IResult": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "LogsheetDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TemplateListDto"
+          },
+          "file": {
+            "$ref": "#/components/schemas/FileDto"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ELogSheetStatus"
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "alignmentData": {
+            "$ref": "#/components/schemas/AlignmentDataDto"
+          },
+          "extractedValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtractedValueDto"
+            },
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LogsheetListDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "file": {
+            "$ref": "#/components/schemas/FileDto"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ELogSheetStatus"
+          },
+          "isFrontAligned": {
+            "type": "boolean"
+          },
+          "isBackAligned": {
+            "type": "boolean"
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PatchLogsheetDto": {
+        "type": "object",
+        "properties": {
+          "frontAlignmentData": {
+            "type": "string",
+            "nullable": true
+          },
+          "backAlignmentData": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PointCoordinateDto": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "y": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PredefinedRoiValidationConditionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "roiType": {
+            "$ref": "#/components/schemas/ERoiType"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/RoiValidationConditionNode"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProcessLogsheetDataOptions": {
+        "type": "object",
+        "properties": {
+          "uglyCheckboxes": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProcessLogsheetDataRequest": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "#/components/schemas/ProcessLogsheetDataOptions"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResidualDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "variableName": {
+            "type": "string",
+            "nullable": true
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ERoiType"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "validationCondition": {
+            "$ref": "#/components/schemas/RoiValidationConditionNode"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RoiValidationConditionNode": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "operator": {
+            "type": "string",
+            "nullable": true
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoiValidationConditionNode"
+            },
+            "nullable": true
+          },
+          "ruleType": {
+            "type": "string",
+            "nullable": true
+          },
+          "params": {
+            "nullable": true
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RoiValidationRuleCatalogDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "roiTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoiValidationRulesByRoiTypeDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RoiValidationRuleDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "ruleType": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "defaultParams": { }
+        },
+        "additionalProperties": false
+      },
+      "RoiValidationRulesByRoiTypeDto": {
+        "type": "object",
+        "properties": {
+          "roiType": {
+            "$ref": "#/components/schemas/ERoiType"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoiValidationRuleDefinitionDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RoiValidationWarningDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "path": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetLogsheetAlignmentRequest": {
+        "type": "object",
+        "properties": {
+          "alignment": {
+            "$ref": "#/components/schemas/AlignmentDataDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetResidualDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetResidualRequest": {
+        "type": "object",
+        "properties": {
+          "residuals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SetResidualDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetRoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "variableName": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/ERoiType"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          },
+          "validationCondition": {
+            "$ref": "#/components/schemas/RoiValidationConditionNode"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetRoiRequest": {
+        "type": "object",
+        "properties": {
+          "rois": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SetRoiDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SetUserCredentialsRequest": {
+        "type": "object",
+        "properties": {
+          "keys": {
+            "type": "object",
+            "properties": {
+              "Google": {
+                "type": "string"
+              },
+              "Azure": {
+                "type": "string"
+              },
+              "Amazon": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StartBatchLogsheetProcessingCommand": {
+        "type": "object",
+        "properties": {
+          "logsheetIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "options": {
+            "$ref": "#/components/schemas/ProcessLogsheetDataOptions"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/TemplateWithoutParentDto"
+          },
+          "backsideTemplate": {
+            "$ref": "#/components/schemas/TemplateReferenceDto"
+          },
+          "frontsideTemplate": {
+            "$ref": "#/components/schemas/TemplateReferenceDto"
+          },
+          "file": {
+            "$ref": "#/components/schemas/FileDto"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "rois": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoiDto"
+            },
+            "nullable": true
+          },
+          "residuals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResidualDto"
+            },
+            "nullable": true
+          },
+          "isEditable": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateListDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "backsideTemplateId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "roiCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "logsheetCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateReferenceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateWithoutParentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "file": {
+            "$ref": "#/components/schemas/FileDto"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpsertResidualDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpsertResidualRequest": {
+        "type": "object",
+        "properties": {
+          "residual": {
+            "$ref": "#/components/schemas/UpsertResidualDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VerifyExtractedValueDto": {
+        "type": "object",
+        "properties": {
+          "correctedValue": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "LogsheetXtractor.API.Endpoints.CredentialsEndpoints"
+    },
+    {
+      "name": "LogsheetXtractor.API.Endpoints.ExtractedValueEndpoints"
+    },
+    {
+      "name": "LogsheetXtractor.API.Endpoints.FileEndpoints"
+    },
+    {
+      "name": "LogsheetXtractor.API.Endpoints.LogsheetEndpoints"
+    },
+    {
+      "name": "LogsheetXtractor.API.Endpoints.ResidualEndpoints"
+    },
+    {
+      "name": "LogsheetXtractor.API.Endpoints.RoiEndpoints"
+    },
+    {
+      "name": "LogsheetXtractor.API.Endpoints.RoiValidationEndpoints"
+    },
+    {
+      "name": "LogsheetXtractor.API.Endpoints.TemplateEndpoints"
+    }
+  ]
+}

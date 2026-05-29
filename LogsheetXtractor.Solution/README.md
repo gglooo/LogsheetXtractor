@@ -14,7 +14,7 @@ Docker users normally do not need the local Python setup because the backend ima
 
 ## Setup
 
-From `logsheetXtractor/LogsheetXtractor.Solution/`:
+From `LogsheetXtractor.Solution/`:
 
 ```bash
 dotnet restore LogsheetXtractor.Solution.sln
@@ -41,19 +41,19 @@ Local development uses `LogsheetXtractor.API/appsettings.Development.json`.
 
 Important settings:
 
-- `ConnectionStrings:DefaultConnection`: SQLite database path. The default is `../../app_data/FormHTR.db`.
-- `Storage:LocalStoragePath`: uploaded/generated file storage path. The default is `../../app_data/storage`.
+- `ConnectionStrings:DefaultConnection`: SQLite database path.
+- `Storage:LocalStoragePath`: uploaded/generated file storage path.
 - `Python:InterpreterPath`: Python interpreter used for OCR/HTR script execution. Change this to the interpreter where `formhtr` is installed.
 - `Credentials:*ApiKeyPath`: default file paths for mounted provider credentials.
 - `Credentials:CookieSecure`: set to `false` for local HTTP development.
 
 The API creates the storage directory and applies pending EF Core migrations at startup.
 
-Relative paths are resolved by the running backend process. If you run from a different working directory than your IDE uses, confirm these paths still resolve to `logsheetXtractor/app_data`.
+Relative paths are resolved by the running backend process. If you run from a different working directory than your IDE uses, confirm these paths still resolve to `app_data`.
 
 ## Credentials
 
-For file-based credentials, create `logsheetXtractor/credentials/`:
+For file-based credentials, create `credentials/`:
 
 ```bash
 cd ..
@@ -70,7 +70,7 @@ Credentials can also be provided through the web UI. User-provided credentials a
 
 ## Local Development
 
-Run the API from `logsheetXtractor/LogsheetXtractor.Solution/`:
+Run the API from `LogsheetXtractor.Solution/`:
 
 ```bash
 dotnet run --project LogsheetXtractor.API
@@ -161,5 +161,5 @@ dotnet tool install --global dotnet-ef
 
 - **Python execution fails:** confirm `Python:InterpreterPath` points to an environment with `formhtr` installed, then run `python -m formhtr.cli`.
 - **OCR processing fails:** confirm the selected provider credentials are valid and that the uploaded logsheet matches the selected template.
-- **SQLite or storage path errors:** confirm `../../app_data` is writable from the API working directory, or override the paths in `appsettings.Development.json`.
+- **SQLite or storage path errors:** confirm `../app_data` is writable from the API working directory, or override the paths in `appsettings.Development.json`.
 - **Port conflict:** change the `applicationUrl` in `LogsheetXtractor.API/Properties/launchSettings.json` or pass a different `ASPNETCORE_URLS` value.

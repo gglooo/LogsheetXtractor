@@ -10,7 +10,7 @@ React + TypeScript + Vite frontend for LogsheetXtractor.
 
 ## Setup
 
-From `logsheetXtractor/web/`:
+From `web/`:
 
 ```bash
 pnpm install
