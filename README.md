@@ -90,10 +90,6 @@ CI publishes multi-arch images to GitHub Container Registry on every push to `ma
 On a server with Docker, clone the repo (for `docker-compose.yml`, volumes, and config), then:
 
 ```bash
-cp .env.example .env
-# optional: set LOGSHEETXTRACTOR_TAG to a specific commit SHA
-
-echo "$GITHUB_TOKEN" | docker login ghcr.io -u USERNAME --password-stdin
 docker compose pull
 docker compose up -d
 ```
@@ -124,8 +120,7 @@ See the backend and frontend READMEs for prerequisites, coverage commands, E2E n
 - **Backend Dockerfile**: Creates Python virtual environment and installs dependencies.
 - **Frontend Dockerfile**: Builds and serves the web app.
 - **appsettings.Docker.json**: Docker environment overrides.
-- **docker-compose.yml**: Defines services, GHCR image names (`LOGSHEETXTRACTOR_IMAGE` / `LOGSHEETXTRACTOR_TAG`), and mounts local directories.
-- **.env.example**: Optional overrides for pulling pre-built images instead of building locally.
+- **docker-compose.yml**: Defines services, GHCR image names, and mounts local directories.
 
 ## Troubleshooting
 

@@ -1,8 +1,7 @@
 # Image names match GHCR tags published by .github/workflows/docker-image.yml
-# Override via .env (see .env.example): LOGSHEETXTRACTOR_IMAGE, LOGSHEETXTRACTOR_TAG
 services:
   backend:
-    image: ${LOGSHEETXTRACTOR_IMAGE:-ghcr.io/grp-bork/logsheetxtractor}-backend:${LOGSHEETXTRACTOR_TAG:-latest}
+    image: ghcr.io/grp-bork/logsheetxtractor-backend:latest
     build:
       context: .
       dockerfile: LogsheetXtractor.Solution/LogsheetXtractor.API/Dockerfile
@@ -16,7 +15,7 @@ services:
       - ./credentials:/app/credentials
 
   frontend:
-    image: ${LOGSHEETXTRACTOR_IMAGE:-ghcr.io/grp-bork/logsheetxtractor}-frontend:${LOGSHEETXTRACTOR_TAG:-latest}
+    image: ghcr.io/grp-bork/logsheetxtractor-frontend:latest
     build:
       context: ./web
     ports:
