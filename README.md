@@ -80,6 +80,26 @@ Access points:
 - Backend API: `http://localhost:8080`
 - CloudBeaver (DB UI): `http://localhost:8978`
 
+### Run from published images (production)
+
+CI publishes multi-arch images to GitHub Container Registry on every push to `main`:
+
+- `ghcr.io/grp-bork/logsheetxtractor-backend:latest` (and `:commit-sha`)
+- `ghcr.io/grp-bork/logsheetxtractor-frontend:latest` (and `:commit-sha`)
+
+On a server with Docker, clone the repo (for `docker-compose.yml`, volumes, and config), then:
+
+```bash
+cp .env.example .env
+# optional: set LOGSHEETXTRACTOR_TAG to a specific commit SHA
+
+echo "$GITHUB_TOKEN" | docker login ghcr.io -u USERNAME --password-stdin
+docker compose pull
+docker compose up -d
+```
+
+Use the same `docker compose` command as locally; omit `--build` to run the pulled images. `docker compose up --build` still works for local development and tags built images with the names above.
+
 ## Testing
 
 Detailed test setup lives in the component-specific READMEs. Common commands:
@@ -104,7 +124,8 @@ See the backend and frontend READMEs for prerequisites, coverage commands, E2E n
 - **Backend Dockerfile**: Creates Python virtual environment and installs dependencies.
 - **Frontend Dockerfile**: Builds and serves the web app.
 - **appsettings.Docker.json**: Docker environment overrides.
-- **docker-compose.yml**: Defines services and mounts local directories.
+- **docker-compose.yml**: Defines services, GHCR image names (`LOGSHEETXTRACTOR_IMAGE` / `LOGSHEETXTRACTOR_TAG`), and mounts local directories.
+- **.env.example**: Optional overrides for pulling pre-built images instead of building locally.
 
 ## Troubleshooting
 
