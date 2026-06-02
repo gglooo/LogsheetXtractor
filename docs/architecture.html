@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LogsheetXtractor Architecture</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+      line-height: 1.6;
+      color: #1f2937;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    code {
+      background: #f3f4f6;
+      border-radius: 4px;
+      padding: 0.1rem 0.3rem;
+    }
+    .todo {
+      border-left: 4px solid #f59e0b;
+      background: #fffbeb;
+      padding: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .box {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    a { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <p><a href="./">Back to docs home</a></p>
+  <h1>Architecture</h1>
+  <p>
+    High-level architecture overview of LogsheetXtractor, including data flow between frontend,
+    backend API, OCR providers, and storage.
+  </p>
+
+  <h2>System Context</h2>
+  <div class="todo">
+    TODO-ARCH: Add a context diagram image (or Mermaid) showing:
+    User -> Frontend -> Backend API -> OCR Providers -> Storage/DB.
+  </div>
+
+  <div class="box">
+    <h3>Frontend</h3>
+    <ul>
+      <li>Web UI for template editing, alignment, processing, and proofreading.</li>
+      <li>Communicates with backend HTTP API and receives status updates.</li>
+    </ul>
+  </div>
+
+  <div class="box">
+    <h3>Backend API</h3>
+    <ul>
+      <li>Exposes endpoint layer for templates, logsheets, ROIs, residuals, and exports.</li>
+      <li>Coordinates async processing pipeline and persistence.</li>
+      <li>Integrates with OCR/HTR script execution and external credentials.</li>
+    </ul>
+  </div>
+
+  <div class="box">
+    <h3>Data and Storage</h3>
+    <ul>
+      <li>Relational metadata (templates, logsheets, extracted values, validation state).</li>
+      <li>File/object storage for uploaded files, images, and exports.</li>
+    </ul>
+  </div>
+
+  <h2>Main Workflows</h2>
+
+  <h3>1) Template Preparation</h3>
+  <ol>
+    <li>Upload blank template PDF.</li>
+    <li>Define ROIs and optional residual regions.</li>
+    <li>Attach ROI semantic type and validation conditions.</li>
+  </ol>
+  <div class="todo">
+    TODO-ARCH: Add endpoint-to-workflow mapping for template preparation.
+  </div>
+
+  <h3>2) Logsheet Processing</h3>
+  <ol>
+    <li>Upload scanned logsheet(s).</li>
+    <li>Associate template and run alignment (automatic or manual correction).</li>
+    <li>Start async extraction.</li>
+    <li>Persist extracted values and validation warnings.</li>
+  </ol>
+  <div class="todo">
+    TODO-ARCH: Add state transition table for logsheet statuses.
+  </div>
+
+  <h3>3) Proofreading and Export</h3>
+  <ol>
+    <li>Review extracted values with visual context.</li>
+    <li>Correct suspected OCR mistakes and resolve warnings.</li>
+    <li>Finalize proofreading and export data file.</li>
+  </ol>
+  <div class="todo">
+    TODO-ARCH: Add rules for "complete/reset proofreading" semantics.
+  </div>
+
+  <h2>Cross-Cutting Concerns</h2>
+  <ul>
+    <li>Authentication/credential handling for OCR provider access.</li>
+    <li>Error handling and user-facing validation feedback.</li>
+    <li>Background processing reliability and retry strategy.</li>
+  </ul>
+  <div class="todo">
+    TODO-ARCH: Document operational constraints and deployment assumptions.
+  </div>
+
+  <h2>References</h2>
+  <ul>
+    <li><a href="./api/">API Reference (ReDoc)</a></li>
+    <li><a href="./frontend-guide.html">Frontend Guide</a></li>
+  </ul>
+</body>
+</html>
