@@ -1,5 +1,7 @@
 # Documentation Site
 
+![LogsheetXtractor banner](./assets/banner.png)
+
 This folder is a static site published to GitHub Pages.
 
 ## Structure
