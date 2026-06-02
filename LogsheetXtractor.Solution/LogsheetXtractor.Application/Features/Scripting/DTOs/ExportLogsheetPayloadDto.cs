@@ -5,6 +5,10 @@ using LogsheetXtractor.Domain.ValueObjects;
 
 namespace LogsheetXtractor.Application.Features.Scripting.DTOs;
 
+/// <summary>
+/// TODO-DOC: Describe ExportLogsheetPayloadDto purpose and usage.
+/// TODO-DOC-MEMBERS: Document public properties.
+/// </summary>
 public class ExportLogsheetPayloadDto
 {
     [JsonPropertyName("width")]

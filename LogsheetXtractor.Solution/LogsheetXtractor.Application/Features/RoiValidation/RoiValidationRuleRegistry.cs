@@ -3,6 +3,9 @@ using LogsheetXtractor.Domain.Enums;
 
 namespace LogsheetXtractor.Application.Features.RoiValidation;
 
+/// <summary>
+/// Runtime registry for ROI validation rule evaluators.
+/// </summary>
 public sealed class RoiValidationRuleRegistry(IEnumerable<IRoiValidationRuleEvaluator> evaluators)
     : IRoiValidationRuleRegistry
 {
@@ -11,22 +14,34 @@ public sealed class RoiValidationRuleRegistry(IEnumerable<IRoiValidationRuleEval
 
     private readonly IReadOnlyList<IRoiValidationRuleEvaluator> _all = evaluators.ToList();
 
+    /// <summary>
+    /// Tries to resolve a rule evaluator by rule type.
+    /// </summary>
     public bool TryGet(string ruleType, out IRoiValidationRuleEvaluator evaluator)
     {
         return _lookup.TryGetValue(ruleType, out evaluator!);
     }
 
+    /// <summary>
+    /// Returns all registered evaluators.
+    /// </summary>
     public IReadOnlyList<IRoiValidationRuleEvaluator> GetAll()
     {
         return _all;
     }
 }
 
+/// <summary>
+/// Provides a stable DTO catalog describing supported ROI validation rules.
+/// </summary>
 public sealed class RoiValidationRuleCatalogProvider(IRoiValidationRuleRegistry registry)
     : IRoiValidationRuleCatalogProvider
 {
     private readonly RoiValidationRuleCatalogDto _catalog = BuildCatalog(registry.GetAll());
 
+    /// <summary>
+    /// Returns the precomputed validation rule catalog.
+    /// </summary>
     public RoiValidationRuleCatalogDto GetCatalog()
     {
         return _catalog;

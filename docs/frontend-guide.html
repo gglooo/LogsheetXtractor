@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LogsheetXtractor Frontend Guide</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body class="page-wide">
+  <p><a href="./">Back to docs home</a></p>
+  <h1>Frontend Guide</h1>
+  <p>
+    User-oriented walkthrough of the main UI flows in LogsheetXtractor with screenshot placeholders.
+  </p>
+
+  <h2>Before You Start</h2>
+  <ul>
+    <li>Application is running and backend API is reachable.</li>
+    <li>OCR credentials are available (uploaded or configured).</li>
+    <li>You have a template PDF and sample logsheet scans.</li>
+  </ul>
+
+  <h2>Workflow Overview</h2>
+  <ol>
+    <li>Create or open a template.</li>
+    <li>Define ROIs and validation conditions.</li>
+    <li>Upload logsheets and start processing.</li>
+    <li>Review warnings and proofread extracted values.</li>
+    <li>Export final data.</li>
+  </ol>
+
+  <h2>1) Template Editor</h2>
+  <div class="todo">
+    TODO-FE: Describe how to switch between selection and drawing tools.
+  </div>
+  <div class="shot">
+    TODO-SCREENSHOT: Add screenshot of template editor canvas and sidebar controls.
+  </div>
+  <ul>
+    <li>Draw, move, resize, and delete ROI rectangles.</li>
+    <li>Name fields and assign ROI type.</li>
+    <li>Save template changes.</li>
+  </ul>
+
+  <h2>2) ROI Validation Setup</h2>
+  <div class="todo">
+    TODO-FE: Add examples of common validation condition presets.
+  </div>
+  <div class="shot">
+    TODO-SCREENSHOT: Add screenshot of validation condition builder and warning preview.
+  </div>
+
+  <h2>3) Upload and Process Logsheets</h2>
+  <div class="shot">
+    TODO-SCREENSHOT: Add screenshot of upload flow and logsheet list/status table.
+  </div>
+  <ul>
+    <li>Upload one or more scans.</li>
+    <li>Select template association.</li>
+    <li>Start single or batch processing.</li>
+  </ul>
+  <div class="todo">
+    TODO-FE: Clarify expected status progression in the UI.
+  </div>
+
+  <h2>4) Alignment</h2>
+  <div class="shot">
+    TODO-SCREENSHOT: Add screenshot of manual alignment UI (frontside/backside points).
+  </div>
+  <ul>
+    <li>Use automatic alignment first when available.</li>
+    <li>Adjust alignment points manually for problematic scans.</li>
+  </ul>
+
+  <h2>5) Proofreading</h2>
+  <div class="shot">
+    TODO-SCREENSHOT: Add screenshot of proofreading screen (value + cropped ROI context).
+  </div>
+  <ul>
+    <li>Review flagged values first (validation warnings).</li>
+    <li>Correct OCR output where needed.</li>
+    <li>Mark logsheet as complete after verification.</li>
+  </ul>
+  <div class="todo">
+    TODO-FE: Add explanation of warning behavior after value correction.
+  </div>
+
+  <h2>6) Export</h2>
+  <div class="shot">
+    TODO-SCREENSHOT: Add screenshot of export action and downloaded output example.
+  </div>
+  <ul>
+    <li>Export one logsheet or a batch.</li>
+    <li>Use exported file in downstream analysis tools.</li>
+  </ul>
+
+  <h2>Troubleshooting</h2>
+  <ul>
+    <li>If processing fails, check OCR credentials and template association.</li>
+    <li>If warnings persist, verify ROI validation rules and corrected value format.</li>
+    <li>If alignment is incorrect, re-run manual alignment and re-process.</li>
+  </ul>
+
+  <h2>References</h2>
+  <ul>
+    <li><a href="./architecture.html">Architecture</a></li>
+    <li><a href="./api/">API Reference (ReDoc)</a></li>
+  </ul>
+</body>
+</html>

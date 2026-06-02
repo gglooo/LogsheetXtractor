@@ -8,10 +8,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LogsheetXtractor.Application.Features.ROIs;
 
+/// <summary>
+/// Command that replaces the ROI set for a template.
+/// </summary>
+/// <param name="TemplateId">The template identifier.</param>
+/// <param name="Rois">ROI definitions to persist.</param>
 public sealed record SetTemplateRoisCommand(Guid TemplateId, IEnumerable<SetRoiDto> Rois);
 
+/// <summary>
+/// Validates and stores template ROIs.
+/// </summary>
 public static class SetTemplateRoisHandler
 {
+    /// <summary>
+    /// Validates editability and ROI definitions, then applies ROI updates to the template.
+    /// </summary>
     public static async Task<Result<IEnumerable<RoiDto>>> Handle(
         SetTemplateRoisCommand request,
         IRoiService roiService,
@@ -73,15 +84,17 @@ public static class SetTemplateRoisHandler
             return Result.Fail($"Failed to update ROIs: {ex.Message}");
         }
     }
-    
+
+    /// <summary>
+    /// Validates ROI-specific rule configuration before persistence.
+    /// </summary>
     private static Result ValidateRoi(SetRoiDto roi, IRoiValidationConditionTreeValidator conditionTreeValidator)
     {
-       
         if (roi.ValidationCondition is null)
         {
             return Result.Ok();
         }
-        
+
         if (roi.Type is null)
         {
             return Result.Fail(
@@ -90,12 +103,12 @@ public static class SetTemplateRoisHandler
                 )
             );
         }
-        
+
         var validationResult = conditionTreeValidator.Validate(
             roi.Type.Value,
             roi.ValidationCondition
         );
-        
+
         if (validationResult.IsFailed)
         {
             var message =

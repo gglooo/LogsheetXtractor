@@ -9,8 +9,20 @@ using Wolverine.Http;
 
 namespace LogsheetXtractor.API.Endpoints;
 
+/// <summary>
+/// Endpoints for file upload and retrieval operations.
+/// </summary>
 public static class FileEndpoints
 {
+    /// <summary>
+    /// Uploads a file to storage and persists its metadata.
+    /// </summary>
+    /// <param name="formFile">The multipart form file payload.</param>
+    /// <param name="bus">Message bus used to dispatch the upload command.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>
+    /// A file DTO when upload succeeds, or a validation error when the payload is invalid.
+    /// </returns>
     [WolverinePost("/api/files/upload")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -35,6 +47,13 @@ public static class FileEndpoints
         return result.ToHttpResult();
     }
 
+    /// <summary>
+    /// Returns metadata and content details for a stored file by identifier.
+    /// </summary>
+    /// <param name="id">The file identifier.</param>
+    /// <param name="bus">Message bus used to dispatch the query.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>The file payload when found; otherwise a not found response.</returns>
     [WolverineGet("/api/files/{id}")]
     [ProducesResponseType(200, Type = typeof(GetFileDto))]
     [ProducesResponseType(404)]
@@ -46,6 +65,13 @@ public static class FileEndpoints
         return result.ToHttpResult();
     }
 
+    /// <summary>
+    /// Returns image-ready file content by identifier.
+    /// </summary>
+    /// <param name="id">The file identifier.</param>
+    /// <param name="bus">Message bus used to dispatch the query.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>The image payload when found; otherwise a not found response.</returns>
     [WolverineGet("/api/files/{id}/image")]
     [ProducesResponseType(200, Type = typeof(GetFileDto))]
     [ProducesResponseType(404)]

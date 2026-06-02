@@ -9,13 +9,25 @@ using Wolverine;
 
 namespace LogsheetXtractor.Application.Features.Logsheets;
 
+/// <summary>
+/// Command that starts asynchronous processing for a single logsheet.
+/// </summary>
+/// <param name="LogsheetId">The logsheet identifier to process.</param>
+/// <param name="Options">Optional processing settings.</param>
 public sealed record StartLogsheetProcessingCommand(
     Guid LogsheetId,
     ProcessLogsheetDataOptions? Options
 );
 
+/// <summary>
+/// Validates processing prerequisites and enqueues logsheet processing.
+/// </summary>
 public static class StartLogsheetProcessingHandler
 {
+    /// <summary>
+    /// Sets a logsheet to processing state and publishes the processing command with request context.
+    /// This keeps HTTP request handling responsive while extraction runs in the background.
+    /// </summary>
     public static async Task<Result> Handle(
         StartLogsheetProcessingCommand command,
         IAppDbContext dbContext,

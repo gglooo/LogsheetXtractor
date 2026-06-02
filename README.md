@@ -115,6 +115,21 @@ pnpm test
 
 See the backend and frontend READMEs for prerequisites, coverage commands, E2E notes, and local development details.
 
+## Documentation (GitHub Pages)
+
+This repository contains a static documentation site in `docs/` with:
+
+- landing page: `docs/index.html`
+- API reference (ReDoc): `docs/api/index.html`
+- OpenAPI output: `docs/openapi/logsheetxtractor.swagger.json` (generated in CI)
+
+Deployment is handled by GitHub Actions workflow:
+
+- `.github/workflows/docs-pages.yml`
+
+The workflow publishes the `docs/` folder to GitHub Pages on every push to `main`.
+The workflow builds and runs the backend API in `Development` mode, fetches `/swagger/v1/swagger.json`, and publishes that fresh spec with the docs site.
+
 ### Docker Configuration Details
 
 - **Backend Dockerfile**: Creates Python virtual environment and installs dependencies.

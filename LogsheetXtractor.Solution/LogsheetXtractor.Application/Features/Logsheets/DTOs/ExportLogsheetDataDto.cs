@@ -3,6 +3,10 @@ using LogsheetXtractor.Domain.ValueObjects;
 
 namespace LogsheetXtractor.Application.Features.Logsheets.DTOs;
 
+/// <summary>
+/// TODO-DOC: Describe ExportLogsheetDataDto purpose and usage.
+/// TODO-DOC-MEMBERS: Document public properties.
+/// </summary>
 public class ExportLogsheetDataDto
 {
     [JsonPropertyName("coordinates")]
@@ -18,6 +22,10 @@ public class ExportLogsheetDataDto
     public int Page { get; set; } = 0;
 }
 
+/// <summary>
+/// TODO-DOC: Describe ExportCoordinateDto purpose and usage.
+/// TODO-DOC-MEMBERS: Document public properties.
+/// </summary>
 public class ExportCoordinateDto
 {
     [JsonPropertyName("x")]

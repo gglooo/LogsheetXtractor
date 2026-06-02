@@ -4,6 +4,9 @@ using LogsheetXtractor.Domain.ValueObjects.RoiValidation;
 
 namespace LogsheetXtractor.Application.Features.ROIs.DTOs;
 
+/// <summary>
+/// Input ROI definition used when replacing template ROIs.
+/// </summary>
 public record SetRoiDto(
     string? Id,
     string VariableName,

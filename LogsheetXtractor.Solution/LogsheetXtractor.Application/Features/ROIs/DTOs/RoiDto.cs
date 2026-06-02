@@ -4,6 +4,9 @@ using LogsheetXtractor.Domain.ValueObjects.RoiValidation;
 
 namespace LogsheetXtractor.Application.Features.ROIs.DTOs;
 
+/// <summary>
+/// ROI definition persisted on a template for extraction and proofreading.
+/// </summary>
 public record RoiDto(
     Guid? Id,
     string VariableName,

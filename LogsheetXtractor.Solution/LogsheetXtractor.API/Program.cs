@@ -20,7 +20,16 @@ var isTestingEnvironment = builder.Environment.IsEnvironment("Testing");
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFileName = $"{typeof(Program).Assembly.GetName().Name}.xml";
+    var xmlFilePath = Path.Combine(AppContext.BaseDirectory, xmlFileName);
+
+    if (File.Exists(xmlFilePath))
+    {
+        options.IncludeXmlComments(xmlFilePath);
+    }
+});
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Host.UseWolverine(opts =>

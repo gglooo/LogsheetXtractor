@@ -18,8 +18,15 @@ using File = LogsheetXtractor.Domain.Entities.File;
 
 namespace LogsheetXtractor.Application.Common.Mappings;
 
+/// <summary>
+/// Central Mapster registration for domain, command, and DTO mappings.
+/// </summary>
 public class MappingConfig : IRegister
 {
+    /// <summary>
+    /// Registers all mapping definitions used by the application layer.
+    /// </summary>
+    /// <param name="config">Mapster type adapter configuration container.</param>
     public void Register(TypeAdapterConfig config)
     {
         config.NewConfig<Template, Template>();

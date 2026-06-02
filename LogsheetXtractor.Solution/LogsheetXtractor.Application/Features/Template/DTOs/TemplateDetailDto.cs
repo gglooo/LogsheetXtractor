@@ -5,6 +5,9 @@ using LogsheetXtractor.Application.Features.ROIs.DTOs;
 
 namespace LogsheetXtractor.Application.Features.Template.DTOs;
 
+/// <summary>
+/// Full template payload including geometric metadata, ROIs, and residuals.
+/// </summary>
 public record TemplateDetailDto(
     Guid Id,
     string Name,
