@@ -3,6 +3,9 @@ using LogsheetXtractor.Domain.Enums;
 
 namespace LogsheetXtractor.Application.Features.Logsheets.DTOs;
 
+/// <summary>
+/// Lightweight logsheet item for list and queue views.
+/// </summary>
 public record LogsheetListDto(
     Guid Id,
     Guid TemplateId,

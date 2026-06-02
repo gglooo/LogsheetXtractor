@@ -6,15 +6,34 @@ using Wolverine;
 
 namespace LogsheetXtractor.Application.Features.Logsheets;
 
+/// <summary>
+/// Optional flags that modify logsheet processing behavior.
+/// </summary>
+/// <param name="UglyCheckboxes">
+/// Feature flag forwarded to the underlying extraction scripts for checkbox parsing behavior.
+/// Keep the name unchanged to preserve compatibility with existing script arguments.
+/// </param>
 public sealed record ProcessLogsheetDataOptions(bool? UglyCheckboxes);
 
+/// <summary>
+/// Command that performs logsheet extraction and validation work.
+/// </summary>
+/// <param name="LogsheetId">Identifier of the logsheet to process.</param>
+/// <param name="Options">Optional processing flags.</param>
 public sealed record ProcessLogsheetDataCommand(
     Guid LogsheetId,
     ProcessLogsheetDataOptions? Options
 );
 
+/// <summary>
+/// Executes logsheet processing and emits completion events.
+/// </summary>
 public static class ProcessLogsheetDataHandler
 {
+    /// <summary>
+    /// Processes a logsheet and publishes a completion event containing success or failure details.
+    /// On failure, the logsheet status is marked as failed and an error message is persisted.
+    /// </summary>
     public static async Task Handle(
         ProcessLogsheetDataCommand request,
         IAppDbContext dbContext,

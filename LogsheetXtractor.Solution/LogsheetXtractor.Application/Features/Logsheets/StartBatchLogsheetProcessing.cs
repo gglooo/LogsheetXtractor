@@ -9,13 +9,25 @@ using Wolverine;
 
 namespace LogsheetXtractor.Application.Features.Logsheets;
 
+/// <summary>
+/// Command that starts asynchronous processing for a batch of logsheets.
+/// </summary>
+/// <param name="LogsheetIds">Identifiers of logsheets to process.</param>
+/// <param name="options">Optional processing settings applied to each logsheet.</param>
 public record StartBatchLogsheetProcessingCommand(
     Guid[] LogsheetIds,
     ProcessLogsheetDataOptions? options
 );
 
+/// <summary>
+/// Iterates a logsheet batch, validates state, and enqueues processing commands.
+/// </summary>
 public static class StartBatchLogsheetProcessingHandler
 {
+    /// <summary>
+    /// Marks eligible logsheets as processing and dispatches background processing work.
+    /// Invalid items are skipped; the command fails only if no item can be processed.
+    /// </summary>
     public static async Task<Result> Handle(
         StartBatchLogsheetProcessingCommand command,
         IAppDbContext dbContext,

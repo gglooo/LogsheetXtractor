@@ -3,6 +3,9 @@ using LogsheetXtractor.Domain.Enums;
 
 namespace LogsheetXtractor.Application.Features.ExtractedValues.DTOs;
 
+/// <summary>
+/// Represents one extracted ROI value, including verification and validation metadata.
+/// </summary>
 public record ExtractedValueDto(
     Guid Id,
     Guid LogsheetId,

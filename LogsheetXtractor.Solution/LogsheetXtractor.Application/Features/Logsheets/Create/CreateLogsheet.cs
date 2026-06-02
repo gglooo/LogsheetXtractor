@@ -9,6 +9,13 @@ using Wolverine;
 
 namespace LogsheetXtractor.Application.Features.Logsheets.Create;
 
+/// <summary>
+/// Command for creating a logsheet bound to template and file inputs.
+/// </summary>
+/// <param name="TemplateId">Identifier of the frontside template.</param>
+/// <param name="BacksideTemplateId">Optional identifier of the backside template.</param>
+/// <param name="FileId">Identifier of the source file.</param>
+/// <param name="PerformAutomaticAlignment">Whether automatic alignment should be triggered after creation.</param>
 public sealed record CreateLogsheetCommand(
     Guid TemplateId,
     Guid? BacksideTemplateId,
@@ -16,8 +23,14 @@ public sealed record CreateLogsheetCommand(
     bool PerformAutomaticAlignment = true
 );
 
+/// <summary>
+/// Handles creation of new logsheets and emits creation events.
+/// </summary>
 public static class CreateLogsheetHandler
 {
+    /// <summary>
+    /// Validates command references, creates a logsheet, and publishes a creation event.
+    /// </summary>
     public static async Task<Result<LogsheetDetailDto>> Handle(
         CreateLogsheetCommand request,
         CancellationToken ct,
