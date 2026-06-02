@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           export ASPNETCORE_ENVIRONMENT=Development
           export ASPNETCORE_URLS=http://127.0.0.1:5180
-          dotnet run --project "LogsheetXtractor.Solution/LogsheetXtractor.API/LogsheetXtractor.API.csproj" --no-build > /tmp/logsheetxtractor-api.log 2>&1 &
+          dotnet run --project "LogsheetXtractor.Solution/LogsheetXtractor.API/LogsheetXtractor.API.csproj" --no-build --urls http://127.0.0.1:5180 > /tmp/logsheetxtractor-api.log 2>&1 &
           API_PID=$!
 
           cleanup() {
