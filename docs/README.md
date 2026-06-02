@@ -6,6 +6,7 @@ This folder is a static site published to GitHub Pages.
 
 - `index.html` - docs landing page
 - `api/index.html` - ReDoc API reference page
+- `style.css` - shared styling for docs pages
 - `openapi/logsheetxtractor.swagger.json` - OpenAPI file consumed by ReDoc
 
 ## Local preview
