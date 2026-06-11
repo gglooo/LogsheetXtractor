@@ -42,16 +42,15 @@
   </ul>
 
   <h2>2) Template Editor</h2>
-  <div class="todo">
-    TODO-FE: Describe how to switch between selection and drawing tools.
-  </div>
   <div class="shot">
     <img src="./assets/editor.png" alt="Template editor canvas and sidebar controls" style="max-width:100%;height:auto;" />
   </div>
   <ul>
     <li>Draw, move, resize, and delete ROI rectangles.</li>
+    <li>Autodetect ROIs from the uploaded template.</li>
     <li>Name fields and assign ROI type.</li>
-    <li>Save template changes.</li>
+    <li>Assign optional validation conditions to ROIs.</li>
+    <li>Autosave template changes.</li>
   </ul>
 
   <h2>3) Alignment (optional)</h2>
@@ -59,8 +58,9 @@
     <img src="./assets/alignment.png" alt="Manual alignment UI (frontside/backside points)" style="max-width:100%;height:auto;" />
   </div>
   <ul>
-    <li>Use automatic alignment first when available.</li>
-    <li>Adjust alignment points manually for problematic scans.</li>
+    <li>Every logsheet is automatically aligned upon upload.</li>
+    <li>Inspect and adjust alignment points manually for problematic scans.</li>
+    <li>Drag and drop alignment points to adjust their position until the ROIs are correctly aligned.</li>
   </ul>
 
   <h2>4) Upload and Process Logsheets</h2>
@@ -68,13 +68,12 @@
     <img src="./assets/logsheets.png" alt="Upload flow and logsheet list/status table" style="max-width:100%;height:auto;" />
   </div>
   <ul>
-    <li>Upload one or more scans.</li>
-    <li>Select template association.</li>
-    <li>Start single or batch processing.</li>
+    <li>Upload one or more scanned logsheets to a template working space.</li>
+    <li>Make sure all logsheets are aligned with the template (previous step).</li>
+    <li>Start single or batch logsheet processing.</li>
+    <li>For a processed logsheet, access the proofreading interface to review and correct the extracted values.</li>
+    <li>For a completed logsheet, inspect or export the data.</li>
   </ul>
-  <div class="todo">
-    TODO-FE: Clarify expected status progression in the UI.
-  </div>
 
   <h2>5) Proofreading</h2>
   <div class="shot">
@@ -85,21 +84,10 @@
     <li>Correct OCR output where needed.</li>
     <li>Mark logsheet as complete after verification.</li>
   </ul>
-  <div class="todo">
-    TODO-FE: Add explanation of warning behavior after value correction.
-  </div>
 
   <h2>6) Export</h2>
   <ul>
-    <li>Export one logsheet or a batch.</li>
-    <li>Use exported file in downstream analysis tools.</li>
-  </ul>
-
-  <h2>Troubleshooting</h2>
-  <ul>
-    <li>If processing fails, check OCR credentials and template association.</li>
-    <li>If warnings persist, verify ROI validation rules and corrected value format.</li>
-    <li>If alignment is incorrect, re-run manual alignment and re-process.</li>
+    <li>Export extracted values in an Excel spreadsheet format.</li>
   </ul>
 
   <h2>References</h2>
