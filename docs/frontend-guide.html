@@ -10,7 +10,7 @@
   <p><a href="./">Back to docs home</a></p>
   <h1>Frontend Guide</h1>
   <p>
-    User-oriented walkthrough of the main UI flows in LogsheetXtractor with screenshot placeholders.
+    User-oriented walkthrough of the main UI flows in LogsheetXtractor.
   </p>
 
   <h2>Before You Start</h2>
@@ -23,18 +23,30 @@
   <h2>Workflow Overview</h2>
   <ol>
     <li>Create or open a template.</li>
-    <li>Define ROIs and validation conditions.</li>
-    <li>Upload logsheets and start processing.</li>
-    <li>Review warnings and proofread extracted values.</li>
-    <li>Export final data.</li>
+    <li>Define regions of interest (ROIs).</li>
+    <li>Upload logsheets, align them with the template, and start logsheet processing.</li>
+    <li>Proofread extracted values and review warnings.</li>
+    <li>Export the final data.</li>
   </ol>
 
-  <h2>1) Template Editor</h2>
+  <h2>1) Templates Management</h2>
+  <div class="shot">
+    <img src="./assets/list-of-templates.png" alt="List of templates" style="max-width:100%;height:auto;" />
+  </div>
+  <ul>
+    <li>Browse existing templates from the templates list.</li>
+    <li>Create a new template or open existing one for editing.</li>
+    <li>Clone a template to create a new template from an existing template.</li>
+    <li>Delete templates that are no longer needed.</li>
+    <li>Preview basic information about the template (number of ROIs, number of logsheets, presence of backside).</li>
+  </ul>
+
+  <h2>2) Template Editor</h2>
   <div class="todo">
     TODO-FE: Describe how to switch between selection and drawing tools.
   </div>
   <div class="shot">
-    TODO-SCREENSHOT: Add screenshot of template editor canvas and sidebar controls.
+    <img src="./assets/editor.png" alt="Template editor canvas and sidebar controls" style="max-width:100%;height:auto;" />
   </div>
   <ul>
     <li>Draw, move, resize, and delete ROI rectangles.</li>
@@ -42,17 +54,18 @@
     <li>Save template changes.</li>
   </ul>
 
-  <h2>2) ROI Validation Setup</h2>
-  <div class="todo">
-    TODO-FE: Add examples of common validation condition presets.
-  </div>
+  <h2>3) Alignment (optional)</h2>
   <div class="shot">
-    TODO-SCREENSHOT: Add screenshot of validation condition builder and warning preview.
+    <img src="./assets/alignment.png" alt="Manual alignment UI (frontside/backside points)" style="max-width:100%;height:auto;" />
   </div>
+  <ul>
+    <li>Use automatic alignment first when available.</li>
+    <li>Adjust alignment points manually for problematic scans.</li>
+  </ul>
 
-  <h2>3) Upload and Process Logsheets</h2>
+  <h2>4) Upload and Process Logsheets</h2>
   <div class="shot">
-    TODO-SCREENSHOT: Add screenshot of upload flow and logsheet list/status table.
+    <img src="./assets/logsheets.png" alt="Upload flow and logsheet list/status table" style="max-width:100%;height:auto;" />
   </div>
   <ul>
     <li>Upload one or more scans.</li>
@@ -63,18 +76,9 @@
     TODO-FE: Clarify expected status progression in the UI.
   </div>
 
-  <h2>4) Alignment</h2>
-  <div class="shot">
-    TODO-SCREENSHOT: Add screenshot of manual alignment UI (frontside/backside points).
-  </div>
-  <ul>
-    <li>Use automatic alignment first when available.</li>
-    <li>Adjust alignment points manually for problematic scans.</li>
-  </ul>
-
   <h2>5) Proofreading</h2>
   <div class="shot">
-    TODO-SCREENSHOT: Add screenshot of proofreading screen (value + cropped ROI context).
+    <img src="./assets/proofreading.png" alt="Proofreading screen (value and cropped ROI context)" style="max-width:100%;height:auto;" />
   </div>
   <ul>
     <li>Review flagged values first (validation warnings).</li>
@@ -86,9 +90,6 @@
   </div>
 
   <h2>6) Export</h2>
-  <div class="shot">
-    TODO-SCREENSHOT: Add screenshot of export action and downloaded output example.
-  </div>
   <ul>
     <li>Export one logsheet or a batch.</li>
     <li>Use exported file in downstream analysis tools.</li>
