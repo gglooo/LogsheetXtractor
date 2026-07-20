@@ -4,9 +4,9 @@ using LogsheetXtractor.Domain.Enums;
 namespace LogsheetXtractor.Application.Features.RoiValidation.DTOs;
 
 /// <summary>
-/// TODO-DOC: Describe RoiValidationRuleCatalogDto purpose and usage.
-/// <param name="Version">TODO-DOC: Describe Version.</param>
-/// <param name="RoiTypes">TODO-DOC: Describe RoiTypes.</param>
+/// Catalog of validation rules supported by the application.
+/// <param name="Version">The catalog version exposed to clients.</param>
+/// <param name="RoiTypes">Validation rules grouped by supported ROI type.</param>
 /// </summary>
 public sealed record RoiValidationRuleCatalogDto(
     string Version,
@@ -14,9 +14,9 @@ public sealed record RoiValidationRuleCatalogDto(
 );
 
 /// <summary>
-/// TODO-DOC: Describe RoiValidationRulesByRoiTypeDto purpose and usage.
-/// <param name="RoiType">TODO-DOC: Describe RoiType.</param>
-/// <param name="Rules">TODO-DOC: Describe Rules.</param>
+/// Validation rules applicable to one ROI type.
+/// <param name="RoiType">The ROI type supported by the rules.</param>
+/// <param name="Rules">The rule definitions available for that ROI type.</param>
 /// </summary>
 public sealed record RoiValidationRulesByRoiTypeDto(
     ERoiType RoiType,
@@ -24,11 +24,11 @@ public sealed record RoiValidationRulesByRoiTypeDto(
 );
 
 /// <summary>
-/// TODO-DOC: Describe RoiValidationRuleDefinitionDto purpose and usage.
-/// <param name="RuleType">TODO-DOC: Describe RuleType.</param>
-/// <param name="Label">TODO-DOC: Describe Label.</param>
-/// <param name="Description">TODO-DOC: Describe Description.</param>
-/// <param name="DefaultParams">TODO-DOC: Describe DefaultParams.</param>
+/// Client-facing description of one ROI validation rule.
+/// <param name="RuleType">The stable identifier used to select the rule evaluator.</param>
+/// <param name="Label">The human-readable rule label.</param>
+/// <param name="Description">The human-readable explanation of the rule.</param>
+/// <param name="DefaultParams">The default JSON parameters for the rule.</param>
 /// </summary>
 public sealed record RoiValidationRuleDefinitionDto(
     string RuleType,

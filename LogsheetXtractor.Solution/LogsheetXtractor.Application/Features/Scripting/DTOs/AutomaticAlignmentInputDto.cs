@@ -4,7 +4,7 @@ using LogsheetXtractor.Domain.Entities;
 namespace LogsheetXtractor.Application.Features.Scripting.DTOs;
 
 /// <summary>
-/// TODO-DOC: Describe AutomaticAlignmentInputDto purpose and usage.
-/// <param name="Logsheet">TODO-DOC: Describe Logsheet.</param>
+/// Input passed to the automatic-alignment script for a logsheet.
+/// <param name="Logsheet">The logsheet to align with its template.</param>
 /// </summary>
 public record AutomaticAlignmentInputDto(Logsheet Logsheet);

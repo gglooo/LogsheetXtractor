@@ -7,8 +7,11 @@ using LogsheetXtractor.Application.Features.Logsheets;
 using LogsheetXtractor.Application.Features.Logsheets.DTOs;
 using LogsheetXtractor.Application.Features.Template.DTOs;
 using LogsheetXtractor.Domain.Entities;
+using LogsheetXtractor.Domain.Enums;
+using LogsheetXtractor.Domain.ValueObjects;
 using LogsheetXtractor.Infrastructure.Persistence;
 using LogsheetXtractor.UnitTests.Common;
+using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -20,6 +23,13 @@ public class PatchLogsheetCommandHandlerTests : IDisposable
 {
     private readonly AppDbContext _dbContext = TestDbContextFactory.Create();
     private readonly Mock<IMapper> _mapperMock = new();
+
+    public PatchLogsheetCommandHandlerTests()
+    {
+        new LogsheetXtractor.Application.Common.Mappings.MappingConfig().Register(
+            TypeAdapterConfig.GlobalSettings
+        );
+    }
 
     [Fact]
     public async Task Handle_ShouldPatchLogsheet_WhenLogsheetExists()
@@ -46,7 +56,12 @@ public class PatchLogsheetCommandHandlerTests : IDisposable
         _dbContext.Logsheets.Add(logsheet);
         await _dbContext.SaveChangesAsync();
 
-        var patchDto = new PatchLogsheetDto("New Front Data", "New Back Data");
+        var patchDto = new PatchLogsheetDto(
+            new AlignmentDataDto(
+                new List<PointCoordinateDto> { new() { X = 10, Y = 20 } },
+                new List<PointCoordinateDto> { new() { X = 30, Y = 40 } }
+            )
+        );
         var command = new PatchLogsheetCommand(logsheet.Id, patchDto);
 
         var expectedDto = new LogsheetDetailDto(
@@ -94,12 +109,18 @@ public class PatchLogsheetCommandHandlerTests : IDisposable
         var updatedLogsheet = await _dbContext.Logsheets.FindAsync(logsheet.Id);
 
         updatedLogsheet.Should().NotBeNull();
+        updatedLogsheet!.AlignmentData.Should().BeEquivalentTo(
+            new AlignmentContainer(
+                new List<PointCoordinate> { new(10, 20) },
+                new List<PointCoordinate> { new(30, 40) }
+            )
+        );
     }
 
     [Fact]
     public async Task Handle_ShouldFail_WhenLogsheetNotFound()
     {
-        var command = new PatchLogsheetCommand(Guid.NewGuid(), new PatchLogsheetDto(null, null));
+        var command = new PatchLogsheetCommand(Guid.NewGuid(), new PatchLogsheetDto(null));
 
         var result = await PatchLogsheetHandler.Handle(
             command,

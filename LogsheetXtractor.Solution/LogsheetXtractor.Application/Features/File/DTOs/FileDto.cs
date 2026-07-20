@@ -1,7 +1,7 @@
 namespace LogsheetXtractor.Application.Features.File.DTOs;
 
 /// <summary>
-/// TODO-DOC: Describe FileDto purpose and usage.
+/// File metadata returned by application services without opening the file content.
 /// </summary>
 public record FileDto
 (

@@ -112,6 +112,7 @@ public class MappingConfig : IRegister
             .Map(dest => dest.ValidationCondition, src => src.ValidationCondition);
 
         config.NewConfig<PatchLogsheetDto, Logsheet>()
+            .Map(dest => dest.AlignmentData, src => src.AlignmentData)
             .IgnoreNullValues(true);
 
         config.NewConfig<SelectRoisOutputDto, DetectRoisResponseDto>();

@@ -56,10 +56,20 @@ public class LogsheetLifecycleIntegrationTests : IClassFixture<ApiWebApplication
             $"/api/logsheets/{createdLogsheet.Id}",
             new
             {
-                frontAlignmentData = "{\"x\":1}",
-                backAlignmentData = (string?)null,
+                alignmentData = new
+                {
+                    frontside = new[] { new { x = 10, y = 20 } },
+                    backside = new[] { new { x = 30, y = 40 } },
+                },
             });
         patchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var patchedLogsheet = await patchResponse.Content.ReadFromJsonAsync<LogsheetDetailResponse>();
+        patchedLogsheet.Should().NotBeNull();
+        patchedLogsheet!.AlignmentData!.Frontside.Should().ContainSingle();
+        patchedLogsheet.AlignmentData.Frontside![0].Should().BeEquivalentTo(new { X = 10, Y = 20 });
+        patchedLogsheet.AlignmentData.Backside.Should().ContainSingle();
+        patchedLogsheet.AlignmentData.Backside![0].Should().BeEquivalentTo(new { X = 30, Y = 40 });
 
         var deleteResponse = await _client.DeleteAsync($"/api/logsheets/{createdLogsheet.Id}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -125,6 +135,16 @@ public class LogsheetLifecycleIntegrationTests : IClassFixture<ApiWebApplication
     private sealed record TemplateRef(Guid Id);
     private sealed record FileRef(Guid Id);
     private sealed record TemplateDetailResponse(Guid Id);
-    private sealed record LogsheetDetailResponse(Guid Id, TemplateRef Template, FileRef File);
+    private sealed record LogsheetDetailResponse(
+        Guid Id,
+        TemplateRef Template,
+        FileRef File,
+        AlignmentDataResponse? AlignmentData = null
+    );
+    private sealed record AlignmentDataResponse(
+        List<PointResponse>? Frontside,
+        List<PointResponse>? Backside
+    );
+    private sealed record PointResponse(int X, int Y);
     private sealed record LogsheetListResponse(Guid Id);
 }

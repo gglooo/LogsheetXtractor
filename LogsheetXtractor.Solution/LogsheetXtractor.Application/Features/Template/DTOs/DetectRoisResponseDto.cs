@@ -4,8 +4,8 @@ using LogsheetXtractor.Application.Features.ROIs.DTOs;
 namespace LogsheetXtractor.Application.Features.Template.DTOs;
 
 /// <summary>
-/// TODO-DOC: Describe DetectRoisResponseDto purpose and usage.
-/// <param name="Rois">TODO-DOC: Describe Rois.</param>
-/// <param name="Residuals">TODO-DOC: Describe Residuals.</param>
+/// Result of detecting ROI and residual regions in a template.
+/// <param name="Rois">The detected regions of interest.</param>
+/// <param name="Residuals">The detected residual regions and their expected content.</param>
 /// </summary>
 public record DetectRoisResponseDto(IEnumerable<RoiDto> Rois, IEnumerable<ResidualDto> Residuals);
